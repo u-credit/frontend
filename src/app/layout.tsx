@@ -1,8 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Mitr, Rubik, Bai_Jamjuree } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
+const mitr = Mitr({ 
+  subsets: ["latin"],
+  weight: ['200', '300', '400', '500', '600', '700'],
+  variable: "--font-mitr"
+});
+const rubik = Rubik({ 
+  subsets: ["latin"],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: "--font-rubik"
+});
+const baiJamjuree = Bai_Jamjuree({ 
+  subsets: ["latin"], 
+  weight: ['200', '300', '400', '500', '600', '700'],
+  variable: "--font-bai-jamjuree"
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${mitr.variable} ${rubik.variable} ${baiJamjuree.variable}`}>
       <body className={inter.className}>{children}</body>
     </html>
   );
