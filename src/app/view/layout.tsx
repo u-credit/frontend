@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${mitr.variable} ${rubik.variable} ${baiJamjuree.variable}`}>
-      <body className={inter.className}>{children}</body>
+    <body className={inter.className}>{children}</body>
     </html>
-  );
-}
+    );
+  }
