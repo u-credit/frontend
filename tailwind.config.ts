@@ -8,11 +8,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      corePlugins: {
+        preflight: false,
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+      important: '#__next',
       fontFamily: {
         mitr: ['var(--font-mitr)'],
         rubik: ['var(--font-rubik)'],
