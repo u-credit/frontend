@@ -21,6 +21,7 @@ declare module '@mui/material/styles' {
 declare module '@mui/material/Button' {
   interface ButtonPropsColorOverrides {
     customSalmon: true;
+    primaryReverse: true;
   }
 }
 
@@ -33,9 +34,9 @@ const globalMuiTheme = createTheme({
       300: '#EB6D2A',
       400: '#E35205',
       500: '#BB4100',
-      main: '#EB6D2A',
+      main: '#E35205',
       light: '#F29B6D',
-      dark: '#E35205',
+      dark: '#BB4100',
       contrastText: '#fff',
     },
     secondary: {
@@ -91,7 +92,38 @@ const globalMuiTheme = createTheme({
       fontFamily: 'bai Jamjuree',
     },
   },
-  components: {},
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: '6px',
+          boxShadow: 'none', // Remove the default shadow
+          '&:hover': {
+            boxShadow: 'none', // Remove shadow on hover
+          },
+          '&:active': {
+            boxShadow: 'none', // Remove shadow on active state
+          },
+          '&:focus': {
+            boxShadow: 'none', // Remove shadow on focus state
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'Bai Jamjuree',
+        },
+        label: {
+          fontFamily: 'Bai Jamjuree',
+        },
+        labelSmall: {
+          fontFamily: 'Bai Jamjuree',
+        },
+      },
+    },
+  },
 });
 
 export default globalMuiTheme;
