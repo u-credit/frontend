@@ -29,6 +29,7 @@ export default function CustomSelectOutlined({
   disabled = false,
 }: SelectProps) {
   const handleChange = (event: SelectChangeEvent) => {
+    console.log('event.target.value', event.target);
     onSelectedValueChange(event.target.value as string);
   };
 

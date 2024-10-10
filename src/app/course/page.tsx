@@ -88,6 +88,22 @@ export default function Course() {
   const handleOpen = () => setOpenBookmarkModal(true);
   const handleClose = () => setOpenBookmarkModal(false);
 
+  const handleFacultyChange = (value: string) => {
+    console.log('Selected Faculty:', value);
+    const selected = facultyOptions.find((option) => option.value === value);
+    setSelectedFaculty(selected?.label || '');
+  };
+
+  const handleDepartmentChange = (value: string) => {
+    const selected = departmentOptions.find((option) => option.value === value);
+    setSelectedDepartment(selected?.label || '');
+  };
+
+  const handleProgramChange = (value: string) => {
+    const selected = programOptions.find((option) => option.value === value);
+    setSelectedProgram(selected?.label || '');
+  };
+
   useEffect(() => {
     const loadMoreSubjects = async () => {
       const last_id =

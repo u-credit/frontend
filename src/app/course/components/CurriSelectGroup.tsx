@@ -1,17 +1,30 @@
 import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CustomSelectOutlined from './CustomSelectOutlined';
+import { SelectOption } from '@/types';
 
 interface CurriSelectGroupProps {
-  selectedFaculty: string | null;
-  selectedDepartment: string | null;
-  selectedProgram: string | null;
+  selectedFaculty: string;
+  selectedDepartment: string;
+  selectedProgram: string;
+  facultyOptions: SelectOption[];
+  departmentOptions: SelectOption[];
+  programOptions: SelectOption[];
+  onFacultyChange: (value: string) => void; // Callback for faculty change
+  onDepartmentChange: (value: string) => void; // Callback for department change
+  onProgramChange: (value: string) => void; // Callback for program change
 }
 
 export default function CurriSelectGroup({
   selectedFaculty,
   selectedDepartment,
   selectedProgram,
+  facultyOptions,
+  departmentOptions,
+  programOptions,
+  onFacultyChange,
+  onDepartmentChange,
+  onProgramChange,
 }: CurriSelectGroupProps) {
   return (
     <div className="flex-grow bg-white max-w-3xl text-primary-400 lg:max-w-none rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
@@ -57,28 +70,22 @@ export default function CurriSelectGroup({
               หลักสูตรของคุณ
             </span>{' '}
             <CustomSelectOutlined
-              onSelectedValueChange={function (value: string): void {
-                throw new Error('Function not implemented.');
-              }}
-              selectOptions={[]}
-              selectedValue={''}
+              onSelectedValueChange={onFacultyChange}
+              selectOptions={facultyOptions}
+              selectedValue={selectedFaculty}
               label="คณะ"
             />
             <CustomSelectOutlined
-              onSelectedValueChange={function (value: string): void {
-                throw new Error('Function not implemented.');
-              }}
-              selectOptions={[]}
-              selectedValue={''}
+              onSelectedValueChange={onDepartmentChange}
+              selectOptions={departmentOptions}
+              selectedValue={selectedDepartment}
               label="ภาควิชา"
               disabled={!selectedFaculty}
             />
             <CustomSelectOutlined
-              onSelectedValueChange={function (value: string): void {
-                throw new Error('Function not implemented.');
-              }}
-              selectOptions={[]}
-              selectedValue={''}
+              onSelectedValueChange={onProgramChange}
+              selectOptions={programOptions}
+              selectedValue={selectedProgram}
               label="หลักสูตร"
               disabled={!selectedDepartment}
             />
