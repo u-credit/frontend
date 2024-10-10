@@ -44,11 +44,11 @@ export interface TeachTableDto {
   teach_time_start: string;
   teach_time_end: string;
   midterm_exam_day: number;
-  midterm_exam_date: Date;
+  midterm_exam_date: Date | null;
   midterm_exam_time_start: string;
   midterm_exam_time_end: string;
   final_exam_day: number;
-  final_exam_date: Date;
+  final_exam_date: Date | null;
   final_exam_time_start: string;
   final_exam_time_end: string;
   teach_time_str: string;

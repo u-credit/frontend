@@ -1,5 +1,6 @@
 export const API_PATHS = {
   subject: '/subjects',
+  faculty: '/faculty',
 };
 
 export const ROUTES = {

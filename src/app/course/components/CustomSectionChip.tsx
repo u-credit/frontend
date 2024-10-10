@@ -4,6 +4,7 @@ interface CustomSectionChipProps {
 }
 
 const dayColorMap = [
+  '#EAEAEA', // none & multiple
   '#FFA8AA', // Sunday
   '#FFFAB0', // Monday
   '#FFC7F2', // Tuesday
@@ -19,6 +20,7 @@ export default function CustomSectionChip({
 }: CustomSectionChipProps) {
   const secBackgroundColor = dayColorMap[day];
   const dayNames = [
+    'ไม่ระบุ',
     'วันอาทิตย์',
     'วันจันทร์',
     'วันอังคาร',

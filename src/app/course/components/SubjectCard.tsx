@@ -11,7 +11,7 @@ import { SubjectDetail, SubjectDto } from '../../../Interfaces';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CustomButton from './CustomButton';
 import CustomSelect from './CustomSelect';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SelectOption } from '@/types';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
@@ -39,6 +39,8 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
 
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
+  const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
+
   const handleSelectValueChange = (value: string) => {
     setSelectedValue(value);
     console.log('Selected Value:', value);
@@ -65,6 +67,16 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
     console.log('Accordion Clicked');
     router.push(`/course/${subjectDetail.subject_id}`);
   };
+
+  useEffect(() => {
+    if (subjectDetail.teach_table) {
+      const daySection = new Array(8).fill('');
+      subjectDetail.teach_table.forEach((table) => {
+        daySection[table.teach_day] += table.section + ' ';
+      });
+      setDaySection(daySection);
+    }
+  }, [subjectDetail]);
 
   return (
     <div className="relative group">
@@ -147,13 +159,12 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                 />
               </div>
               <div id="row-3" className="flex flex-wrap gap-x-2 gap-y-1">
-                <CustomSectionChip day={0} sec="19" />
-                <CustomSectionChip day={1} sec="19" />
-                <CustomSectionChip day={2} sec="19" />
-                <CustomSectionChip day={3} sec="19" />
-                <CustomSectionChip day={4} sec="19" />
-                <CustomSectionChip day={5} sec="19" />
-                <CustomSectionChip day={6} sec="19" />
+                {daySection.map((section, index) => {
+                  if (section === '') return null;
+                  return (
+                    <CustomSectionChip key={index} day={index} sec={section} />
+                  );
+                })}
               </div>
             </div>
           </div>

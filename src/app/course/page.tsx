@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -11,7 +11,12 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar from './components/Sidebar';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { ListSubjectQueryParams, PageDto, SubjectDto } from '@/Interfaces';
+import {
+  FacultyDto,
+  ListSubjectQueryParams,
+  PageDto,
+  SubjectDto,
+} from '@/Interfaces';
 import { fetchListSubject } from '@/api/subjectApi';
 import { SelectOption } from '@/types';
 import {
@@ -24,6 +29,8 @@ import {
 
 import { useInView } from 'react-intersection-observer';
 import { ListSubjectOrderBy, Order } from '@/enums';
+import { fetchListFaculty } from '@/api/facultyApi';
+import { list } from 'postcss';
 
 const mockSelectOptions: SelectOption[] = [
   { label: 'Option 1', value: 'option1' },
@@ -37,19 +44,41 @@ export default function Course() {
     { label: 'Option 1', value: 'option1' },
     { label: 'Option 2', value: 'option2' },
   ]);
-  const [selectedFaculty, setSelectedFaculty] = useState(null);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
-  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
+  const [departmentOptions, setDepartmentOptions] = useState<SelectOption[]>(
+    [],
+  );
+  const [programOptions, setProgramOptions] = useState<SelectOption[]>([]);
+  const [selectedFaculty, setSelectedFaculty] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [selectedProgram, setSelectedProgram] = useState<string>('');
 
   const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
+  const [listFaculty, setListFaculty] = useState<FacultyDto[]>([]);
   const { ref, inView } = useInView();
 
   const [openBookmarkModal, setOpenBookmarkModal] = useState(false);
   const handleOpen = () => setOpenBookmarkModal(true);
   const handleClose = () => setOpenBookmarkModal(false);
+
+  const handleFacultyChange = (value: string) => {
+    console.log('Selected Faculty:', value);
+    const selected = facultyOptions.find((option) => option.value === value);
+    setSelectedFaculty(selected?.label || '');
+  };
+
+  const handleDepartmentChange = (value: string) => {
+    const selected = departmentOptions.find((option) => option.value === value);
+    setSelectedDepartment(selected?.label || '');
+  };
+
+  const handleProgramChange = (value: string) => {
+    const selected = programOptions.find((option) => option.value === value);
+    setSelectedProgram(selected?.label || '');
+  };
 
   useEffect(() => {
     // is meta should be replace?
@@ -97,8 +126,67 @@ export default function Course() {
       }
     };
 
+    const loadFaculty = async () => {
+      try {
+        const data = (await fetchListFaculty())?.data || [];
+        setListFaculty(data);
+      } catch (error) {
+      } finally {
+      }
+    };
+
+    loadFaculty();
     loadSubjects();
   }, []);
+
+  useEffect(() => {
+    const facultyOptions =
+      listFaculty?.map((faculty) => ({
+        label: faculty.faculty_name,
+        value: faculty.faculty_id,
+      })) || [];
+    setFacultyOptions(facultyOptions);
+    console.log('Updated listFaculty:', listFaculty);
+  }, [listFaculty]); // จะทำงานเมื่อ listFaculty เปลี่ยนแปลง
+
+  useEffect(() => {
+    console.log('Updated facultyOptions:', facultyOptions);
+  }, [facultyOptions]); // จะทำงานเมื่อ facultyOptions เปลี่ยนแปลง
+
+  useEffect(() => {
+    for (let i = 0; i < listFaculty.length; i++) {
+      if (listFaculty[i].faculty_id === selectedFaculty) {
+        const departmentOptions =
+          listFaculty[i].department?.map((department) => ({
+            label: department.department_name,
+            value: department.department_id,
+          })) || [];
+        setDepartmentOptions(departmentOptions);
+        break;
+      }
+    }
+  }, [selectedFaculty, listFaculty]);
+
+  useEffect(() => {
+    for (let i = 0; i < listFaculty.length; i++) {
+      if (listFaculty[i].faculty_id === selectedFaculty) {
+        for (let j = 0; j < listFaculty[i].department.length; j++) {
+          if (
+            listFaculty[i].department[j].department_id === selectedDepartment
+          ) {
+            const programOptions =
+              listFaculty[i].department[j].curriculum?.map((curriculum) => ({
+                label: curriculum.curriculum_name,
+                value: curriculum.curriculum_id,
+              })) || [];
+            setProgramOptions(programOptions);
+            break;
+          }
+        }
+        break;
+      }
+    }
+  }, [selectedDepartment, listFaculty, selectedFaculty]);
 
   // Handler to update search value
   const handleSearchValueChange = (value: string) => {
@@ -123,9 +211,15 @@ export default function Course() {
       </div>
       <div className="w-full">
         <CurriSelectGroup
-          selectedFaculty={''}
-          selectedDepartment={''}
-          selectedProgram={''}
+          selectedFaculty={selectedFaculty}
+          selectedDepartment={selectedDepartment}
+          selectedProgram={selectedProgram}
+          facultyOptions={facultyOptions}
+          departmentOptions={departmentOptions}
+          programOptions={programOptions}
+          onFacultyChange={handleFacultyChange}
+          onDepartmentChange={handleDepartmentChange}
+          onProgramChange={handleProgramChange}
         />
         <div className="flex-grow bg-white max-w-3xl lg:max-w-none rounded-lg mx-auto lg:ml-64 lg:mr-4 my-4">
           <div className="flex flex-col sm:flex-row p-4 gap-4 justify-between">

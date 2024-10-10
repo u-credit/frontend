@@ -10,7 +10,6 @@ export const fetchListSubject = async (
   params: ListSubjectQueryParams,
 ): Promise<Response<SubjectDto[]>> => {
   const queryParams = new URLSearchParams();
-  console.log('test:', process.env.NEXT_PUBLIC_BACKEND_URL);
   Object.keys(params).forEach((key) => {
     const value = params[key as keyof ListSubjectQueryParams];
     if (value !== undefined && value !== null) {
