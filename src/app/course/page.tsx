@@ -89,19 +89,29 @@ export default function Course() {
   const handleClose = () => setOpenBookmarkModal(false);
 
   const handleFacultyChange = (value: string) => {
-    console.log('Selected Faculty:', value);
     const selected = facultyOptions.find((option) => option.value === value);
-    setSelectedFaculty(selected?.label || '');
+    setSelectedFaculty(selected?.value || '');
+    setSelectedFacultyObj(selected || null);
+
+    setSelectedDepartment('');
+    setSelectedProgram('');
   };
 
   const handleDepartmentChange = (value: string) => {
+    const departmentOptions = selectedFacultyObj?.children || [];
+
     const selected = departmentOptions.find((option) => option.value === value);
-    setSelectedDepartment(selected?.label || '');
+    setSelectedDepartment(selected?.value || '');
+    setSelectedDepartmentObj(selected || null);
+
+    setSelectedProgram('');
   };
 
   const handleProgramChange = (value: string) => {
+    const programOptions = selectedDepartmentObj?.children || [];
     const selected = programOptions.find((option) => option.value === value);
-    setSelectedProgram(selected?.label || '');
+
+    setSelectedProgram(selected?.value || '');
   };
 
   useEffect(() => {
