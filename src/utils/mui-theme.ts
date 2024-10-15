@@ -123,6 +123,13 @@ const globalMuiTheme = createTheme({
         },
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          transition: 'none !important',
+        },
+      },
+    },
   },
 });
 

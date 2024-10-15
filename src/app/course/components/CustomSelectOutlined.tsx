@@ -3,13 +3,10 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { SelectOption } from '@/types';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import styled from '@emotion/styled';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { SxProps } from '@mui/system';
 import { Theme } from '@mui/material/styles';
 import { InputLabel } from '@mui/material';
-import OutlinedInput from '@mui/material/OutlinedInput';
 
 interface SelectProps {
   onSelectedValueChange: (value: string) => void;
@@ -29,7 +26,7 @@ export default function CustomSelectOutlined({
   disabled = false,
 }: SelectProps) {
   const handleChange = (event: SelectChangeEvent) => {
-    console.log('event.target.value', event.target);
+    // console.log('event.target.value', event.target);
     onSelectedValueChange(event.target.value as string);
   };
 

@@ -4,15 +4,13 @@ import CustomSelectOutlined from './CustomSelectOutlined';
 import { SelectOption } from '@/types';
 
 interface CurriSelectGroupProps {
-  selectedFaculty: string;
-  selectedDepartment: string;
-  selectedProgram: string;
+  selectedFaculty: string | number;
+  selectedDepartment: string | number;
+  selectedProgram: string | number;
   facultyOptions: SelectOption[];
-  departmentOptions: SelectOption[];
-  programOptions: SelectOption[];
-  onFacultyChange: (value: string) => void; // Callback for faculty change
-  onDepartmentChange: (value: string) => void; // Callback for department change
-  onProgramChange: (value: string) => void; // Callback for program change
+  onFacultyChange: (value: string) => void;
+  onDepartmentChange: (value: string) => void;
+  onProgramChange: (value: string) => void;
 }
 
 export default function CurriSelectGroup({
@@ -20,12 +18,21 @@ export default function CurriSelectGroup({
   selectedDepartment,
   selectedProgram,
   facultyOptions,
-  departmentOptions,
-  programOptions,
   onFacultyChange,
   onDepartmentChange,
   onProgramChange,
 }: CurriSelectGroupProps) {
+  const selectedFacultyObj = facultyOptions.find(
+    (faculty) => faculty.value === selectedFaculty,
+  );
+
+  const departmentOptions = selectedFacultyObj?.children || [];
+
+  const selectedDepartmentObj = departmentOptions.find(
+    (department) => department.value === selectedDepartment,
+  );
+
+  const programOptions = selectedDepartmentObj?.children || [];
   return (
     <div className="flex-grow bg-white max-w-3xl text-primary-400 lg:max-w-none rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
       <Accordion
@@ -72,20 +79,20 @@ export default function CurriSelectGroup({
             <CustomSelectOutlined
               onSelectedValueChange={onFacultyChange}
               selectOptions={facultyOptions}
-              selectedValue={selectedFaculty}
+              selectedValue={String(selectedFaculty)}
               label="คณะ"
             />
             <CustomSelectOutlined
               onSelectedValueChange={onDepartmentChange}
               selectOptions={departmentOptions}
-              selectedValue={selectedDepartment}
+              selectedValue={String(selectedDepartment)}
               label="ภาควิชา"
               disabled={!selectedFaculty}
             />
             <CustomSelectOutlined
               onSelectedValueChange={onProgramChange}
               selectOptions={programOptions}
-              selectedValue={selectedProgram}
+              selectedValue={String(selectedProgram)}
               label="หลักสูตร"
               disabled={!selectedDepartment}
             />

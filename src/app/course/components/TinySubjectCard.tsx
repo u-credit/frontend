@@ -36,7 +36,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
 
   const handleSelectValueChange = (value: string) => {
     setSelectedValue(value);
-    console.log('Selected Value:', value);
+    // console.log('Selected Value:', value);
   };
 
   const handleToggle = () => {

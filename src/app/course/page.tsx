@@ -49,9 +49,15 @@ export default function Course() {
     [],
   );
   const [programOptions, setProgramOptions] = useState<SelectOption[]>([]);
-  const [selectedFaculty, setSelectedFaculty] = useState<string>('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-  const [selectedProgram, setSelectedProgram] = useState<string>('');
+  const [selectedFaculty, setSelectedFaculty] = useState<string | number>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string | number>(
+    '',
+  );
+  const [selectedProgram, setSelectedProgram] = useState<string | number>('');
+  const [selectedFacultyObj, setSelectedFacultyObj] =
+    useState<SelectOption | null>(null);
+  const [selectedDepartmentObj, setSelectedDepartmentObj] =
+    useState<SelectOption | null>(null);
 
   const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(true);
@@ -65,30 +71,40 @@ export default function Course() {
   const handleClose = () => setOpenBookmarkModal(false);
 
   const handleFacultyChange = (value: string) => {
-    console.log('Selected Faculty:', value);
     const selected = facultyOptions.find((option) => option.value === value);
-    setSelectedFaculty(selected?.label || '');
+    setSelectedFaculty(selected?.value || '');
+    setSelectedFacultyObj(selected || null);
+
+    setSelectedDepartment('');
+    setSelectedProgram('');
   };
 
   const handleDepartmentChange = (value: string) => {
+    const departmentOptions = selectedFacultyObj?.children || [];
+
     const selected = departmentOptions.find((option) => option.value === value);
-    setSelectedDepartment(selected?.label || '');
+    setSelectedDepartment(selected?.value || '');
+    setSelectedDepartmentObj(selected || null);
+
+    setSelectedProgram('');
   };
 
   const handleProgramChange = (value: string) => {
+    const programOptions = selectedDepartmentObj?.children || [];
     const selected = programOptions.find((option) => option.value === value);
-    setSelectedProgram(selected?.label || '');
+
+    setSelectedProgram(selected?.value || '');
   };
 
   useEffect(() => {
     // is meta should be replace?
     const loadMoreSubjects = async () => {
-      console.log('Load more users');
+      // console.log('Load more users');
       const last_id =
         listSubjects && listSubjects.length > 0
           ? listSubjects[listSubjects.length - 1].subject_id
           : '';
-      console.log('last_id', last_id);
+      // console.log('last_id', last_id);
       const params: ListSubjectQueryParams = {
         semester: 1,
         year: 2564,
@@ -122,17 +138,28 @@ export default function Course() {
       } finally {
         setLoading(false);
         setInitialLoadComplete(true);
-        console.log('finally', listSubjects);
+        // console.log('finally', listSubjects);
       }
     };
 
     const loadFaculty = async () => {
       try {
         const data = (await fetchListFaculty())?.data || [];
+        const facultyOptions: SelectOption[] = data.map((faculty) => ({
+          label: faculty.faculty_name,
+          value: faculty.faculty_id,
+          children: faculty.department?.map((department) => ({
+            label: department.department_name,
+            value: department.department_id,
+            children: department.curriculum?.map((curriculum) => ({
+              label: curriculum.curriculum_name,
+              value: curriculum.curriculum_id,
+            })),
+          })),
+        }));
         setListFaculty(data);
-      } catch (error) {
-      } finally {
-      }
+        setFacultyOptions(facultyOptions);
+      } catch (error) {}
     };
 
     loadFaculty();
@@ -140,68 +167,21 @@ export default function Course() {
   }, []);
 
   useEffect(() => {
-    const facultyOptions =
-      listFaculty?.map((faculty) => ({
-        label: faculty.faculty_name,
-        value: faculty.faculty_id,
-      })) || [];
-    setFacultyOptions(facultyOptions);
-    console.log('Updated listFaculty:', listFaculty);
-  }, [listFaculty]); // จะทำงานเมื่อ listFaculty เปลี่ยนแปลง
+    setSelectedFaculty('');
+    setSelectedDepartment('');
+    setSelectedProgram('');
+  }, [facultyOptions]);
 
-  useEffect(() => {
-    console.log('Updated facultyOptions:', facultyOptions);
-  }, [facultyOptions]); // จะทำงานเมื่อ facultyOptions เปลี่ยนแปลง
 
-  useEffect(() => {
-    for (let i = 0; i < listFaculty.length; i++) {
-      if (listFaculty[i].faculty_id === selectedFaculty) {
-        const departmentOptions =
-          listFaculty[i].department?.map((department) => ({
-            label: department.department_name,
-            value: department.department_id,
-          })) || [];
-        setDepartmentOptions(departmentOptions);
-        break;
-      }
-    }
-  }, [selectedFaculty, listFaculty]);
-
-  useEffect(() => {
-    for (let i = 0; i < listFaculty.length; i++) {
-      if (listFaculty[i].faculty_id === selectedFaculty) {
-        for (let j = 0; j < listFaculty[i].department.length; j++) {
-          if (
-            listFaculty[i].department[j].department_id === selectedDepartment
-          ) {
-            const programOptions =
-              listFaculty[i].department[j].curriculum?.map((curriculum) => ({
-                label: curriculum.curriculum_name,
-                value: curriculum.curriculum_id,
-              })) || [];
-            setProgramOptions(programOptions);
-            break;
-          }
-        }
-        break;
-      }
-    }
-  }, [selectedDepartment, listFaculty, selectedFaculty]);
-
-  // Handler to update search value
   const handleSearchValueChange = (value: string) => {
     setSearchValue(value);
   };
 
-  // Optional: Function to handle search action, like pressing Enter
   const handleSearchAction = () => {
-    console.log('Final Search Value:', searchValue);
-    // Perform search or any other action here
   };
 
   const handleSelectValueChange = (value: string) => {
     setSelectedValue(value);
-    console.log('Selected Value:', value);
   };
 
   return (
@@ -215,8 +195,6 @@ export default function Course() {
           selectedDepartment={selectedDepartment}
           selectedProgram={selectedProgram}
           facultyOptions={facultyOptions}
-          departmentOptions={departmentOptions}
-          programOptions={programOptions}
           onFacultyChange={handleFacultyChange}
           onDepartmentChange={handleDepartmentChange}
           onProgramChange={handleProgramChange}
