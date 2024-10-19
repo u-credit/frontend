@@ -4,6 +4,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import './globals.css';
 import theme from '@/utils/mui-theme';
 import CssBaseline from '@mui/material/CssBaseline';
+import Navbar from '@/components/common/NavBar';
 
 const inter = Inter({ subsets: ['latin'] });
 const mitr = Mitr({
@@ -32,11 +33,17 @@ export default function RootLayout({
       lang="en"
       className={`${mitr.variable} ${rubik.variable} ${baiJamjuree.variable}`}
     >
-      <body className={inter.className}>
+      <head>
+        <script src="https://accounts.google.com/gsi/client" async></script>
+      </head>
+      <body className={baiJamjuree.className}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            {children}
+            <Navbar />
+            <div className="bg-gray-100">
+              <div className="mt-12 max-w-7xl mx-auto">{children}</div>
+            </div>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
