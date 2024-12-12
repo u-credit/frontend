@@ -88,46 +88,6 @@ export default function Course() {
   const handleOpen = () => setOpenBookmarkModal(true);
   const handleClose = () => setOpenBookmarkModal(false);
 
-  const handleFacultyChange = (value: string) => {
-    const selected = facultyOptions.find((option) => option.value === value);
-    setSelectedFaculty(selected?.value || '');
-    setSelectedFacultyObj(selected || null);
-
-    setSelectedDepartment('');
-    setSelectedCurriculum('');
-    setSelectedCurriculumYear('');
-  };
-
-  const handleDepartmentChange = (value: string) => {
-    const departmentOptions = selectedFacultyObj?.children || [];
-
-    const selected = departmentOptions.find((option) => option.value === value);
-    setSelectedDepartment(selected?.value || '');
-    setSelectedDepartmentObj(selected || null);
-
-    setSelectedCurriculum('');
-    setSelectedCurriculumYear('');
-  };
-
-  const handleCurriculumChange = (value: string) => {
-    const curriculumOptions = selectedDepartmentObj?.children || [];
-    const selected = curriculumOptions.find((option) => option.value === value);
-
-    setSelectedCurriculum(selected?.value || '');
-    setSelectedCurriculumObj(selected || null);
-
-    setSelectedCurriculumYear('');
-  };
-
-  const handleCurriculumYearChange = (value: string) => {
-    const curriculumYearOptions = selectedCurriculumObj?.children || [];
-    const selected = curriculumYearOptions.find(
-      (option) => option.value === value,
-    );
-
-    setSelectedCurriculumYear(selected?.value || '');
-  };
-
   useEffect(() => {
     const loadMoreSubjects = async () => {
       const last_id =
