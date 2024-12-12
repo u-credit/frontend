@@ -59,18 +59,9 @@ export default function Course() {
 
   const [searchValue, setSearchValue] = useState<string>('');
   const [selectedValue, setSelectedValue] = useState<string>('');
-  const [selectedOption, setSelectedOption] = useState<SelectOption[]>([
-    { label: 'Option 1', value: 'option1' },
-    { label: 'Option 2', value: 'option2' },
-  ]);
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-  const [departmentOptions, setDepartmentOptions] = useState<SelectOption[]>(
-    [],
-  );
-  const [curriculumOptions, setCurriculumOptions] = useState<SelectOption[]>(
-    [],
-  );
-  const [selectedFaculty, setSelectedFaculty] = useState<string | number>({});
+
+  const [selectedFaculty, setSelectedFaculty] = useState<string | number>('');
   const [selectedDepartment, setSelectedDepartment] = useState<string | number>(
     '',
   );
