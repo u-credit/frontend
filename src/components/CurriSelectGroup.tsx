@@ -1,120 +1,136 @@
-import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+'use client';
 import CustomSelectOutlined from './CustomSelectOutlined';
 import { SelectOption } from '@/types';
+import { useEffect, useState } from 'react';
+import { CurriGroup } from '@/Interfaces';
 
 interface CurriSelectGroupProps {
-  selectedFaculty: string | number;
-  selectedDepartment: string | number;
-  selectedCurriculum: string | number;
-  selectedCurriculumYear: string | number;
+  selectedCurriGroup: CurriGroup;
   facultyOptions: SelectOption[];
-  onFacultyChange: (value: string) => void;
-  onDepartmentChange: (value: string) => void;
-  onCurriculumChange: (value: string) => void;
-  onCurriculumYearChange: (value: string) => void;
+  onCurriGroupChange: (curriGroup: CurriGroup) => void;
 }
 
 export default function CurriSelectGroup({
-  selectedFaculty,
-  selectedDepartment,
-  selectedCurriculum,
-  selectedCurriculumYear,
+  selectedCurriGroup,
   facultyOptions,
-  onFacultyChange,
-  onDepartmentChange,
-  onCurriculumChange,
-  onCurriculumYearChange,
+  onCurriGroupChange,
 }: CurriSelectGroupProps) {
-  const selectedFacultyObj = facultyOptions.find(
-    (faculty) => faculty.value === selectedFaculty,
+  const [selectedFaculty, setSelectedFaculty] = useState<string | number>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string | number>(
+    '',
   );
+  const [selectedCurriculum, setSelectedCurriculum] = useState<string | number>(
+    '',
+  );
+  const [selectedCurriculumYear, setSelectedCurriculumYear] = useState<
+    string | number
+  >('');
+
+  const [selectedFacultyObj, setSelectedFacultyObj] =
+    useState<SelectOption | null>(null);
+  const [selectedDepartmentObj, setSelectedDepartmentObj] =
+    useState<SelectOption | null>(null);
+  const [selectedCurriculumObj, setSelectedCurriculumObj] =
+    useState<SelectOption | null>(null);
+
+  useEffect(() => {
+    if (selectedCurriGroup) {
+      setSelectedFaculty(selectedCurriGroup.faculty);
+      setSelectedDepartment(selectedCurriGroup.department);
+      setSelectedCurriculum(selectedCurriGroup.curriculum);
+      setSelectedCurriculumYear(selectedCurriGroup.curriculumYear);
+    }
+  }, [selectedCurriGroup]);
 
   const departmentOptions = selectedFacultyObj?.children || [];
 
-  const selectedDepartmentObj = departmentOptions.find(
-    (department) => department.value === selectedDepartment,
-  );
-
   const curriculumOptions = selectedDepartmentObj?.children || [];
-  const selectedCurriculumObj = curriculumOptions.find(
-    (curriculum) => curriculum.value === selectedCurriculum,
-  );
+
   const curriculumYearOptions = selectedCurriculumObj?.children || [];
 
-  return (
-    <div className="flex-grow bg-white max-w-3xl text-primary-400 lg:max-w-none rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
-      <Accordion
-        sx={{
-          borderRadius: 2,
-          borderWidth: 0,
-          boxShadow: 'none',
-          backgroundColor: 'white',
-          '&.Mui-expanded': {
-            margin: 0,
-          },
-        }}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1-content"
-          id="panel1-header"
-          sx={{
-            padding: 0,
-            minHeight: 'unset',
-            ' &.Mui-expanded': {
-              minHeight: 'unset',
-              margin: 0,
-            },
-            '& .MuiAccordionSummary-content': {
-              margin: 0,
-            },
+  const handleFacultyChange = (value: string) => {
+    const selected = facultyOptions.find((option) => option.value === value);
+    setSelectedFaculty(selected?.value || '');
+    setSelectedFacultyObj(selected || null);
 
-            '& .MuiAccordionSummary-content.Mui-expanded': {
-              margin: 0,
-            },
-          }}
-        >
-          <span className="text-primary-400">
-            *เพื่อการแสดงผลรายละเอียดหมวดหมู่รายวิชาที่ละเอียดมากยิ่งขึ้น
-            โปรดกรอกรายละเอียดหลักสูตรของคุณ
-          </span>
-        </AccordionSummary>
-        <AccordionDetails sx={{ padding: 0 }}>
-          <div className="flex flex-row gap-x-7 mt-4">
-            <span className="font-semibold whitespace-nowrap content-center">
-              หลักสูตรของคุณ
-            </span>{' '}
-            <CustomSelectOutlined
-              onSelectedValueChange={onFacultyChange}
-              selectOptions={facultyOptions}
-              selectedValue={String(selectedFaculty)}
-              label="คณะ"
-            />
-            <CustomSelectOutlined
-              onSelectedValueChange={onDepartmentChange}
-              selectOptions={departmentOptions}
-              selectedValue={String(selectedDepartment)}
-              label="ภาควิชา"
-              disabled={!selectedFaculty}
-            />
-            <CustomSelectOutlined
-              onSelectedValueChange={onCurriculumChange}
-              selectOptions={curriculumOptions}
-              selectedValue={String(selectedCurriculum)}
-              label="หลักสูตร"
-              disabled={!selectedDepartment}
-            />
-            <CustomSelectOutlined
-              onSelectedValueChange={onCurriculumYearChange}
-              selectOptions={curriculumYearOptions}
-              selectedValue={String(selectedCurriculumYear)}
-              label="เล่มหลักสูตร"
-              disabled={!selectedCurriculum}
-            />
-          </div>
-        </AccordionDetails>
-      </Accordion>
-    </div>
+    setSelectedDepartment('');
+    setSelectedCurriculum('');
+    setSelectedCurriculumYear('');
+  };
+
+  const handleDepartmentChange = (value: string) => {
+    const departmentOptions = selectedFacultyObj?.children || [];
+
+    const selected = departmentOptions.find((option) => option.value === value);
+    setSelectedDepartment(selected?.value || '');
+    setSelectedDepartmentObj(selected || null);
+
+    setSelectedCurriculum('');
+    setSelectedCurriculumYear('');
+  };
+
+  const handleCurriculumChange = (value: string) => {
+    const curriculumOptions = selectedDepartmentObj?.children || [];
+    const selected = curriculumOptions.find((option) => option.value === value);
+
+    setSelectedCurriculum(selected?.value || '');
+    setSelectedCurriculumObj(selected || null);
+
+    setSelectedCurriculumYear('');
+  };
+
+  const handleCurriculumYearChange = (value: string) => {
+    const curriculumYearOptions = selectedCurriculumObj?.children || [];
+    const selected = curriculumYearOptions.find(
+      (option) => option.value === value,
+    );
+
+    setSelectedCurriculumYear(selected?.value || '');
+  };
+
+  useEffect(() => {
+    onCurriGroupChange({
+      faculty: selectedFaculty,
+      department: selectedDepartment,
+      curriculum: selectedCurriculum,
+      curriculumYear: selectedCurriculumYear,
+    });
+  }, [
+    selectedFaculty,
+    selectedDepartment,
+    selectedCurriculum,
+    selectedCurriculumYear,
+  ]);
+
+  return (
+    <>
+      <CustomSelectOutlined
+        onSelectedValueChange={handleFacultyChange}
+        selectOptions={facultyOptions}
+        selectedValue={String(selectedFaculty)}
+        label="คณะ"
+      />
+      <CustomSelectOutlined
+        onSelectedValueChange={handleDepartmentChange}
+        selectOptions={departmentOptions}
+        selectedValue={String(selectedDepartment)}
+        label="ภาควิชา"
+        disabled={!selectedFaculty}
+      />
+      <CustomSelectOutlined
+        onSelectedValueChange={handleCurriculumChange}
+        selectOptions={curriculumOptions}
+        selectedValue={String(selectedCurriculum)}
+        label="หลักสูตร"
+        disabled={!selectedDepartment}
+      />
+      <CustomSelectOutlined
+        onSelectedValueChange={handleCurriculumYearChange}
+        selectOptions={curriculumYearOptions}
+        selectedValue={String(selectedCurriculumYear)}
+        label="เล่มหลักสูตร"
+        disabled={!selectedCurriculum}
+      />
+    </>
   );
 }

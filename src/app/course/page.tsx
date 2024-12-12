@@ -3,15 +3,24 @@ import { useEffect, useState } from 'react';
 import { Button } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar from './components/Sidebar';
-import { FacultyDto, ListSubjectQueryParams, SubjectDto } from '@/Interfaces';
+import {
+  CurriGroup,
+  FacultyDto,
+  ListSubjectQueryParams,
+  SubjectDto,
+} from '@/Interfaces';
 import { fetchListSubject } from '@/api/subjectApi';
 import { SelectOption } from '@/types';
-import { BookmarkModal, SubjectContainer } from './components';
+import {
+  BookmarkModal,
+  CurriSelectContainer,
+  SubjectContainer,
+} from './components';
 
 import { useInView } from 'react-intersection-observer';
 import { ListSubjectOrderBy, Order } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
-import { CurriSelectGroup, CustomSearchBar, CustomSelect } from '@/components';
+import { CustomSearchBar, CustomSelect } from '@/components';
 
 interface FilterGroup {
   courseCategory: string[];
@@ -61,22 +70,12 @@ export default function Course() {
   const [selectedValue, setSelectedValue] = useState<string>('');
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
 
-  const [selectedFaculty, setSelectedFaculty] = useState<string | number>('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string | number>(
-    '',
-  );
-  const [selectedCurriculum, setSelectedCurriculum] = useState<string | number>(
-    '',
-  );
-  const [selectedCurriculumYear, setSelectedCurriculumYear] = useState<
-    string | number
-  >('');
-  const [selectedFacultyObj, setSelectedFacultyObj] =
-    useState<SelectOption | null>(null);
-  const [selectedDepartmentObj, setSelectedDepartmentObj] =
-    useState<SelectOption | null>(null);
-  const [selectedCurriculumObj, setSelectedCurriculumObj] =
-    useState<SelectOption | null>(null);
+  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
+    faculty: '',
+    department: '',
+    curriculum: '',
+    curriculumYear: '',
+  });
 
   const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(true);
@@ -88,46 +87,6 @@ export default function Course() {
   const [openBookmarkModal, setOpenBookmarkModal] = useState(false);
   const handleOpen = () => setOpenBookmarkModal(true);
   const handleClose = () => setOpenBookmarkModal(false);
-
-  const handleFacultyChange = (value: string) => {
-    const selected = facultyOptions.find((option) => option.value === value);
-    setSelectedFaculty(selected?.value || '');
-    setSelectedFacultyObj(selected || null);
-
-    setSelectedDepartment('');
-    setSelectedCurriculum('');
-    setSelectedCurriculumYear('');
-  };
-
-  const handleDepartmentChange = (value: string) => {
-    const departmentOptions = selectedFacultyObj?.children || [];
-
-    const selected = departmentOptions.find((option) => option.value === value);
-    setSelectedDepartment(selected?.value || '');
-    setSelectedDepartmentObj(selected || null);
-
-    setSelectedCurriculum('');
-    setSelectedCurriculumYear('');
-  };
-
-  const handleCurriculumChange = (value: string) => {
-    const curriculumOptions = selectedDepartmentObj?.children || [];
-    const selected = curriculumOptions.find((option) => option.value === value);
-
-    setSelectedCurriculum(selected?.value || '');
-    setSelectedCurriculumObj(selected || null);
-
-    setSelectedCurriculumYear('');
-  };
-
-  const handleCurriculumYearChange = (value: string) => {
-    const curriculumYearOptions = selectedCurriculumObj?.children || [];
-    const selected = curriculumYearOptions.find(
-      (option) => option.value === value,
-    );
-
-    setSelectedCurriculumYear(selected?.value || '');
-  };
 
   useEffect(() => {
     const loadMoreSubjects = async () => {
@@ -198,11 +157,10 @@ export default function Course() {
     loadSubjects();
   }, []);
 
-  useEffect(() => {
-    setSelectedFaculty('');
-    setSelectedDepartment('');
-    setSelectedCurriculum('');
-  }, [facultyOptions]);
+  const handleCurriGroupChange = (curriGroup: CurriGroup) => {
+    setSelectedCurriGroup(curriGroup);
+    console.log('new curriGroup => ', curriGroup);
+  };
 
   const handleSearchValueChange = (value: string) => {
     setSearchValue(value);
@@ -223,16 +181,10 @@ export default function Course() {
         />{' '}
       </div>
       <div className="w-full">
-        <CurriSelectGroup
-          selectedFaculty={selectedFaculty}
-          selectedDepartment={selectedDepartment}
-          selectedCurriculum={selectedCurriculum}
-          selectedCurriculumYear={selectedCurriculumYear}
+        <CurriSelectContainer
+          selectedCurriGroup={selectedCurriGroup}
           facultyOptions={facultyOptions}
-          onFacultyChange={handleFacultyChange}
-          onDepartmentChange={handleDepartmentChange}
-          onCurriculumChange={handleCurriculumChange}
-          onCurriculumYearChange={handleCurriculumYearChange}
+          onCurriGroupChange={handleCurriGroupChange}
         />
         <div className="flex-grow bg-white max-w-3xl lg:max-w-none rounded-lg mx-auto lg:ml-64 lg:mr-4 my-4">
           <div className="flex flex-col sm:flex-row p-4 gap-4 justify-between">

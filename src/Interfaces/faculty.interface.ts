@@ -21,3 +21,9 @@ export interface FacultyDto {
   department: DepartmentDto[];
 }
 
+export interface CurriGroup {
+  faculty: string | number;
+  department: string | number;
+  curriculum: string | number;
+  curriculumYear: string | number;
+}
