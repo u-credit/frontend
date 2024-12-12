@@ -94,7 +94,8 @@ export default function Course() {
     setSelectedFacultyObj(selected || null);
 
     setSelectedDepartment('');
-    setSelectedProgram('');
+    setSelectedCurriculum('');
+    setSelectedCurriculumYear('');
   };
 
   const handleDepartmentChange = (value: string) => {
@@ -104,14 +105,27 @@ export default function Course() {
     setSelectedDepartment(selected?.value || '');
     setSelectedDepartmentObj(selected || null);
 
-    setSelectedProgram('');
+    setSelectedCurriculum('');
+    setSelectedCurriculumYear('');
   };
 
-  const handleProgramChange = (value: string) => {
-    const programOptions = selectedDepartmentObj?.children || [];
-    const selected = programOptions.find((option) => option.value === value);
+  const handleCurriculumChange = (value: string) => {
+    const curriculumOptions = selectedDepartmentObj?.children || [];
+    const selected = curriculumOptions.find((option) => option.value === value);
 
-    setSelectedProgram(selected?.value || '');
+    setSelectedCurriculum(selected?.value || '');
+    setSelectedCurriculumObj(selected || null);
+
+    setSelectedCurriculumYear('');
+  };
+
+  const handleCurriculumYearChange = (value: string) => {
+    const curriculumYearOptions = selectedCurriculumObj?.children || [];
+    const selected = curriculumYearOptions.find(
+      (option) => option.value === value,
+    );
+
+    setSelectedCurriculumYear(selected?.value || '');
   };
 
   useEffect(() => {
