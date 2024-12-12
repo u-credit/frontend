@@ -1,3 +1,4 @@
+import CourseInfo from './CourseInfo';
 import UploadTranscript from './UploadTranscript';
 
 export default function Upload() {
@@ -17,6 +18,9 @@ export default function Upload() {
           <div className="border-t border-gray-200"></div>
           <div className="border-2 border-rose-700">
             <UploadTranscript />
+          </div>
+          <div>
+            <CourseInfo />
           </div>
         </div>
       </div>
