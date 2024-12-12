@@ -2,6 +2,7 @@ export interface CurriculumDto {
   curriculum_id: string;
   curriculum_name: string;
   curriculum_ename: string;
+  curriculum_year: string[];
 }
 
 export interface DepartmentDto {
@@ -20,3 +21,9 @@ export interface FacultyDto {
   department: DepartmentDto[];
 }
 
+export interface CurriGroup {
+  faculty: string | number;
+  department: string | number;
+  curriculum: string | number;
+  curriculumYear: string | number;
+}

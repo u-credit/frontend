@@ -9,18 +9,16 @@ import {
 } from '@mui/material';
 import { SubjectDetail, SubjectDto } from '../../../Interfaces';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import CustomButton from './CustomButton';
-import CustomSelect from './CustomSelect';
 import { useEffect, useState } from 'react';
 import { SelectOption } from '@/types';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import CustomSectionChip from './CustomSectionChip';
 import CustomTable from './CustomTable';
 import StarIcon from '@mui/icons-material/Star';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { stripHtmlTags } from '@/utils';
 import { useRouter } from 'next/navigation';
+import { CustomSectionChip, CustomSelect } from '@/components';
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
@@ -40,6 +38,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
+  const [sectionList, setSectionList] = useState<string[]>([]);
 
   const handleSelectValueChange = (value: string) => {
     setSelectedValue(value);
@@ -73,6 +72,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       const daySection = new Array(8).fill('');
       subjectDetail.teach_table.forEach((table) => {
         daySection[table.teach_day] += table.section + ' ';
+        setSectionList((prevList) => [...prevList, table.section]);
       });
       setDaySection(daySection);
     }
@@ -142,13 +142,16 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
               </div>
               <div id="row-2" className="flex flex-row gap-3">
                 <div>{subjectDetail.credit} หน่วยกิต</div>
+                <div className="text-primary-400">รีวิว</div>
                 <Rating
                   name="half-rating-read"
                   defaultValue={2.5}
                   precision={0.5}
                   readOnly
                   emptyIcon={<StarIcon fontSize="inherit" />}
+                  size="small"
                   sx={{
+                    alignItems: 'center',
                     '& .MuiRating-iconEmpty': {
                       color: 'grey.200',
                     },
@@ -178,14 +181,16 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       </Accordion>
       <div
         id="button-area"
-        className="absolute flex items-end justify-between px-4 w-full bottom-4 hover:cursor-pointer"
+        className="absolute flex items-end justify-end px-4 w-full bottom-4 hover:cursor-pointer"
         onClick={handleExpanded}
       >
-        <span className="text-sm">เปิดในเทอมนี้</span>
         <div className="flex space-x-2">
           <CustomSelect
             onSelectedValueChange={handleSelectValueChange}
-            selectOptions={mockSelectOptions}
+            selectOptions={sectionList.map((section) => ({
+              label: section,
+              value: section,
+            }))}
             selectedValue={selectedValue}
           />
           <Button

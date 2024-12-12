@@ -1,38 +1,25 @@
+'use client';
 import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CustomSelectOutlined from './CustomSelectOutlined';
 import { SelectOption } from '@/types';
+import { CurriSelectGroup } from '@/components';
+import { CurriGroup } from '@/Interfaces';
 
-interface CurriSelectGroupProps {
-  selectedFaculty: string | number;
-  selectedDepartment: string | number;
-  selectedProgram: string | number;
+interface CurriSelectContainerProps {
+  selectedCurriGroup: CurriGroup;
   facultyOptions: SelectOption[];
-  onFacultyChange: (value: string) => void;
-  onDepartmentChange: (value: string) => void;
-  onProgramChange: (value: string) => void;
+  onCurriGroupChange: (curriGroup: CurriGroup) => void;
 }
 
-export default function CurriSelectGroup({
-  selectedFaculty,
-  selectedDepartment,
-  selectedProgram,
+export default function CurriSelectContainer({
+  selectedCurriGroup,
   facultyOptions,
-  onFacultyChange,
-  onDepartmentChange,
-  onProgramChange,
-}: CurriSelectGroupProps) {
-  const selectedFacultyObj = facultyOptions.find(
-    (faculty) => faculty.value === selectedFaculty,
-  );
+  onCurriGroupChange,
+}: CurriSelectContainerProps) {
+  const handleCurriGroupChange = (curriGroup: CurriGroup) => {
+    onCurriGroupChange(curriGroup);
+  };
 
-  const departmentOptions = selectedFacultyObj?.children || [];
-
-  const selectedDepartmentObj = departmentOptions.find(
-    (department) => department.value === selectedDepartment,
-  );
-
-  const programOptions = selectedDepartmentObj?.children || [];
   return (
     <div className="flex-grow bg-white max-w-3xl text-primary-400 lg:max-w-none rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
       <Accordion
@@ -76,25 +63,10 @@ export default function CurriSelectGroup({
             <span className="font-semibold whitespace-nowrap content-center">
               หลักสูตรของคุณ
             </span>{' '}
-            <CustomSelectOutlined
-              onSelectedValueChange={onFacultyChange}
-              selectOptions={facultyOptions}
-              selectedValue={String(selectedFaculty)}
-              label="คณะ"
-            />
-            <CustomSelectOutlined
-              onSelectedValueChange={onDepartmentChange}
-              selectOptions={departmentOptions}
-              selectedValue={String(selectedDepartment)}
-              label="ภาควิชา"
-              disabled={!selectedFaculty}
-            />
-            <CustomSelectOutlined
-              onSelectedValueChange={onProgramChange}
-              selectOptions={programOptions}
-              selectedValue={String(selectedProgram)}
-              label="หลักสูตร"
-              disabled={!selectedDepartment}
+            <CurriSelectGroup
+              selectedCurriGroup={selectedCurriGroup}
+              facultyOptions={facultyOptions}
+              onCurriGroupChange={handleCurriGroupChange}
             />
           </div>
         </AccordionDetails>

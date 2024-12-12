@@ -9,16 +9,14 @@ import {
 } from '@mui/material';
 import { SubjectDetail } from '../../../Interfaces';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import CustomButton from './CustomButton';
-import CustomSelect from './CustomSelect';
 import { useState } from 'react';
 import { SelectOption } from '@/types';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import CustomSectionChip from './CustomSectionChip';
 import CustomTable from './CustomTable';
 import StarIcon from '@mui/icons-material/Star';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { CustomSectionChip, CustomSelect } from '@/components';
 
 interface SubjectCardProps {
   subjectDetail: SubjectDetail;
