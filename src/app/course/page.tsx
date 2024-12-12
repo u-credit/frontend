@@ -1,36 +1,24 @@
 'use client';
-import { use, useEffect, useState } from 'react';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Button,
-  FormGroup,
-  Typography,
-} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Button } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar from './components/Sidebar';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-  FacultyDto,
-  ListSubjectQueryParams,
-  PageDto,
-  SubjectDto,
-} from '@/Interfaces';
+import { FacultyDto, ListSubjectQueryParams, SubjectDto } from '@/Interfaces';
 import { fetchListSubject } from '@/api/subjectApi';
 import { SelectOption } from '@/types';
-import {
-  BookmarkModal,
-  CurriSelectGroup,
-  CustomSearchBar,
-  CustomSelect,
-  SubjectContainer,
-} from './components';
+import { BookmarkModal, SubjectContainer } from './components';
 
 import { useInView } from 'react-intersection-observer';
 import { ListSubjectOrderBy, Order } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
-import { list } from 'postcss';
+import { CurriSelectGroup, CustomSearchBar, CustomSelect } from '@/components';
+
+interface FilterGroup {
+  courseCategory: string[];
+  yearLevel: string;
+  classDay: string[];
+  classTime: string[];
+}
 
 const mockSelectOptions: SelectOption[] = [
   { label: 'Option 1', value: 'option1' },
@@ -38,6 +26,37 @@ const mockSelectOptions: SelectOption[] = [
 ];
 
 export default function Course() {
+  const [filter, setFilter] = useState<string>('');
+  const [filterValues, setFilterValues] = useState<FilterGroup>({
+    courseCategory: [],
+    yearLevel: '',
+    classDay: [],
+    classTime: [],
+  });
+
+  const handleFilterChange = (group: string, value: string | string[]) => {
+    setFilterValues((prevValues) => {
+      const currentValue = prevValues[group as keyof FilterGroup];
+
+      if (Array.isArray(value)) {
+        return {
+          ...prevValues,
+          [group]: value,
+        };
+      } else {
+        const updatedValues =
+          Array.isArray(currentValue) && currentValue.includes(value)
+            ? currentValue.filter((item) => item !== value)
+            : [...(Array.isArray(currentValue) ? currentValue : []), value];
+
+        return {
+          ...prevValues,
+          [group]: updatedValues,
+        };
+      }
+    });
+  };
+
   const [searchValue, setSearchValue] = useState<string>('');
   const [selectedValue, setSelectedValue] = useState<string>('');
   const [selectedOption, setSelectedOption] = useState<SelectOption[]>([
@@ -48,15 +67,24 @@ export default function Course() {
   const [departmentOptions, setDepartmentOptions] = useState<SelectOption[]>(
     [],
   );
-  const [programOptions, setProgramOptions] = useState<SelectOption[]>([]);
-  const [selectedFaculty, setSelectedFaculty] = useState<string | number>('');
+  const [curriculumOptions, setCurriculumOptions] = useState<SelectOption[]>(
+    [],
+  );
+  const [selectedFaculty, setSelectedFaculty] = useState<string | number>({});
   const [selectedDepartment, setSelectedDepartment] = useState<string | number>(
     '',
   );
-  const [selectedProgram, setSelectedProgram] = useState<string | number>('');
+  const [selectedCurriculum, setSelectedCurriculum] = useState<string | number>(
+    '',
+  );
+  const [selectedCurriculumYear, setSelectedCurriculumYear] = useState<
+    string | number
+  >('');
   const [selectedFacultyObj, setSelectedFacultyObj] =
     useState<SelectOption | null>(null);
   const [selectedDepartmentObj, setSelectedDepartmentObj] =
+    useState<SelectOption | null>(null);
+  const [selectedCurriculumObj, setSelectedCurriculumObj] =
     useState<SelectOption | null>(null);
 
   const [data, setData] = useState(null);
@@ -76,7 +104,8 @@ export default function Course() {
     setSelectedFacultyObj(selected || null);
 
     setSelectedDepartment('');
-    setSelectedProgram('');
+    setSelectedCurriculum('');
+    setSelectedCurriculumYear('');
   };
 
   const handleDepartmentChange = (value: string) => {
@@ -86,25 +115,35 @@ export default function Course() {
     setSelectedDepartment(selected?.value || '');
     setSelectedDepartmentObj(selected || null);
 
-    setSelectedProgram('');
+    setSelectedCurriculum('');
+    setSelectedCurriculumYear('');
   };
 
-  const handleProgramChange = (value: string) => {
-    const programOptions = selectedDepartmentObj?.children || [];
-    const selected = programOptions.find((option) => option.value === value);
+  const handleCurriculumChange = (value: string) => {
+    const curriculumOptions = selectedDepartmentObj?.children || [];
+    const selected = curriculumOptions.find((option) => option.value === value);
 
-    setSelectedProgram(selected?.value || '');
+    setSelectedCurriculum(selected?.value || '');
+    setSelectedCurriculumObj(selected || null);
+
+    setSelectedCurriculumYear('');
+  };
+
+  const handleCurriculumYearChange = (value: string) => {
+    const curriculumYearOptions = selectedCurriculumObj?.children || [];
+    const selected = curriculumYearOptions.find(
+      (option) => option.value === value,
+    );
+
+    setSelectedCurriculumYear(selected?.value || '');
   };
 
   useEffect(() => {
-    // is meta should be replace?
     const loadMoreSubjects = async () => {
-      // console.log('Load more users');
       const last_id =
         listSubjects && listSubjects.length > 0
           ? listSubjects[listSubjects.length - 1].subject_id
           : '';
-      // console.log('last_id', last_id);
       const params: ListSubjectQueryParams = {
         semester: 1,
         year: 2564,
@@ -118,7 +157,6 @@ export default function Course() {
     };
 
     if (inView && initialLoadComplete) {
-      // Check if initial load is complete
       loadMoreSubjects();
     }
   }, [inView, initialLoadComplete, listSubjects]);
@@ -138,7 +176,6 @@ export default function Course() {
       } finally {
         setLoading(false);
         setInitialLoadComplete(true);
-        // console.log('finally', listSubjects);
       }
     };
 
@@ -154,6 +191,10 @@ export default function Course() {
             children: department.curriculum?.map((curriculum) => ({
               label: curriculum.curriculum_name,
               value: curriculum.curriculum_id,
+              children: curriculum.curriculum_year?.map((year) => ({
+                label: year,
+                value: year,
+              })),
             })),
           })),
         }));
@@ -169,16 +210,14 @@ export default function Course() {
   useEffect(() => {
     setSelectedFaculty('');
     setSelectedDepartment('');
-    setSelectedProgram('');
+    setSelectedCurriculum('');
   }, [facultyOptions]);
-
 
   const handleSearchValueChange = (value: string) => {
     setSearchValue(value);
   };
 
-  const handleSearchAction = () => {
-  };
+  const handleSearchAction = () => {};
 
   const handleSelectValueChange = (value: string) => {
     setSelectedValue(value);
@@ -187,17 +226,22 @@ export default function Course() {
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
       <div className="hidden lg:flex fixed min-w-60  bg-white h-full ">
-        <Sidebar />
+        <Sidebar
+          filterValues={filterValues}
+          onFilterChange={handleFilterChange}
+        />{' '}
       </div>
       <div className="w-full">
         <CurriSelectGroup
           selectedFaculty={selectedFaculty}
           selectedDepartment={selectedDepartment}
-          selectedProgram={selectedProgram}
+          selectedCurriculum={selectedCurriculum}
+          selectedCurriculumYear={selectedCurriculumYear}
           facultyOptions={facultyOptions}
           onFacultyChange={handleFacultyChange}
           onDepartmentChange={handleDepartmentChange}
-          onProgramChange={handleProgramChange}
+          onCurriculumChange={handleCurriculumChange}
+          onCurriculumYearChange={handleCurriculumYearChange}
         />
         <div className="flex-grow bg-white max-w-3xl lg:max-w-none rounded-lg mx-auto lg:ml-64 lg:mr-4 my-4">
           <div className="flex flex-col sm:flex-row p-4 gap-4 justify-between">
@@ -208,11 +252,6 @@ export default function Course() {
               />
             </div>
             <div className="flex flex-row gap-2 justify-between sm:ml-auto sm:gap-4">
-              <CustomSelect
-                onSelectedValueChange={handleSelectValueChange}
-                selectOptions={mockSelectOptions}
-                selectedValue={selectedValue}
-              />
               <CustomSelect
                 onSelectedValueChange={handleSelectValueChange}
                 selectOptions={mockSelectOptions}

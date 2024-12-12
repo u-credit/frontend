@@ -40,6 +40,7 @@ export default function CustomSectionChip({
         className="flex items-center px-[6px] bg-transparent text-gray-800 border-l border-gray-300"
         style={{ backgroundColor: secBackgroundColor }}
       >
+        <span>sec&nbsp;</span>
         <span>{sec}</span>
       </div>
     </div>

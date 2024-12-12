@@ -6,21 +6,25 @@ import { SelectOption } from '@/types';
 interface CurriSelectGroupProps {
   selectedFaculty: string | number;
   selectedDepartment: string | number;
-  selectedProgram: string | number;
+  selectedCurriculum: string | number;
+  selectedCurriculumYear: string | number;
   facultyOptions: SelectOption[];
   onFacultyChange: (value: string) => void;
   onDepartmentChange: (value: string) => void;
-  onProgramChange: (value: string) => void;
+  onCurriculumChange: (value: string) => void;
+  onCurriculumYearChange: (value: string) => void;
 }
 
 export default function CurriSelectGroup({
   selectedFaculty,
   selectedDepartment,
-  selectedProgram,
+  selectedCurriculum,
+  selectedCurriculumYear,
   facultyOptions,
   onFacultyChange,
   onDepartmentChange,
-  onProgramChange,
+  onCurriculumChange,
+  onCurriculumYearChange,
 }: CurriSelectGroupProps) {
   const selectedFacultyObj = facultyOptions.find(
     (faculty) => faculty.value === selectedFaculty,
@@ -32,7 +36,12 @@ export default function CurriSelectGroup({
     (department) => department.value === selectedDepartment,
   );
 
-  const programOptions = selectedDepartmentObj?.children || [];
+  const curriculumOptions = selectedDepartmentObj?.children || [];
+  const selectedCurriculumObj = curriculumOptions.find(
+    (curriculum) => curriculum.value === selectedCurriculum,
+  );
+  const curriculumYearOptions = selectedCurriculumObj?.children || [];
+
   return (
     <div className="flex-grow bg-white max-w-3xl text-primary-400 lg:max-w-none rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
       <Accordion
@@ -90,11 +99,18 @@ export default function CurriSelectGroup({
               disabled={!selectedFaculty}
             />
             <CustomSelectOutlined
-              onSelectedValueChange={onProgramChange}
-              selectOptions={programOptions}
-              selectedValue={String(selectedProgram)}
+              onSelectedValueChange={onCurriculumChange}
+              selectOptions={curriculumOptions}
+              selectedValue={String(selectedCurriculum)}
               label="หลักสูตร"
               disabled={!selectedDepartment}
+            />
+            <CustomSelectOutlined
+              onSelectedValueChange={onCurriculumYearChange}
+              selectOptions={curriculumYearOptions}
+              selectedValue={String(selectedCurriculumYear)}
+              label="เล่มหลักสูตร"
+              disabled={!selectedCurriculum}
             />
           </div>
         </AccordionDetails>

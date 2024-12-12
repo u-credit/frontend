@@ -1,12 +1,7 @@
-export {default as BookmarkModal} from './BookmarkModal';
-export {default as CurriSelectGroup} from './CurriSelectGroup';
-export {default as CustomButton} from './CustomButton';
-export {default as CustomSearchBar} from './CustomSearchBar';
-export {default as CustomSectionChip} from './CustomSectionChip';
-export {default as CustomSelect} from './CustomSelect';
-export {default as CustomSelectOutlined} from './CustomSelectOutlined';
-export {default as CustomTable} from './CustomTable';
-export {default as Sidebar} from './Sidebar';
-export {default as SubjectCard} from './SubjectCard';
-export {default as SubjectContainer} from './SubjectContainer';
-export {default as TinySubjectCard} from './TinySubjectCard';
+export { default as BookmarkModal } from './BookmarkModal';
+
+export { default as CustomTable } from './CustomTable';
+export { default as Sidebar } from './Sidebar';
+export { default as SubjectCard } from './SubjectCard';
+export { default as SubjectContainer } from './SubjectContainer';
+export { default as TinySubjectCard } from './TinySubjectCard';

@@ -2,6 +2,7 @@ export interface CurriculumDto {
   curriculum_id: string;
   curriculum_name: string;
   curriculum_ename: string;
+  curriculum_year: string[];
 }
 
 export interface DepartmentDto {
