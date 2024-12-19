@@ -1,6 +1,7 @@
 export const API_PATHS = {
   subject: '/subjects',
   faculty: '/faculty',
+  transcript: '/transcript',
 };
 
 export const ROUTES = {

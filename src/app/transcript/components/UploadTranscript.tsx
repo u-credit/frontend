@@ -5,15 +5,45 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Button } from '@mui/material';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { uploadTranscriptFindStudentInfo } from '@/api/uploadTranscriptApi';
+import { StudentInfo } from '@/Interfaces/studentInfo.interface';
+interface UploadTranscriptProps {
+  onUploadSuccess: (data: StudentInfo) => void;
+}
 
-export default function UploadTranscript() {
+export default function UploadTranscript({
+  onUploadSuccess,
+}: UploadTranscriptProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      setFile(acceptedFiles[0]);
-    }
-  }, []);
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        setFile(acceptedFiles[0]);
+
+        setUploadStatus('Uploading...');
+        const result = await uploadTranscriptFindStudentInfo(acceptedFiles[0]);
+
+        if (result.success) {
+          setUploadStatus('File uploaded successfully!');
+          onUploadSuccess({
+            curr2_faculty_id: result.data.curr2_faculty_id,
+            curr2_curr2_id: result.data.curr2_curr2_id,
+            curr2_dept_id: result.data.curr2_dept_id,
+            curr2_curri_mapping_curri_id:
+              result.data.curr2_curri_mapping_curri_id,
+            cuAdmisCurrYearMappings_curr_year:
+              result.data.cuAdmisCurrYearMappings_curr_year,
+          });
+        } else {
+          setUploadStatus(`Upload failed: ${result.error}`);
+          console.error(result.error);
+        }
+      }
+    },
+    [onUploadSuccess],
+  );
 
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
