@@ -1,7 +1,7 @@
 'use client';
 import CustomSelectOutlined from './CustomSelectOutlined';
 import { SelectOption } from '@/types';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CurriGroup } from '@/Interfaces';
 
 interface CurriSelectGroupProps {
@@ -15,16 +15,18 @@ export default function CurriSelectGroup({
   facultyOptions,
   onCurriGroupChange,
 }: CurriSelectGroupProps) {
-  const [selectedFaculty, setSelectedFaculty] = useState<string | number>('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string | number>(
-    '',
-  );
-  const [selectedCurriculum, setSelectedCurriculum] = useState<string | number>(
-    '',
-  );
-  const [selectedCurriculumYear, setSelectedCurriculumYear] = useState<
-    string | number
-  >('');
+  const [selectedFaculty, setSelectedFaculty] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [selectedCurriculum, setSelectedCurriculum] = useState<string>('');
+  const [selectedCurriculumYear, setSelectedCurriculumYear] =
+    useState<string>('');
+
+  const prevCurriGroupRef = useRef<CurriGroup>({
+    faculty: '',
+    department: '',
+    curriculum: '',
+    curriculumYear: '',
+  });
 
   const [selectedFacultyObj, setSelectedFacultyObj] =
     useState<SelectOption | null>(null);
@@ -35,12 +37,32 @@ export default function CurriSelectGroup({
 
   useEffect(() => {
     if (selectedCurriGroup) {
-      setSelectedFaculty(selectedCurriGroup.faculty);
-      setSelectedDepartment(selectedCurriGroup.department);
-      setSelectedCurriculum(selectedCurriGroup.curriculum);
-      setSelectedCurriculumYear(selectedCurriGroup.curriculumYear);
+      const facultyObj = facultyOptions.find(
+        (option) => option.value === selectedCurriGroup.faculty,
+      );
+      setSelectedFacultyObj(facultyObj || null);
+
+      if (facultyObj) setSelectedFaculty(selectedCurriGroup.faculty);
+      const departmentObj = facultyObj?.children?.find(
+        (option) => option.value === selectedCurriGroup.department,
+      );
+      if (departmentObj) setSelectedDepartment(selectedCurriGroup.department);
+      setSelectedDepartmentObj(departmentObj || null);
+
+      const curriculumObj = departmentObj?.children?.find(
+        (option) => option.value === selectedCurriGroup.curriculum,
+      );
+      if (curriculumObj) setSelectedCurriculum(selectedCurriGroup.curriculum);
+
+      setSelectedCurriculumObj(curriculumObj || null);
+
+      const curriculumYearObj = curriculumObj?.children?.find(
+        (option) => option.value === selectedCurriGroup.curriculumYear,
+      );
+      if (curriculumYearObj)
+        setSelectedCurriculumYear(selectedCurriGroup.curriculumYear);
     }
-  }, [selectedCurriGroup]);
+  }, [selectedCurriGroup, facultyOptions]);
 
   const departmentOptions = selectedFacultyObj?.children || [];
 
@@ -50,7 +72,7 @@ export default function CurriSelectGroup({
 
   const handleFacultyChange = (value: string) => {
     const selected = facultyOptions.find((option) => option.value === value);
-    setSelectedFaculty(selected?.value || '');
+    setSelectedFaculty(String(selected?.value || ''));
     setSelectedFacultyObj(selected || null);
 
     setSelectedDepartment('');
@@ -62,7 +84,7 @@ export default function CurriSelectGroup({
     const departmentOptions = selectedFacultyObj?.children || [];
 
     const selected = departmentOptions.find((option) => option.value === value);
-    setSelectedDepartment(selected?.value || '');
+    setSelectedDepartment(String(selected?.value || ''));
     setSelectedDepartmentObj(selected || null);
 
     setSelectedCurriculum('');
@@ -73,7 +95,7 @@ export default function CurriSelectGroup({
     const curriculumOptions = selectedDepartmentObj?.children || [];
     const selected = curriculumOptions.find((option) => option.value === value);
 
-    setSelectedCurriculum(selected?.value || '');
+    setSelectedCurriculum(String(selected?.value || ''));
     setSelectedCurriculumObj(selected || null);
 
     setSelectedCurriculumYear('');
@@ -85,21 +107,31 @@ export default function CurriSelectGroup({
       (option) => option.value === value,
     );
 
-    setSelectedCurriculumYear(selected?.value || '');
+    setSelectedCurriculumYear(String(selected?.value || ''));
   };
 
   useEffect(() => {
-    onCurriGroupChange({
+    const newCurriGroup = {
       faculty: selectedFaculty,
       department: selectedDepartment,
       curriculum: selectedCurriculum,
       curriculumYear: selectedCurriculumYear,
-    });
+    };
+    if (
+      prevCurriGroupRef.current.faculty !== newCurriGroup.faculty ||
+      prevCurriGroupRef.current.department !== newCurriGroup.department ||
+      prevCurriGroupRef.current.curriculum !== newCurriGroup.curriculum ||
+      prevCurriGroupRef.current.curriculumYear !== newCurriGroup.curriculumYear
+    ) {
+      prevCurriGroupRef.current = newCurriGroup;
+      onCurriGroupChange(newCurriGroup);
+    }
   }, [
     selectedFaculty,
     selectedDepartment,
     selectedCurriculum,
     selectedCurriculumYear,
+    onCurriGroupChange,
   ]);
 
   return (
