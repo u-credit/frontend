@@ -1,53 +1,83 @@
 'use client';
-import { CustomSelectOutlined } from '@/app/course/components';
+import { fetchListFaculty } from '@/api/facultyApi';
+import { CurriSelectGroup } from '@/components';
+import { CurriGroup } from '@/Interfaces';
+import { StudentInfo } from '@/Interfaces/studentInfo.interface';
 import { SelectOption } from '@/types';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const options: SelectOption[] = [
-  { label: 'Option 1', value: 'option1' },
-  { label: 'Option 2', value: 'option2' },
-  { label: 'Option 3', value: 'option3' },
-];
+interface StudentInfoProps {
+  studentInfo: StudentInfo;
+  onCurriGroupChange: (curriGroup: CurriGroup) => void;
+}
 
-export default function CourseInfo() {
-  const [selectedValue, setSelectedValue] = useState<string>('');
+export default function CourseInfo({
+  studentInfo,
+  onCurriGroupChange,
+}: StudentInfoProps) {
+  const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
 
-  const handleSelectedValueChange = (value: string) => {
-    console.log('Selected value:', value);
-    setSelectedValue(value);
+  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
+    faculty: '',
+    department: '',
+    curriculum: '',
+    curriculumYear: '',
+  });
+
+  useEffect(() => {
+    const loadFaculty = async () => {
+      try {
+        const data = (await fetchListFaculty())?.data || [];
+        const facultyOptions: SelectOption[] = data.map((faculty) => ({
+          label: faculty.faculty_name,
+          value: faculty.faculty_id,
+          children: faculty.department?.map((department) => ({
+            label: department.department_name,
+            value: department.department_id,
+            children: department.curriculum?.map((curriculum) => ({
+              label: curriculum.curriculum_name,
+              value: curriculum.curriculum_id,
+              children: curriculum.curriculum_year?.map((year) => ({
+                label: year,
+                value: year,
+              })),
+            })),
+          })),
+        }));
+        setFacultyOptions(facultyOptions);
+      } catch (error) {}
+    };
+
+    loadFaculty();
+  }, []);
+
+  useEffect(() => {
+    const curriGroup = {
+      faculty: studentInfo.curr2_faculty_id,
+      department: studentInfo.curr2_dept_id,
+      curriculum: studentInfo.curr2_curr2_id,
+      curriculumYear: studentInfo.cuAdmisCurrYearMappings_curr_year,
+    };
+    setSelectedCurriGroup(curriGroup);
+  }, [studentInfo]);
+
+  useEffect(() => {
+    onCurriGroupChange(selectedCurriGroup);
+  }, [selectedCurriGroup]);
+
+  const handleCurriGroupChange = (curriGroup: CurriGroup) => {
+    setSelectedCurriGroup(curriGroup);
+    console.log('new curriGroup => ', curriGroup);
   };
 
   return (
     <div className="flex flex-col gap-10">
       <div className="font-mitr font-medium text-xl">ข้อมูลหลักสูตรของคุณ</div>
       <div className="flex gap-x-10">
-        <CustomSelectOutlined
-          onSelectedValueChange={handleSelectedValueChange}
-          selectOptions={options}
-          selectedValue={selectedValue}
-          label="คณะ"
-          disabled={false}
-        />
-        <CustomSelectOutlined
-          onSelectedValueChange={handleSelectedValueChange}
-          selectOptions={options}
-          selectedValue={selectedValue}
-          label="ภาควิขา"
-          disabled={true}
-        />
-        <CustomSelectOutlined
-          onSelectedValueChange={handleSelectedValueChange}
-          selectOptions={options}
-          selectedValue={selectedValue}
-          label="หลักสูตร"
-          disabled={false}
-        />
-        <CustomSelectOutlined
-          onSelectedValueChange={handleSelectedValueChange}
-          selectOptions={options}
-          selectedValue={selectedValue}
-          label="เล่มหลักสูตร"
-          disabled={false}
+        <CurriSelectGroup
+          selectedCurriGroup={selectedCurriGroup}
+          facultyOptions={facultyOptions}
+          onCurriGroupChange={handleCurriGroupChange}
         />
       </div>
     </div>
