@@ -1,3 +1,5 @@
+import { CursorMetaDto, PageMetaDto } from './page.interface';
+
 export type Response<T> = {
   status: boolean;
   statusCode: number;
@@ -5,5 +7,5 @@ export type Response<T> = {
   message: string;
   data: T;
   timestamp: string;
-  meta?: any;
+  meta?: CursorMetaDto | PageMetaDto;
 };

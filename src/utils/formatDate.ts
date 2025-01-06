@@ -15,5 +15,5 @@ export function formatDate(
     return 'Invalid Date';
   }
 
-  return new Intl.DateTimeFormat('en-US', options).format(parsedDate);
+  return new Intl.DateTimeFormat('th-TH', options).format(parsedDate);
 }

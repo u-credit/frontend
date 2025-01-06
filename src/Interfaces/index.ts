@@ -1,3 +1,7 @@
+export * from './auth.interface';
+
+export * from './bookmark.interface';
+
 export * from './faculty.interface';
 
 export * from './subject.interface';

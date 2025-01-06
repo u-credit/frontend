@@ -3,3 +3,9 @@ export enum ListSubjectOrderBy {
   RATING = 'rating',
   UPDATED_AT = 'updatedAt',
 }
+
+export enum SubjectCategory {
+  GENERAL = 'GENERAL',
+  MAJOR = 'MAJOR',
+  ALL = 'ALL'
+}

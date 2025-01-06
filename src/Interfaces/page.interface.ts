@@ -1,8 +1,3 @@
-export interface PageDto<T> {
-  data: T[];
-  meta: PageMetaDto;
-}
-
 export interface PageMetaDto {
   page: number;
   take: number;
@@ -10,4 +5,12 @@ export interface PageMetaDto {
   pageCount: number;
   hasPreviousPage: boolean;
   hasNextPage: boolean;
+}
+
+export interface CursorMetaDto {
+  cursor: string | null;
+  limit: number;
+  currentItems: number;
+  totalItems: number;
+  hasNext: boolean;
 }
