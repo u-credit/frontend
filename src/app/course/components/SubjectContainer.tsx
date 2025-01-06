@@ -1,8 +1,8 @@
-import { SubjectDetail, SubjectDto } from '../../../Interfaces';
+import { SubjectDto } from '../../../Interfaces';
 import SubjectCard from './SubjectCard';
 
 interface SubjectListProps {
-  subjectDetail?: SubjectDto[] ;
+  subjectDetail?: SubjectDto[];
 }
 
 export default function SubjectContainer({ subjectDetail }: SubjectListProps) {

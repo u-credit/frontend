@@ -4,6 +4,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { SelectOption } from '@/types';
 import { CurriSelectGroup } from '@/components';
 import { CurriGroup } from '@/Interfaces';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/features/store';
+import { setCurrigroup } from '@/features/selectorValueSlice';
 
 interface CurriSelectContainerProps {
   selectedCurriGroup: CurriGroup;
@@ -16,7 +19,9 @@ export default function CurriSelectContainer({
   facultyOptions,
   onCurriGroupChange,
 }: CurriSelectContainerProps) {
+  const dispatch = useDispatch();
   const handleCurriGroupChange = (curriGroup: CurriGroup) => {
+    dispatch(setCurrigroup(curriGroup));
     onCurriGroupChange(curriGroup);
   };
 

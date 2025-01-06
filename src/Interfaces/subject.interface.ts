@@ -1,4 +1,4 @@
-import { ListSubjectOrderBy, Order } from '@/enums';
+import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
 
 export interface SubjectDetail {
   subjectCode: string;
@@ -25,6 +25,24 @@ export interface ListSubjectQueryParams {
   //   offset?: number;
   direction?: Order;
   orderBy?: ListSubjectOrderBy;
+  day?: number[];
+  rangeTime?: string[];
+  facultyId?: string;
+  departmentId?: string;
+  curriculumId?: string;
+  curriculumYear?: string;
+  yearLevel?: number;
+  subjectCategory?: SubjectCategory;
+}
+
+export interface ListSubjectByIdsQueryParams {
+  semester: number;
+  year: number;
+  subjectIds: string[];
+  facultyId?: string;
+  department?: string;
+  curriculumId?: string;
+  curriculumYear?: string;
 }
 
 export interface TeacherDto {
@@ -37,6 +55,7 @@ export interface TeachTableDto {
   curriculum_id: number;
   semester: number;
   year: number;
+  lecture_or_practice: string;
   section: string;
   room_no: string;
   building_no: string;
@@ -72,4 +91,10 @@ export interface SubjectDto {
   last_modified: Date;
   prerequisite?: string[];
   teach_table: TeachTableDto[];
+  category?: {
+    category_id: number;
+    group_id: number;
+    group_name: number;
+    subgroup_name: string;
+  }[];
 }

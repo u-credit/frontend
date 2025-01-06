@@ -1,5 +1,5 @@
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
-import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -7,6 +7,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { CustomSelectOutlined } from '@/components';
+import { SubjectCategory } from '@/enums';
 interface FilterGroup {
   courseCategory: string[];
   yearLevel: string;
@@ -17,10 +18,28 @@ interface FilterGroup {
 interface FilterProps {
   filterValues: FilterGroup;
   onFilterChange: (group: string, value: string | string[]) => void;
+  onSelectCustomTime: (checked: boolean) => void;
+  onCustomStartTimeChange: (customTime: string) => void;
+  onCustomEndTimeChange: (customTime: string) => void;
+  onClickFilterSearch: () => void;
 }
 
-export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
-  const [value, setValue] = useState<Dayjs | null>(dayjs().set('hour', 0).set('minute', 0));
+export default function Sidebar({
+  filterValues,
+  onFilterChange,
+  onSelectCustomTime,
+  onCustomStartTimeChange,
+  onCustomEndTimeChange,
+  onClickFilterSearch,
+}: FilterProps) {
+  const [value, setValue] = useState<Dayjs | null>(
+    dayjs().set('hour', 0).set('minute', 0),
+  );
+
+  const catagory = [
+    { key: '1', label: 'วิชาศึกษาทั่วไป', value: SubjectCategory.GENERAL },
+    { key: '2', label: 'วิชาเฉพาะ', value: SubjectCategory.MAJOR },
+  ];
 
   const years = [
     { key: '1', label: 'ปี 1', value: '1' },
@@ -30,34 +49,39 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
     { key: '5', label: 'ปี 5', value: '5' },
   ];
   const days = [
-    { key: 'mon', label: 'จันทร์', value: 'mon' },
-    { key: 'tue', label: 'อังคาร', value: 'tue' },
-    { key: 'wed', label: 'พุธ', value: 'wed' },
-    { key: 'thu', label: 'พฤหัสบดี', value: 'thu' },
-    { key: 'fri', label: 'ศุกร์', value: 'fri' },
-    { key: 'sat', label: 'เสาร์', value: 'sat' },
-    { key: 'sun', label: 'อาทิตย์', value: 'sun' },
+    { key: '1', label: 'อาทิตย์', value: '1' },
+    { key: '2', label: 'จันทร์', value: '2' },
+    { key: '3', label: 'อังคาร', value: '3' },
+    { key: '4', label: 'พุธ', value: '4' },
+    { key: '5', label: 'พฤหัสบดี', value: '5' },
+    { key: '6', label: 'ศุกร์', value: '6' },
+    { key: '7', label: 'เสาร์', value: '7' },
   ];
   const times = [
     {
       key: 'morning',
       label: 'เช้า',
-      value: 'morning',
-      timeRange: '6:00 - 12:00',
+      value: '7:30-12:30',
+      timeRange: '7:30 - 12:30',
     },
     {
       key: 'afternoon',
       label: 'บ่าย',
-      value: 'afternoon',
-      timeRange: '12:00 - 18:00',
+      value: '12:30-17:30',
+      timeRange: '12:30 - 17:30',
     },
     {
       key: 'evening',
       label: 'เย็น',
-      value: 'evening',
-      timeRange: '18:00 - 21:00',
+      value: '17:30-22:30',
+      timeRange: '17:30 - 22:30',
     },
-    { key: 'night', label: 'ดึก', value: 'night', timeRange: '21:00 - 6:00' },
+    {
+      key: 'night',
+      label: 'ดึก',
+      value: '22:30-00:00',
+      timeRange: '22:30 - 00:00',
+    },
   ];
 
   const [state, setState] = useState({
@@ -85,17 +109,7 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
   const { gilad, jason, antoine } = state;
 
   const [customTimeChecked, setCustomTimeChecked] = useState(false);
-  const [customStartTime, setCustomStartTime] = useState('');
-  const [customEndTime, setCustomEndTime] = useState('');
 
-  const timeOptions = Array.from({ length: 24 }, (_, index) => {
-    const hour = index.toString().padStart(2, '0');
-    return { key: hour, label: `${hour}:00`, value: `${hour}:00` };
-  });
-
-  const handleCustomTimeChange = () => {
-    console.log('Custom Time Selected:', customStartTime, customEndTime);
-  };
   return (
     <div className="w-full flex flex-col gap-y-4 p-4 mb-10 overflow-y-auto ">
       <div className="flex items-center font-semibold	text-primary-400 space-x-2">
@@ -105,38 +119,25 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
 
       <FormGroup className="flex flex-col border-solid border-b-[1px] gap-2 pb-3">
         <span className="font-semibold">หมวดหมู่วิชา</span>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={gilad}
-              onChange={handleChange}
-              name="gilad"
-              sx={{
-                padding: 0,
-                color: 'grey.300',
-                marginRight: '16px',
-              }}
-            />
-          }
-          label="วิชาศึกษาทั่วไป"
-          sx={{ margin: 0 }}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={jason}
-              onChange={handleChange}
-              name="jason"
-              sx={{
-                padding: 0,
-                color: 'grey.300',
-                marginRight: '16px',
-              }}
-            />
-          }
-          label="วิชาเฉพาะ"
-          sx={{ margin: 0 }}
-        />
+        {catagory.map(({ key, label, value }) => (
+          <FormControlLabel
+            key={key}
+            control={
+              <Checkbox
+                checked={filterValues.courseCategory.includes(value)}
+                onChange={() => handleCheckboxChange('courseCategory', value)}
+                name={key}
+                sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
+              />
+            }
+            label={
+              <div>
+                <span className="font-medium">{label}</span>
+              </div>
+            }
+            sx={{ margin: 0 }}
+          />
+        ))}
       </FormGroup>
 
       <FormGroup className="gap-y-3 border-solid border-b-[1px] pb-3">
@@ -163,13 +164,13 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
           </span>{' '}
         </div>
 
-        {days.map(({ key, label }) => (
+        {days.map(({ key, label, value }) => (
           <FormControlLabel
             key={key}
             control={
               <Checkbox
-                checked={filterValues.classDay.includes(key)}
-                onChange={() => handleCheckboxChange('classDay', key)}
+                checked={filterValues.classDay.includes(value)}
+                onChange={() => handleCheckboxChange('classDay', value)}
                 name={key}
                 sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
               />
@@ -186,13 +187,13 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
       <FormGroup className="gap-y-2 border-solid border-b-[1px] pb-3">
         <span className="font-semibold">ช่วงเวลาที่เรียน</span>
 
-        {times.map(({ key, label, timeRange }) => (
+        {times.map(({ key, label, value, timeRange }) => (
           <FormControlLabel
             key={key}
             control={
               <Checkbox
-                checked={filterValues.classTime.includes(key)}
-                onChange={() => handleCheckboxChange('classTime', key)}
+                checked={filterValues.classTime.includes(value)}
+                onChange={() => handleCheckboxChange('classTime', value)}
                 name={key}
                 sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
               />
@@ -210,7 +211,10 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
           control={
             <Checkbox
               checked={customTimeChecked}
-              onChange={(e) => setCustomTimeChecked(e.target.checked)}
+              onChange={(e) => {
+                setCustomTimeChecked(e.target.checked);
+                onSelectCustomTime(e.target.checked);
+              }}
               name="customTime"
               sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
             />
@@ -234,8 +238,13 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
             >
               <TimePicker
                 label="เริ่ม"
+                disabled={!customTimeChecked}
                 value={value}
-                onChange={(newValue) => setValue(newValue)}
+                onChange={(newValue) => {
+                  onCustomStartTimeChange(
+                    newValue ? newValue.format('HH:mm') : '',
+                  );
+                }}
                 ampm={false}
                 sx={{
                   width: '95px',
@@ -261,8 +270,13 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
               />
               <TimePicker
                 label="สิ้นสุด"
+                disabled={!customTimeChecked}
                 value={value}
-                onChange={(newValue) => setValue(newValue)}
+                onChange={(newValue) => {
+                  onCustomEndTimeChange(
+                    newValue ? newValue.format('HH:mm') : '',
+                  );
+                }}
                 ampm={false}
                 sx={{
                   width: '95px',
@@ -290,6 +304,13 @@ export default function Sidebar({ filterValues, onFilterChange }: FilterProps) {
           </LocalizationProvider>
         </div>
       </FormGroup>
+      <Button
+        variant="contained"
+        sx={{ minWidth: '115px' }}
+        onClick={onClickFilterSearch}
+      >
+        search
+      </Button>
     </div>
   );
 }

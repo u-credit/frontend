@@ -1,5 +1,5 @@
 import { API_PATHS } from '@/constants';
-import { FacultyDto, PageDto, Response } from '@/Interfaces';
+import { FacultyDto, Response } from '@/Interfaces';
 
 export const fetchListFaculty = async (): Promise<Response<FacultyDto[]>> => {
   const res = await fetch(
@@ -8,7 +8,6 @@ export const fetchListFaculty = async (): Promise<Response<FacultyDto[]>> => {
       method: 'get',
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       },
     },
   );

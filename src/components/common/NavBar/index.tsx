@@ -3,7 +3,10 @@ import { useEffect, useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import Logo from '@/assets/logo.svg';
 import Link from 'next/link';
-import { useMediaQuery } from '@mui/material';
+import { Button, useMediaQuery } from '@mui/material';
+import CustomButton from '@/components/CustomButton';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 interface NavItem {
   path: string;
@@ -14,19 +17,31 @@ const navItems: NavItem[] = [
   { path: '/course', label: 'ค้นหารายวิชา' },
   { path: '/schedule', label: 'ตารางเรียน' },
   { path: '/', label: 'เช็คหน่วยกิต' },
+  { path: '/auth', label: 'เข้าสู่ระบบ' },
 ];
 
 export default function NavBar() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activePage, setActivePage] = useState(navItems[0].path);
+  const [activePage, setActivePage] = useState('');
 
   const isMediumScreen = useMediaQuery('(min-width:768px)');
+
+  useEffect(() => {
+    setActivePage(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     if (isMediumScreen) {
       setIsMenuOpen(false);
     }
   }, [isMediumScreen]);
+
+  const handleLogin = () => {
+    setActivePage('');
+    router.push(`/auth`);
+  };
 
   return (
     <nav className="fixed w-full h-12 bg-white border-b-2 top-0 left-0 z-50 flex items-center">
@@ -46,17 +61,27 @@ export default function NavBar() {
 
         {/* desktop */}
         <div className="hidden md:flex md:items-center h-full">
-          {navItems.map((item, index) => (
-            <Link
-              key={index}
-              href={item.path}
-              onClick={() => setActivePage(item.path)}
-              className={`flex items-center space-x-2 h-full cursor-pointer border-y-[3px] border-transparent px-4 font-mitr
+          {navItems
+            .filter((item) => item.path !== '/auth')
+            .map((item, index) => (
+              <Link
+                key={index}
+                href={item.path}
+                onClick={() => setActivePage(item.path)}
+                className={`flex items-center space-x-2 h-full cursor-pointer border-y-[3px] border-transparent px-4 font-mitr
               ${activePage === item.path ? 'border-b-primary-400 text-primary-400' : 'hover:border-b-primary-400 hover:text-primary-400'}`}
-            >
-              {item.label}
-            </Link>
-          ))}
+              >
+                {item.label}
+              </Link>
+            ))}
+
+          <Button
+            variant="contained"
+            onClick={handleLogin}
+            sx={{ minWidth: '115px', marginLeft: '16px' }}
+          >
+            เข้าสู่ระบบ
+          </Button>
         </div>
 
         {/* mobile */}
