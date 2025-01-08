@@ -1,6 +1,7 @@
 export { default as BookmarkModal } from './BookmarkModal';
 export { default as CurriSelectContainer } from './CurriSelectContainer';
 export { default as CustomTable } from './CustomTable';
+export { default as FilterRow } from './FilterRow';
 export { default as Sidebar } from './Sidebar';
 export { default as SubjectCard } from './SubjectCard';
 export { default as SubjectContainer } from './SubjectContainer';

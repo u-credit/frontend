@@ -9,9 +9,9 @@ import { Theme } from '@mui/material/styles';
 import { InputLabel } from '@mui/material';
 
 interface SelectProps {
-  onSelectedValueChange: (value: string) => void;
+  onSelectedValueChange: (value: SelectOption) => void;
   selectOptions: SelectOption[];
-  selectedValue: string;
+  selectedValue: SelectOption;
   label?: string;
   sx?: SxProps<Theme>;
   disabled?: boolean;
@@ -26,8 +26,13 @@ export default function CustomSelectOutlined({
   disabled = false,
 }: SelectProps) {
   const handleChange = (event: SelectChangeEvent) => {
-    // console.log('event.target.value', event.target);
-    onSelectedValueChange(event.target.value as string);
+    const selectValue = event.target.value;
+    const selectOption = selectOptions.find(
+      (option) => option.value === selectValue,
+    );
+    if (selectOption) {
+      onSelectedValueChange(selectOption);
+    }
   };
 
   return (
@@ -74,7 +79,7 @@ export default function CustomSelectOutlined({
         labelId="demo-simple-select-label"
         id="demo-simple-select"
         onChange={handleChange}
-        value={selectedValue}
+        value={String(selectedValue.value)}
         label={label}
         IconComponent={ArrowDropDownIcon}
         variant="outlined"

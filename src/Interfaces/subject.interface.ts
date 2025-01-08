@@ -22,6 +22,7 @@ export interface ListSubjectQueryParams {
   isBookmarked?: boolean;
   limit?: number;
   cursor?: string;
+  secondaryCursor?: string;
   //   offset?: number;
   direction?: Order;
   orderBy?: ListSubjectOrderBy;
@@ -30,7 +31,9 @@ export interface ListSubjectQueryParams {
   facultyId?: string;
   departmentId?: string;
   curriculumId?: string;
-  curriculumYear?: string;
+  categoryFacultyId?: string;
+  categoryCurriculumId?: string;
+  categoryCurriculumYear?: string;
   yearLevel?: number;
   subjectCategory?: SubjectCategory;
 }
