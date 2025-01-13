@@ -53,18 +53,9 @@ export default function Course() {
     },
     classDay: [],
     classTime: [],
-    faculty: {
-      value: '01',
-      label: '',
-    },
-    department: {
-      value: '05',
-      label: '',
-    },
-    curriculum: {
-      value: '06',
-      label: '',
-    },
+    faculty: initSelectOption(),
+    department: initSelectOption(),
+    curriculum: initSelectOption(),
   });
   const [customStartTimeFilter, setCustomStartTimeFilter] =
     useState<string>('');

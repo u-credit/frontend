@@ -73,14 +73,14 @@ export default function CurriSelectGroup({
         selectOptions={selectedCurriGroup.faculty.children || []}
         selectedValue={selectedCurriGroup.department}
         label="ภาควิชา"
-        disabled={!selectedCurriGroup.faculty}
+        disabled={!selectedCurriGroup.faculty.value}
       />
       <CustomSelectOutlined
         onSelectedValueChange={handleCurriculumChange}
         selectOptions={selectedCurriGroup.department.children || []}
         selectedValue={selectedCurriGroup.curriculum}
         label="หลักสูตร"
-        disabled={!selectedCurriGroup.department}
+        disabled={!selectedCurriGroup.department.value}
       />
       {showCurriculumYear ? (
         <CustomSelectOutlined
@@ -88,7 +88,7 @@ export default function CurriSelectGroup({
           selectOptions={selectedCurriGroup.curriculum.children || []}
           selectedValue={selectedCurriGroup.curriculumYear}
           label="เล่มหลักสูตร"
-          disabled={!selectedCurriGroup.curriculumYear}
+          disabled={!selectedCurriGroup.curriculumYear.value}
         />
       ) : null}
     </>

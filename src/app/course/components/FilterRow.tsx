@@ -1,6 +1,7 @@
 import { formatCategory, formatThaiDay } from '@/utils';
 import { Chip } from '@mui/material';
 import { FilterGroup } from './Sidebar';
+import { initSelectOption } from '@/types';
 
 interface FilterRowProps {
   totalSearchSubject: number;
@@ -41,10 +42,9 @@ export const FilterRow = ({
           onDelete={() => {
             setFilterValues((prevValues) => ({
               ...prevValues,
-              faculty: {
-                label: '',
-                value: '',
-              },
+              faculty: initSelectOption(),
+              department: initSelectOption(),
+              curriculum: initSelectOption(),
             }));
           }}
           color="primary"
@@ -57,10 +57,8 @@ export const FilterRow = ({
           onDelete={() => {
             setFilterValues((prevValues) => ({
               ...prevValues,
-              department: {
-                label: '',
-                value: '',
-              },
+              department: initSelectOption(),
+              curriculum: initSelectOption(),
             }));
           }}
           color="primary"
@@ -73,10 +71,7 @@ export const FilterRow = ({
           onDelete={() => {
             setFilterValues((prevValues) => ({
               ...prevValues,
-              curriculum: {
-                label: '',
-                value: '',
-              },
+              curriculum: initSelectOption(),
             }));
           }}
           color="primary"
@@ -89,10 +84,7 @@ export const FilterRow = ({
           onDelete={() => {
             setFilterValues((prevValues) => ({
               ...prevValues,
-              yearLevel: {
-                label: '',
-                value: '',
-              },
+              yearLevel: initSelectOption(),
             }));
           }}
           color="primary"

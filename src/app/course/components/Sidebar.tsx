@@ -130,6 +130,23 @@ export default function Sidebar({
     onFilterChange('curriculum', selectedCurriGroup.curriculum);
   }, [selectedCurriGroup]);
 
+  useEffect(() => {
+    if (
+      filterValues.faculty.value !== selectedCurriGroup.faculty.value ||
+      filterValues.department.value !== selectedCurriGroup.department.value ||
+      filterValues.curriculum.value !== selectedCurriGroup.curriculum.value
+    ) {
+      setSelectedCurriGroup((prev) => {
+        return {
+          ...prev,
+          faculty: filterValues.faculty,
+          department: filterValues.department,
+          curriculum: filterValues.curriculum,
+        };
+      });
+    }
+  }, [filterValues]);
+
   return (
     <div className="w-full flex flex-col gap-y-4 p-4 mb-10 overflow-y-auto ">
       <div className="flex items-center font-semibold	text-primary-400 space-x-2">
