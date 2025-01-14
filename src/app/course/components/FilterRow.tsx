@@ -25,7 +25,7 @@ export const FilterRow = ({
   handleDeleteFilter,
 }: FilterRowProps) => {
   return (
-    <div className="flex items-center px-4 gap-2">
+    <div className="flex items-center px-4 gap-2 flex-wrap">
       <div>ค้นพบ {totalSearchSubject} วิชา</div>
       {filterValues.courseCategory.map((cat) => (
         <Chip

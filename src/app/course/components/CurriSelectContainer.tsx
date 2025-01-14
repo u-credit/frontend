@@ -57,7 +57,7 @@ export default function CurriSelectContainer({
             },
           }}
         >
-          <span className="text-primary-400">
+          <span className="text-primary-400 font-semibold">
             *เพื่อการแสดงผลรายละเอียดหมวดหมู่รายวิชาที่ละเอียดมากยิ่งขึ้น
             โปรดกรอกรายละเอียดหลักสูตรของคุณ
           </span>

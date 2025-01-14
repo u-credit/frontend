@@ -9,6 +9,7 @@ interface CurriSelectGroupProps {
   setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
   facultyOptions: SelectOption[];
   showCurriculumYear?: boolean;
+  error?: boolean
 }
 
 export default function CurriSelectGroup({
@@ -88,7 +89,7 @@ export default function CurriSelectGroup({
           selectOptions={selectedCurriGroup.curriculum.children || []}
           selectedValue={selectedCurriGroup.curriculumYear}
           label="เล่มหลักสูตร"
-          disabled={!selectedCurriGroup.curriculumYear.value}
+          disabled={!selectedCurriGroup.curriculum.value}
         />
       ) : null}
     </>

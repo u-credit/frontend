@@ -139,20 +139,23 @@ export default function Course() {
 
       if (isLoadMore && (isLoading || !hasMore)) return;
 
+      setIsLoading(true);
+      setHasMore(false);
       const lastSubject = listSubjects?.[listSubjects.length - 1];
       const params = getSubjectParams(
         isLoadMore ? lastSubject.subject_id : '',
         isLoadMore ? lastSubject.category?.length.toString() : '',
       );
 
-      setIsLoading(true);
       try {
         console.log('listsub', listSubjects);
         const response = await fetchListSubject(params);
         const newSubjects = response?.data || [];
-        setListSubjects((prev) =>
-          isLoadMore ? [...prev, ...newSubjects] : newSubjects,
-        );
+        if (isLoadMore) {
+          setListSubjects((prev) => [...prev, ...newSubjects]);
+        } else {
+          setListSubjects(newSubjects);
+        }
         if (!isLoadMore && !isInit) {
           setTotalSearchSubject((response?.meta as CursorMetaDto).totalItems);
         }
@@ -236,7 +239,7 @@ export default function Course() {
 
   useEffect(() => {
     if (inView && hasMore && !isLoading) {
-      loadSubjects({
+            loadSubjects({
         isLoadMore: true,
       });
     }

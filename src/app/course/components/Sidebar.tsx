@@ -147,6 +147,17 @@ export default function Sidebar({
     }
   }, [filterValues]);
 
+  const handleOnClick = () => {
+    if (filterValues.faculty.value && !filterValues.department.value) {
+    } else if (
+      filterValues.department.value &&
+      !filterValues.curriculum.value
+    ) {
+    } else {
+      onClickFilterSearch();
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-y-4 p-4 mb-10 overflow-y-auto ">
       <div className="flex items-center font-semibold	text-primary-400 space-x-2">
@@ -169,7 +180,7 @@ export default function Sidebar({
             }
             label={
               <div>
-                <span className="font-medium">{label}</span>
+                <span className="font-regular">{label}</span>
               </div>
             }
             sx={{ margin: 0 }}
@@ -215,12 +226,17 @@ export default function Sidebar({
                 checked={filterValues.classDay.includes(value)}
                 onChange={() => handleFilterChange('classDay', value)}
                 name={key}
-                sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
+                sx={{
+                  padding: 0,
+                  // paddingTop: 0.4,
+                  color: 'grey.300',
+                  marginRight: '16px',
+                }}
               />
             }
             label={
               <div>
-                <span className="font-medium">{label}</span>
+                <span className="font-regular">{label}</span>
               </div>
             }
             sx={{ margin: 0 }}
@@ -238,13 +254,21 @@ export default function Sidebar({
                 checked={filterValues.classTime.includes(value)}
                 onChange={() => handleFilterChange('classTime', value)}
                 name={key}
-                sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
+                sx={{
+                  padding: 0,
+                  // paddingTop: 0.4,
+                  color: 'grey.300',
+                  marginRight: '16px',
+                }}
               />
             }
             label={
               <div>
-                <span className="font-medium">{label}</span>
-                <span className="block text-xs text-gray-500">{timeRange}</span>
+                <span className="font-regular ">
+                  {label}
+                  <span className=" text-gray-600"> ({timeRange})</span>
+                </span>
+                {/* <span className="block text-xs text-gray-500">{timeRange}</span> */}
               </div>
             }
             sx={{ margin: 0 }}
@@ -264,7 +288,7 @@ export default function Sidebar({
           }
           label={
             <div>
-              <span className="font-medium">อื่น ๆ</span>
+              <span className="font-regular">อื่น ๆ</span>
             </div>
           }
           sx={{ margin: 0 }}
@@ -358,7 +382,7 @@ export default function Sidebar({
       <Button
         variant="contained"
         sx={{ minWidth: '115px' }}
-        onClick={onClickFilterSearch}
+        onClick={handleOnClick}
       >
         search
       </Button>

@@ -5,16 +5,17 @@ import {
   Button,
   Chip,
   Rating,
+  Tooltip,
   Typography,
 } from '@mui/material';
-import { SubjectDto } from '../../../Interfaces';
+import { CategoryDto, SubjectDto } from '../../../Interfaces';
 import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import CustomTable from './CustomTable';
 import StarIcon from '@mui/icons-material/Star';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { stripHtmlTags } from '@/utils';
+import { chipCategory, stripHtmlTags } from '@/utils';
 import { useRouter } from 'next/navigation';
 import { CustomSectionChip } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
@@ -84,13 +85,16 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       const daySection = new Array(8).fill('');
       const dayList: string[][] = Array.from({ length: 8 }, () => []);
       subjectDetail.teach_table.forEach((teach) => {
-        daySection[teach.teach_day] += teach.section + ' ';
+        if (daySection[teach.teach_day] != '')
+          daySection[teach.teach_day] += ', ';
+        daySection[teach.teach_day] += teach.section;
         dayList[teach.teach_day].push(teach.section);
         const time_str = teach.teach_time_str?.split(',');
         time_str?.forEach((time) => {
           const day = Number(time.split('x')[0]);
           if (day && !dayList[day].includes(teach.section)) {
-            daySection[day] += teach.section + ' ';
+            if (daySection[day] != '') daySection[day] += ', ';
+            daySection[day] += teach.section;
             dayList[day].push(teach.section);
           }
         });
@@ -156,18 +160,28 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                   {subjectDetail.subject_english_name}
                 </div>
                 {subjectDetail.category &&
-                  subjectDetail.category.map((category) => (
-                    <Chip
-                      key={category.category_id}
-                      label={`${category.group_name} + ${category.subgroup_name}`}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        whiteSpace: 'nowrap',
-                        textOverflow: 'ellipsis',
-                        maxWidth: '300px',
-                      }}
-                    />
+                  subjectDetail.category.map((category: CategoryDto) => (
+                    <Tooltip
+                      title={chipCategory(category)}
+                      key={
+                        String(category.category_id) + String(category.group_id)
+                      }
+                    >
+                      <Chip
+                        label={chipCategory(category)}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: {
+                            xs: '200px',
+                            sm: '500px',
+                          },
+                        }}
+                      />
+                    </Tooltip>
                   ))}
               </div>
               <div id="row-2" className="flex flex-row gap-3">

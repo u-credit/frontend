@@ -15,6 +15,7 @@ interface SelectProps {
   label?: string;
   sx?: SxProps<Theme>;
   disabled?: boolean;
+  error?: boolean;
 }
 
 export default function CustomSelectOutlined({
@@ -24,6 +25,7 @@ export default function CustomSelectOutlined({
   label,
   sx = {},
   disabled = false,
+  error = false,
 }: SelectProps) {
   const handleChange = (event: SelectChangeEvent) => {
     const selectValue = event.target.value;
@@ -37,6 +39,7 @@ export default function CustomSelectOutlined({
 
   return (
     <FormControl
+      error={error}
       size="small"
       sx={{
         width: '100%',
@@ -47,7 +50,7 @@ export default function CustomSelectOutlined({
         },
         '& .MuiSelect-select': {
           backgroundColor: 'white',
-          fontWeight: 'bold',
+          // fontWeight: 'bold',
           borderRadius: '8px',
         },
         '& .MuiSelect-icon': {
