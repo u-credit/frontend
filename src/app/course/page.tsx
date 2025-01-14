@@ -1,8 +1,8 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import Sidebar from './components/Sidebar';
+import Sidebar, { FilterGroup } from './components/Sidebar';
 import {
   CurriGroup,
   CursorMetaDto,
@@ -10,11 +10,12 @@ import {
   SubjectDto,
 } from '@/Interfaces';
 import { fetchListSubject } from '@/api/subjectApi';
-import { SelectOption } from '@/types';
+import { initSelectOption, SelectOption } from '@/types';
 import {
   BookmarkModal,
   CurriSelectContainer,
   SubjectContainer,
+  FilterRow,
 } from './components';
 import { useInView } from 'react-intersection-observer';
 import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
@@ -23,13 +24,6 @@ import { CustomSearchBar, CustomSelect } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/features/store';
 import { setSemester, setYear } from '@/features/selectorValueSlice';
-import Cookies from 'js-cookie';
-interface FilterGroup {
-  courseCategory: string[];
-  yearLevel: string;
-  classDay: string[];
-  classTime: string[];
-}
 
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
@@ -49,13 +43,19 @@ export default function Course() {
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
-  const [selectedSemester, setSelectedSemester] = useState<string>('1');
-  const [selectedYear, setSelectedYear] = useState<string>('2566');
+  const [selectedSemester, setSelectedSemester] = useState<string>(semester);
+  const [selectedYear, setSelectedYear] = useState<string>(year);
   const [filterValues, setFilterValues] = useState<FilterGroup>({
     courseCategory: [],
-    yearLevel: '',
+    yearLevel: {
+      value: '',
+      label: '',
+    },
     classDay: [],
     classTime: [],
+    faculty: initSelectOption(),
+    department: initSelectOption(),
+    curriculum: initSelectOption(),
   });
   const [customStartTimeFilter, setCustomStartTimeFilter] =
     useState<string>('');
@@ -63,17 +63,20 @@ export default function Course() {
   const [searchValue, setSearchValue] = useState<string>('');
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
   const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
-    faculty: '',
-    department: '',
-    curriculum: '',
-    curriculumYear: '',
+    faculty: initSelectOption(),
+    department: initSelectOption(),
+    curriculum: initSelectOption(),
+    curriculumYear: initSelectOption(),
   });
   const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [hasMore, setHasMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { ref, inView } = useInView();
   const [openBookmarkModal, setOpenBookmarkModal] = useState(false);
   const [sendCustomTime, setSendCustomTime] = useState<boolean>(false);
+  const [totalSearchSubject, setTotalSearchSubject] = useState<number | null>(
+    null,
+  );
 
   const handleOpen = () => setOpenBookmarkModal(true);
   const handleClose = () => {
@@ -81,7 +84,7 @@ export default function Course() {
   };
 
   const loadSubjects = useCallback(
-    async (isLoadMore = false) => {
+    async ({ isLoadMore = false, isInit = false }) => {
       if (semester === '' || year === '') return;
 
       const getCategory = (category: string[]): SubjectCategory => {
@@ -93,6 +96,7 @@ export default function Course() {
 
       const getSubjectParams = (
         cursor = '',
+        secondaryCursor = '',
         limit = 10,
       ): ListSubjectQueryParams => ({
         semester: Number(selectedSemester),
@@ -100,6 +104,7 @@ export default function Course() {
         keyword: searchValue || undefined,
         limit,
         cursor,
+        secondaryCursor,
         direction: Order.ASC,
         orderBy: ListSubjectOrderBy.SUBJECT_ID,
         ...(filterValues.courseCategory.length > 0 && {
@@ -113,34 +118,47 @@ export default function Course() {
               `${customStartTimeFilter}-${customEndTimeFilter}`,
             )
           : filterValues.classTime,
-        ...(selectedCurriGroup.faculty &&
-          selectedCurriGroup.department &&
-          selectedCurriGroup.curriculum && {
-            facultyId: selectedCurriGroup.faculty,
-            departmentId: selectedCurriGroup.department,
-            curriculumId: selectedCurriGroup.curriculum,
-            ...(selectedCurriGroup.curriculumYear && {
-              curriculumYear: selectedCurriGroup.curriculumYear,
-            }),
+        ...(filterValues.faculty.value &&
+          filterValues.department.value &&
+          filterValues.curriculum.value && {
+            facultyId: filterValues.faculty.value,
+            departmentId: filterValues.department.value,
+            curriculumId: filterValues.curriculum.value,
+          }),
+        ...(selectedCurriGroup.faculty.value &&
+          selectedCurriGroup.department.value &&
+          selectedCurriGroup.curriculum.value && {
+            categoryFacultyId: selectedCurriGroup.faculty.value,
+            categoryCurriculumId: selectedCurriGroup.curriculum.value,
+            categoryCurriculumYear: selectedCurriGroup.curriculumYear.value,
           }),
         ...(filterValues.yearLevel && {
-          yearLevel: Number(filterValues.yearLevel),
+          yearLevel: Number(filterValues.yearLevel.value),
         }),
       });
 
       if (isLoadMore && (isLoading || !hasMore)) return;
 
+      setIsLoading(true);
+      setHasMore(false);
+      const lastSubject = listSubjects?.[listSubjects.length - 1];
       const params = getSubjectParams(
-        isLoadMore ? listSubjects?.[listSubjects.length - 1]?.subject_id : '',
+        isLoadMore ? lastSubject.subject_id : '',
+        isLoadMore ? lastSubject.category?.length.toString() : '',
       );
 
-      setIsLoading(true);
       try {
+        console.log('listsub', listSubjects);
         const response = await fetchListSubject(params);
         const newSubjects = response?.data || [];
-        setListSubjects((prev) =>
-          isLoadMore ? [...prev, ...newSubjects] : newSubjects,
-        );
+        if (isLoadMore) {
+          setListSubjects((prev) => [...prev, ...newSubjects]);
+        } else {
+          setListSubjects(newSubjects);
+        }
+        if (!isLoadMore && !isInit) {
+          setTotalSearchSubject((response?.meta as CursorMetaDto).totalItems);
+        }
         setHasMore((response?.meta as CursorMetaDto)?.hasNext ?? false);
       } catch (error) {
         console.error('Error loading subjects:', error);
@@ -160,14 +178,17 @@ export default function Course() {
       filterValues.courseCategory,
       filterValues.classDay,
       filterValues.classTime,
+      filterValues.faculty.value,
+      filterValues.department.value,
+      filterValues.curriculum.value,
       filterValues.yearLevel,
       sendCustomTime,
       customStartTimeFilter,
       customEndTimeFilter,
-      selectedCurriGroup.faculty,
-      selectedCurriGroup.department,
-      selectedCurriGroup.curriculum,
-      selectedCurriGroup.curriculumYear,
+      selectedCurriGroup.faculty.value,
+      selectedCurriGroup.department.value,
+      selectedCurriGroup.curriculum.value,
+      selectedCurriGroup.curriculumYear.value,
     ],
   );
 
@@ -198,26 +219,35 @@ export default function Course() {
     };
 
     loadFaculty();
-    loadSubjects();
+    loadSubjects({ isInit: true });
   }, []);
 
   useEffect(() => {
-    loadSubjects();
+    if (
+      (selectedCurriGroup.faculty &&
+        selectedCurriGroup.department &&
+        selectedCurriGroup.curriculum &&
+        selectedCurriGroup.curriculumYear) ||
+      (!selectedCurriGroup.faculty &&
+        !selectedCurriGroup.department &&
+        !selectedCurriGroup.curriculum &&
+        !selectedCurriGroup.curriculumYear)
+    ) {
+      loadSubjects({ isLoadMore: false });
+    }
   }, [selectedSemester, selectedYear, selectedCurriGroup]);
 
   useEffect(() => {
     if (inView && hasMore && !isLoading) {
-      loadSubjects(true);
+            loadSubjects({
+        isLoadMore: true,
+      });
     }
   }, [inView, hasMore, isLoading]);
 
   const handleSearchValueChange = (value: string) => setSearchValue(value);
 
-  const handleSearchAction = () => loadSubjects();
-
-  const handleCurriGroup = (value: CurriGroup) => {
-    setSelectedCurriGroup(value);
-  };
+  const handleSearchAction = () => loadSubjects({ isLoadMore: false });
 
   const handleSelectSemester = (value: string) => {
     setSelectedSemester(value);
@@ -234,15 +264,29 @@ export default function Course() {
     setSelectedYear(year);
   }, [semester, year]);
 
-  const handleFilterChange = (group: string, value: string | string[]) => {
+  const handleFilterChange = (
+    group: string,
+    value: SelectOption | string | string[],
+  ) => {
     setFilterValues((prevValues) => {
       const currentValue = prevValues[group as keyof FilterGroup];
-      if (group === 'yearLevel') {
+      if (
+        group === 'yearLevel' ||
+        group === 'faculty' ||
+        group === 'department' ||
+        group === 'curriculum'
+      ) {
         return {
           ...prevValues,
-          [group]: value as string,
+          [group]: value,
         };
       } else {
+        if (Array.isArray(value)) {
+          return {
+            ...prevValues,
+            [group]: value,
+          };
+        }
         const updatedValues =
           Array.isArray(currentValue) && currentValue.includes(value as string)
             ? currentValue.filter((item) => item !== (value as string))
@@ -261,11 +305,26 @@ export default function Course() {
   const handleCustomEndTimeChange = (value: string) => {
     setCustomEndTimeFilter(value);
   };
+  const handleDeleteFilter = (group: string, value: string) => {
+    setFilterValues(
+      (prevValues) =>
+        ({
+          ...prevValues,
+          [group as keyof FilterGroup]: (
+            prevValues[group as keyof FilterGroup] as string[]
+          ).filter((item) => item !== value),
+        }) as FilterGroup,
+    );
+  };
+
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
-      <div className="hidden lg:flex fixed min-w-60  bg-white h-full">
+      <div className="hidden lg:flex fixed w-60  bg-white h-full">
         <Sidebar
           filterValues={filterValues}
+          facultyOptions={facultyOptions}
+          customStartTime={customStartTimeFilter}
+          customEndTime={customEndTimeFilter}
           onFilterChange={handleFilterChange}
           onSelectCustomTime={(e) => setSendCustomTime(e)}
           onCustomStartTimeChange={handleCustomStartTimeChange}
@@ -276,8 +335,8 @@ export default function Course() {
       <div className="w-full">
         <CurriSelectContainer
           selectedCurriGroup={selectedCurriGroup}
+          setSelectedCurriGroup={setSelectedCurriGroup}
           facultyOptions={facultyOptions}
-          onCurriGroupChange={handleCurriGroup}
         />
         <div className="flex-grow bg-white max-w-3xl lg:max-w-none rounded-lg mx-auto lg:ml-64 lg:mr-4 my-4">
           <div className="flex flex-col sm:flex-row p-4 gap-4 justify-between">
@@ -308,9 +367,23 @@ export default function Course() {
               </Button>
             </div>
           </div>
+          <FilterRow
+            totalSearchSubject={totalSearchSubject || 0}
+            filterValues={filterValues}
+            setFilterValues={setFilterValues}
+            customStartTimeFilter={customStartTimeFilter}
+            customEndTimeFilter={customEndTimeFilter}
+            setCustomStartTimeFilter={setCustomStartTimeFilter}
+            setCustomEndTimeFilter={setCustomEndTimeFilter}
+            handleDeleteFilter={handleDeleteFilter}
+          />
           <SubjectContainer subjectDetail={listSubjects} />
           {hasMore && <div ref={ref}>Load more</div>}
-          {!hasMore && !isLoading && <>ไม่พบข้อมูล</>}
+          {!hasMore && !isLoading && (
+            <div className="flex p-10 justify-center items-center">
+              ไม่มีข้อมูล
+            </div>
+          )}
         </div>
       </div>
       <BookmarkModal open={openBookmarkModal} onClose={handleClose} />

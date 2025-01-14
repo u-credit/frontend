@@ -2,6 +2,8 @@ export * from './arrayHelpers';
 
 export * from './formatDate';
 
+export * from './formatCategory';
+
 export * from './bookmarkHelpers';
 
 export * from './formatDay';

@@ -22,6 +22,7 @@ export interface ListSubjectQueryParams {
   isBookmarked?: boolean;
   limit?: number;
   cursor?: string;
+  secondaryCursor?: string;
   //   offset?: number;
   direction?: Order;
   orderBy?: ListSubjectOrderBy;
@@ -30,7 +31,9 @@ export interface ListSubjectQueryParams {
   facultyId?: string;
   departmentId?: string;
   curriculumId?: string;
-  curriculumYear?: string;
+  categoryFacultyId?: string;
+  categoryCurriculumId?: string;
+  categoryCurriculumYear?: string;
   yearLevel?: number;
   subjectCategory?: SubjectCategory;
 }
@@ -76,6 +79,13 @@ export interface TeachTableDto {
   teacher: TeacherDto[];
 }
 
+export interface CategoryDto {
+  category_id: number;
+  group_id: number;
+  group_name: number;
+  subgroup_name: string;
+}
+
 export interface SubjectDto {
   subject_id: string;
   subject_thai_name: string;
@@ -91,10 +101,5 @@ export interface SubjectDto {
   last_modified: Date;
   prerequisite?: string[];
   teach_table: TeachTableDto[];
-  category?: {
-    category_id: number;
-    group_id: number;
-    group_name: number;
-    subgroup_name: string;
-  }[];
+  category?: CategoryDto[];
 }

@@ -1,5 +1,12 @@
 export type SelectOption = {
   label: string;
-  value: string | number;
+  value: string;
   children?: SelectOption[];
+};
+
+export const initSelectOption = (): SelectOption => {
+  return {
+    label: '',
+    value: '',
+  };
 };
