@@ -1,7 +1,7 @@
 export interface StudentInfo {
-  curr2_faculty_id: string;
-  curr2_curr2_id: string;
-  curr2_dept_id: string;
-  curr2_curri_mapping_curri_id: string;
-  cuAdmisCurrYearMappings_curr_year: string;
+  faculty_id: string;
+  dept_id: string;
+  curr2_id: string;
+  curri_id: string;
+  curr_year: string;
 }

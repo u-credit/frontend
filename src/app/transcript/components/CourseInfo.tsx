@@ -53,10 +53,10 @@ export default function CourseInfo({
 
   useEffect(() => {
     const curriGroup = {
-      faculty: studentInfo.curr2_faculty_id,
-      department: studentInfo.curr2_dept_id,
-      curriculum: studentInfo.curr2_curr2_id,
-      curriculumYear: studentInfo.cuAdmisCurrYearMappings_curr_year,
+      faculty: studentInfo.faculty_id,
+      department: studentInfo.dept_id,
+      curriculum: studentInfo.curr2_id,
+      curriculumYear: studentInfo.curr_year,
     };
     setSelectedCurriGroup(curriGroup);
   }, [studentInfo]);

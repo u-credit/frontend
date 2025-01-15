@@ -14,7 +14,7 @@ export const uploadTranscriptFindStudentInfo = async (file: File) => {
     );
 
     const result = await response.json();
-    return { success: true, data: result.data.curriculum[0] };
+    return { success: true, data: result.data[0] };
   } catch (error) {
     console.error('File upload failed', error);
     return {

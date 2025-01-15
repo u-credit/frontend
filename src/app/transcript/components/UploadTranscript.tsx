@@ -30,14 +30,13 @@ export default function UploadTranscript({
         if (result.success) {
           setUploadStatus('File uploaded successfully!');
           uploadTranscriptSuccess(true);
+          console.log(result.data);
           extractStudentInfo({
-            curr2_faculty_id: result.data.curr2_faculty_id,
-            curr2_curr2_id: result.data.curr2_curr2_id,
-            curr2_dept_id: result.data.curr2_dept_id,
-            curr2_curri_mapping_curri_id:
-              result.data.curr2_curri_mapping_curri_id,
-            cuAdmisCurrYearMappings_curr_year:
-              result.data.cuAdmisCurrYearMappings_curr_year,
+            faculty_id: result.data.faculty_id,
+            dept_id: result.data.dept_id,
+            curr2_id: result.data.curr2_id,
+            curri_id: result.data.curri_id,
+            curr_year: result.data.curr_year,
           });
         } else {
           setUploadStatus(`Upload failed: ${result.error}`);
