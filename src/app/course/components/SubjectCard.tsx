@@ -21,6 +21,8 @@ import { CustomSectionChip } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { addBookmark, removeBookmark } from '@/features/bookmark/bookmarkSlice';
 import { RootState } from '@/features/store';
+import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import { addBookmarkApi, deleteBookmarkApi } from '@/api/bookmarkApi';
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
@@ -32,6 +34,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const bookmark = useSelector((state: RootState) => state.bookmark.items);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -53,7 +56,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
     }
   }, [subjectDetail.subject_id, bookmark]);
 
-  const handleToggleBookmark = () => {
+  const handleToggleBookmark = async () => {
     setIsBookmarked(!isBookmarked);
     if (!isBookmarked) {
       dispatch(
@@ -64,9 +67,27 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
           year: Number(year),
         }),
       );
+
+      if (isAuthenticated) {
+        await addBookmarkApi({
+          subjectId: subjectDetail.subject_id,
+          selectedSection: '',
+          semester: Number(semester),
+          year: Number(year),
+        });
+      }
     } else {
       setSelectedSection('');
       dispatch(removeBookmark(subjectDetail.subject_id));
+
+      if (isAuthenticated) {
+        await deleteBookmarkApi({
+          subjectId: subjectDetail.subject_id,
+          selectedSection: '',
+          semester: Number(semester),
+          year: Number(year),
+        });
+      }
     }
   };
 

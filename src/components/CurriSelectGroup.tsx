@@ -19,7 +19,6 @@ export default function CurriSelectGroup({
   showCurriculumYear = true,
 }: CurriSelectGroupProps) {
   const handleFacultyChange = (value: SelectOption) => {
-    console.log(value);
     setSelectedCurriGroup((prev) => {
       return {
         ...prev,

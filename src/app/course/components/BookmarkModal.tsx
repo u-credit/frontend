@@ -76,10 +76,10 @@ export default function BookmarkModal({ open, onClose }: BookmarkModalProps) {
           curriGroup.department &&
           curriGroup.curriculum &&
           curriGroup.curriculumYear && {
-            facultyId: curriGroup.faculty,
-            departmentId: curriGroup.department,
-            curriculumId: curriGroup.curriculum,
-            curriculumYear: curriGroup.curriculumYear,
+            facultyId: curriGroup.faculty.value,
+            departmentId: curriGroup.department.value,
+            curriculumId: curriGroup.curriculum.value,
+            curriculumYear: curriGroup.curriculumYear.value,
           }),
       });
 
