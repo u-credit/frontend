@@ -148,7 +148,6 @@ export default function Course() {
       );
 
       try {
-        console.log('listsub', listSubjects);
         const response = await fetchListSubject(params);
         const newSubjects = response?.data || [];
         if (isLoadMore) {

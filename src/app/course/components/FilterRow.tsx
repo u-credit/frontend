@@ -102,7 +102,6 @@ export const FilterRow = ({
       ))}
       {filterValues.classTime.map(
         (time) => (
-          console.log(time),
           (
             <Chip
               key={time}
