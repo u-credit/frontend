@@ -72,14 +72,14 @@ export default function BookmarkModal({ open, onClose }: BookmarkModalProps) {
         year: Number(year),
         subjectIds: bookmarks.map((item) => item.subjectId),
         ...(curriGroup &&
-          curriGroup.faculty &&
-          curriGroup.department &&
-          curriGroup.curriculum &&
-          curriGroup.curriculumYear && {
-            facultyId: curriGroup.faculty.value,
-            departmentId: curriGroup.department.value,
-            curriculumId: curriGroup.curriculum.value,
-            curriculumYear: curriGroup.curriculumYear.value,
+          curriGroup.faculty.value &&
+          curriGroup.department.value &&
+          curriGroup.curriculum.value &&
+          curriGroup.curriculumYear.value && {
+            categoryFacultyId: curriGroup.faculty.value,
+            categoryDepartmentId: curriGroup.department.value,
+            categoryCurriculumId: curriGroup.curriculum.value,
+            categoryCurriculumYear: curriGroup.curriculumYear.value,
           }),
       });
 
