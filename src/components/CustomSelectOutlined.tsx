@@ -9,12 +9,13 @@ import { Theme } from '@mui/material/styles';
 import { InputLabel } from '@mui/material';
 
 interface SelectProps {
-  onSelectedValueChange: (value: string) => void;
+  onSelectedValueChange: (value: SelectOption) => void;
   selectOptions: SelectOption[];
-  selectedValue: string;
+  selectedValue: SelectOption;
   label?: string;
   sx?: SxProps<Theme>;
   disabled?: boolean;
+  error?: boolean;
 }
 
 export default function CustomSelectOutlined({
@@ -24,14 +25,21 @@ export default function CustomSelectOutlined({
   label,
   sx = {},
   disabled = false,
+  error = false,
 }: SelectProps) {
   const handleChange = (event: SelectChangeEvent) => {
-    // console.log('event.target.value', event.target);
-    onSelectedValueChange(event.target.value as string);
+    const selectValue = event.target.value;
+    const selectOption = selectOptions.find(
+      (option) => option.value === selectValue,
+    );
+    if (selectOption) {
+      onSelectedValueChange(selectOption);
+    }
   };
 
   return (
     <FormControl
+      error={error}
       size="small"
       sx={{
         width: '100%',
@@ -42,7 +50,7 @@ export default function CustomSelectOutlined({
         },
         '& .MuiSelect-select': {
           backgroundColor: 'white',
-          fontWeight: 'bold',
+          // fontWeight: 'bold',
           borderRadius: '8px',
         },
         '& .MuiSelect-icon': {
@@ -74,7 +82,7 @@ export default function CustomSelectOutlined({
         labelId="demo-simple-select-label"
         id="demo-simple-select"
         onChange={handleChange}
-        value={selectedValue}
+        value={String(selectedValue.value)}
         label={label}
         IconComponent={ArrowDropDownIcon}
         variant="outlined"

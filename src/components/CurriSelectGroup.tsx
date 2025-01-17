@@ -1,136 +1,96 @@
 'use client';
 import CustomSelectOutlined from './CustomSelectOutlined';
-import { SelectOption } from '@/types';
-import { useEffect, useState } from 'react';
+import { initSelectOption, SelectOption } from '@/types';
 import { CurriGroup } from '@/Interfaces';
+import { Dispatch, SetStateAction } from 'react';
 
 interface CurriSelectGroupProps {
   selectedCurriGroup: CurriGroup;
+  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
   facultyOptions: SelectOption[];
-  onCurriGroupChange: (curriGroup: CurriGroup) => void;
+  showCurriculumYear?: boolean;
+  error?: boolean
 }
 
 export default function CurriSelectGroup({
   selectedCurriGroup,
+  setSelectedCurriGroup,
   facultyOptions,
-  onCurriGroupChange,
+  showCurriculumYear = true,
 }: CurriSelectGroupProps) {
-  const [selectedFaculty, setSelectedFaculty] = useState<string | number>('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string | number>(
-    '',
-  );
-  const [selectedCurriculum, setSelectedCurriculum] = useState<string | number>(
-    '',
-  );
-  const [selectedCurriculumYear, setSelectedCurriculumYear] = useState<
-    string | number
-  >('');
-
-  const [selectedFacultyObj, setSelectedFacultyObj] =
-    useState<SelectOption | null>(null);
-  const [selectedDepartmentObj, setSelectedDepartmentObj] =
-    useState<SelectOption | null>(null);
-  const [selectedCurriculumObj, setSelectedCurriculumObj] =
-    useState<SelectOption | null>(null);
-
-  useEffect(() => {
-    if (selectedCurriGroup) {
-      setSelectedFaculty(selectedCurriGroup.faculty);
-      setSelectedDepartment(selectedCurriGroup.department);
-      setSelectedCurriculum(selectedCurriGroup.curriculum);
-      setSelectedCurriculumYear(selectedCurriGroup.curriculumYear);
-    }
-  }, [selectedCurriGroup]);
-
-  const departmentOptions = selectedFacultyObj?.children || [];
-
-  const curriculumOptions = selectedDepartmentObj?.children || [];
-
-  const curriculumYearOptions = selectedCurriculumObj?.children || [];
-
-  const handleFacultyChange = (value: string) => {
-    const selected = facultyOptions.find((option) => option.value === value);
-    setSelectedFaculty(selected?.value || '');
-    setSelectedFacultyObj(selected || null);
-
-    setSelectedDepartment('');
-    setSelectedCurriculum('');
-    setSelectedCurriculumYear('');
-  };
-
-  const handleDepartmentChange = (value: string) => {
-    const departmentOptions = selectedFacultyObj?.children || [];
-
-    const selected = departmentOptions.find((option) => option.value === value);
-    setSelectedDepartment(selected?.value || '');
-    setSelectedDepartmentObj(selected || null);
-
-    setSelectedCurriculum('');
-    setSelectedCurriculumYear('');
-  };
-
-  const handleCurriculumChange = (value: string) => {
-    const curriculumOptions = selectedDepartmentObj?.children || [];
-    const selected = curriculumOptions.find((option) => option.value === value);
-
-    setSelectedCurriculum(selected?.value || '');
-    setSelectedCurriculumObj(selected || null);
-
-    setSelectedCurriculumYear('');
-  };
-
-  const handleCurriculumYearChange = (value: string) => {
-    const curriculumYearOptions = selectedCurriculumObj?.children || [];
-    const selected = curriculumYearOptions.find(
-      (option) => option.value === value,
-    );
-
-    setSelectedCurriculumYear(selected?.value || '');
-  };
-
-  useEffect(() => {
-    onCurriGroupChange({
-      faculty: selectedFaculty,
-      department: selectedDepartment,
-      curriculum: selectedCurriculum,
-      curriculumYear: selectedCurriculumYear,
+  const handleFacultyChange = (value: SelectOption) => {
+    setSelectedCurriGroup((prev) => {
+      return {
+        ...prev,
+        faculty: value,
+        department: initSelectOption(),
+        curriculum: initSelectOption(),
+        curriculumYear: initSelectOption(),
+      };
     });
-  }, [
-    selectedFaculty,
-    selectedDepartment,
-    selectedCurriculum,
-    selectedCurriculumYear,
-  ]);
+  };
+
+  const handleDepartmentChange = (value: SelectOption) => {
+    setSelectedCurriGroup((prev) => {
+      return {
+        ...prev,
+        department: value,
+        curriculum: initSelectOption(),
+        curriculumYear: initSelectOption(),
+      };
+    });
+  };
+
+  const handleCurriculumChange = (value: SelectOption) => {
+    setSelectedCurriGroup((prev) => {
+      return {
+        ...prev,
+        curriculum: value,
+        curriculumYear: initSelectOption(),
+      };
+    });
+  };
+
+  const handleCurriculumYearChange = (value: SelectOption) => {
+    setSelectedCurriGroup((prev) => {
+      return {
+        ...prev,
+        curriculumYear: value,
+      };
+    });
+  };
 
   return (
     <>
       <CustomSelectOutlined
         onSelectedValueChange={handleFacultyChange}
         selectOptions={facultyOptions}
-        selectedValue={String(selectedFaculty)}
+        selectedValue={selectedCurriGroup.faculty}
         label="คณะ"
       />
       <CustomSelectOutlined
         onSelectedValueChange={handleDepartmentChange}
-        selectOptions={departmentOptions}
-        selectedValue={String(selectedDepartment)}
+        selectOptions={selectedCurriGroup.faculty.children || []}
+        selectedValue={selectedCurriGroup.department}
         label="ภาควิชา"
-        disabled={!selectedFaculty}
+        disabled={!selectedCurriGroup.faculty.value}
       />
       <CustomSelectOutlined
         onSelectedValueChange={handleCurriculumChange}
-        selectOptions={curriculumOptions}
-        selectedValue={String(selectedCurriculum)}
+        selectOptions={selectedCurriGroup.department.children || []}
+        selectedValue={selectedCurriGroup.curriculum}
         label="หลักสูตร"
-        disabled={!selectedDepartment}
+        disabled={!selectedCurriGroup.department.value}
       />
-      <CustomSelectOutlined
-        onSelectedValueChange={handleCurriculumYearChange}
-        selectOptions={curriculumYearOptions}
-        selectedValue={String(selectedCurriculumYear)}
-        label="เล่มหลักสูตร"
-        disabled={!selectedCurriculum}
-      />
+      {showCurriculumYear ? (
+        <CustomSelectOutlined
+          onSelectedValueChange={handleCurriculumYearChange}
+          selectOptions={selectedCurriGroup.curriculum.children || []}
+          selectedValue={selectedCurriGroup.curriculumYear}
+          label="เล่มหลักสูตร"
+          disabled={!selectedCurriGroup.curriculum.value}
+        />
+      ) : null}
     </>
   );
 }

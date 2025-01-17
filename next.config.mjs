@@ -6,8 +6,14 @@ const nextConfig = {
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'http://localhost:4000',
+          },
           {
             key: 'Access-Control-Allow-Methods',
             value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
@@ -32,8 +38,6 @@ const nextConfig = {
     ];
   },
   webpack(config) {
-    
-
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg'),
     );
@@ -45,7 +49,6 @@ const nextConfig = {
     });
 
     fileLoaderRule.exclude = /\.svg$/i;
-    config.cache = false;
     return config;
   },
 };

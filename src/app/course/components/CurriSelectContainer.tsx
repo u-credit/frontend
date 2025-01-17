@@ -4,21 +4,25 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { SelectOption } from '@/types';
 import { CurriSelectGroup } from '@/components';
 import { CurriGroup } from '@/Interfaces';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCurrigroup } from '@/features/selectorValueSlice';
+import { Dispatch, useEffect } from 'react';
 
 interface CurriSelectContainerProps {
   selectedCurriGroup: CurriGroup;
+  setSelectedCurriGroup: Dispatch<React.SetStateAction<CurriGroup>>;
   facultyOptions: SelectOption[];
-  onCurriGroupChange: (curriGroup: CurriGroup) => void;
 }
 
 export default function CurriSelectContainer({
   selectedCurriGroup,
+  setSelectedCurriGroup,
   facultyOptions,
-  onCurriGroupChange,
 }: CurriSelectContainerProps) {
-  const handleCurriGroupChange = (curriGroup: CurriGroup) => {
-    onCurriGroupChange(curriGroup);
-  };
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(setCurrigroup(selectedCurriGroup));
+  }, [selectedCurriGroup]);
 
   return (
     <div className="flex-grow bg-white max-w-3xl text-primary-400 lg:max-w-none rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
@@ -53,7 +57,7 @@ export default function CurriSelectContainer({
             },
           }}
         >
-          <span className="text-primary-400">
+          <span className="text-primary-400 font-semibold">
             *เพื่อการแสดงผลรายละเอียดหมวดหมู่รายวิชาที่ละเอียดมากยิ่งขึ้น
             โปรดกรอกรายละเอียดหลักสูตรของคุณ
           </span>
@@ -65,8 +69,8 @@ export default function CurriSelectContainer({
             </span>{' '}
             <CurriSelectGroup
               selectedCurriGroup={selectedCurriGroup}
+              setSelectedCurriGroup={setSelectedCurriGroup}
               facultyOptions={facultyOptions}
-              onCurriGroupChange={handleCurriGroupChange}
             />
           </div>
         </AccordionDetails>

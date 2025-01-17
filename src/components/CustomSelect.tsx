@@ -15,6 +15,7 @@ interface SelectProps {
   onSelectedValueChange: (value: string) => void;
   selectOptions: SelectOption[];
   selectedValue: string;
+  label?: string;
   sx?: SxProps<Theme>;
 }
 
@@ -22,8 +23,13 @@ export default function CustomSelect({
   onSelectedValueChange,
   selectOptions,
   selectedValue,
+  label,
   sx = {},
 }: SelectProps) {
+  const handleSelectClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   const handleChange = (event: SelectChangeEvent) => {
     onSelectedValueChange(event.target.value as string);
   };
@@ -46,10 +52,12 @@ export default function CustomSelect({
         ...sx,
       }}
     >
+      <InputLabel id="demo-simple-select-label">{label}</InputLabel>
       <Select
         labelId="demo-simple-select-label"
         id="demo-simple-select"
         onChange={handleChange}
+        onClick={handleSelectClick}
         value={selectedValue}
         IconComponent={ArrowDropDownIcon}
         variant="outlined"

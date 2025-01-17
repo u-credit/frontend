@@ -5,55 +5,90 @@ import {
   Button,
   Chip,
   Rating,
+  Tooltip,
   Typography,
 } from '@mui/material';
-import { SubjectDetail, SubjectDto } from '../../../Interfaces';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { CategoryDto, SubjectDto } from '../../../Interfaces';
 import { useEffect, useState } from 'react';
-import { SelectOption } from '@/types';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import CustomTable from './CustomTable';
 import StarIcon from '@mui/icons-material/Star';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { stripHtmlTags } from '@/utils';
+import { chipCategory, stripHtmlTags } from '@/utils';
 import { useRouter } from 'next/navigation';
-import { CustomSectionChip, CustomSelect } from '@/components';
+import { CustomSectionChip } from '@/components';
+import { useDispatch, useSelector } from 'react-redux';
+import { addBookmark, removeBookmark } from '@/features/bookmark/bookmarkSlice';
+import { RootState } from '@/features/store';
+import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import { addBookmarkApi, deleteBookmarkApi } from '@/api/bookmarkApi';
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
 }
 
-const mockSelectOptions: SelectOption[] = [
-  { label: 'Option 1', value: 'option1' },
-  { label: 'Option 2', value: 'option2' },
-];
-
 export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
+  const dispatch = useDispatch();
   const router = useRouter();
-  const [selectedValue, setSelectedValue] = useState<string>('');
-  const [isToggled, setIsToggled] = useState(false);
-  const [expanded, setExpanded] = useState<boolean>(false);
+  const { semester, year } = useSelector(
+    (state: RootState) => state.selectorValue,
+  );
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const bookmark = useSelector((state: RootState) => state.bookmark.items);
+  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
-  const [sectionList, setSectionList] = useState<string[]>([]);
 
-  const handleSelectValueChange = (value: string) => {
-    setSelectedValue(value);
-    // console.log('Selected Value:', value);
-  };
+  useEffect(() => {
+    const isBookmarked = bookmark.find(
+      (item) => item.subjectId === subjectDetail.subject_id,
+    );
+    if (isBookmarked) {
+      setIsBookmarked(true);
+      setSelectedSection(isBookmarked.selectedSection || '');
+    } else {
+      setIsBookmarked(false);
+      setSelectedSection('');
+    }
+  }, [subjectDetail.subject_id, bookmark]);
 
-  const handleToggle = () => {
-    setIsToggled(!isToggled);
-  };
+  const handleToggleBookmark = async () => {
+    setIsBookmarked(!isBookmarked);
+    if (!isBookmarked) {
+      dispatch(
+        addBookmark({
+          subjectId: subjectDetail.subject_id,
+          selectedSection: selectedSection,
+          semester: Number(semester),
+          year: Number(year),
+        }),
+      );
 
-  const handleAccordionChange = (
-    event: React.SyntheticEvent,
-    isExpanded: boolean,
-  ) => {
-    setExpanded(isExpanded);
+      if (isAuthenticated) {
+        await addBookmarkApi({
+          subjectId: subjectDetail.subject_id,
+          selectedSection: '',
+          semester: Number(semester),
+          year: Number(year),
+        });
+      }
+    } else {
+      setSelectedSection('');
+      dispatch(removeBookmark(subjectDetail.subject_id));
+
+      if (isAuthenticated) {
+        await deleteBookmarkApi({
+          subjectId: subjectDetail.subject_id,
+          selectedSection: '',
+          semester: Number(semester),
+          year: Number(year),
+        });
+      }
+    }
   };
 
   const handleExpanded = (event: React.MouseEvent) => {
@@ -63,16 +98,27 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
   };
 
   const handleMoreDetail = () => {
-    // console.log('Accordion Clicked');
     router.push(`/course/${subjectDetail.subject_id}`);
   };
 
   useEffect(() => {
     if (subjectDetail.teach_table) {
       const daySection = new Array(8).fill('');
-      subjectDetail.teach_table.forEach((table) => {
-        daySection[table.teach_day] += table.section + ' ';
-        setSectionList((prevList) => [...prevList, table.section]);
+      const dayList: string[][] = Array.from({ length: 8 }, () => []);
+      subjectDetail.teach_table.forEach((teach) => {
+        if (daySection[teach.teach_day] != '')
+          daySection[teach.teach_day] += ', ';
+        daySection[teach.teach_day] += teach.section;
+        dayList[teach.teach_day].push(teach.section);
+        const time_str = teach.teach_time_str?.split(',');
+        time_str?.forEach((time) => {
+          const day = Number(time.split('x')[0]);
+          if (day && !dayList[day].includes(teach.section)) {
+            if (daySection[day] != '') daySection[day] += ', ';
+            daySection[day] += teach.section;
+            dayList[day].push(teach.section);
+          }
+        });
       });
       setDaySection(daySection);
     }
@@ -134,11 +180,30 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                 >
                   {subjectDetail.subject_english_name}
                 </div>
-                <Chip
-                  label="วิชาเฉพาะ-แกน-วิศวกรรม"
-                  size="small"
-                  variant="outlined"
-                />
+                {subjectDetail.category &&
+                  subjectDetail.category.map((category: CategoryDto) => (
+                    <Tooltip
+                      title={chipCategory(category)}
+                      key={
+                        String(category.category_id) + String(category.group_id)
+                      }
+                    >
+                      <Chip
+                        label={chipCategory(category)}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: {
+                            xs: '200px',
+                            sm: '500px',
+                          },
+                        }}
+                      />
+                    </Tooltip>
+                  ))}
               </div>
               <div id="row-2" className="flex flex-row gap-3">
                 <div>{subjectDetail.credit} หน่วยกิต</div>
@@ -185,28 +250,23 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
         onClick={handleExpanded}
       >
         <div className="flex space-x-2">
-          <CustomSelect
-            onSelectedValueChange={handleSelectValueChange}
-            selectOptions={sectionList.map((section) => ({
-              label: section,
-              value: section,
-            }))}
-            selectedValue={selectedValue}
-          />
           <Button
             variant="contained"
-            startIcon={isToggled ? <CheckIcon /> : <AddIcon />}
+            startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}
             sx={{
-              backgroundColor: isToggled ? 'white' : undefined,
-              color: isToggled ? 'primary.main' : undefined,
+              backgroundColor: isBookmarked ? 'white' : undefined,
+              color: isBookmarked ? 'primary.main' : undefined,
               borderStyle: 'solid',
               borderWidth: 1,
               borderColor: 'primary.main',
               '&:hover': {
-                backgroundColor: isToggled ? 'primary.100' : undefined,
+                backgroundColor: isBookmarked ? 'primary.100' : undefined,
               },
             }}
-            onClick={handleToggle}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggleBookmark();
+            }}
           >
             บันทึก
           </Button>
