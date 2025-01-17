@@ -32,6 +32,8 @@ const nextConfig = {
     ];
   },
   webpack(config) {
+    
+
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg'),
     );
@@ -43,7 +45,7 @@ const nextConfig = {
     });
 
     fileLoaderRule.exclude = /\.svg$/i;
-
+    config.cache = false;
     return config;
   },
 };
