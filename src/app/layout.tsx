@@ -45,12 +45,11 @@ export default function RootLayout({
       <body className={baiJamjuree.className}>
         <AppRouterCacheProvider>
           <StoreProvider>
-            {' '}
             <AuthChecker />
             <ThemeProvider theme={theme}>
               <CssBaseline />
               <Navbar />
-              <div className="bg-gray-100">
+              <div className="h-screen bg-gray-100 overflow-auto">
                 <div className="mt-12 max-w-7xl mx-auto">{children}</div>
               </div>
             </ThemeProvider>

@@ -69,7 +69,7 @@ export default function CustomTable({ teachTable }: CustomTableProps) {
               <div
                 className={`table-cell align-middle border-r border-gray-200 ${index !== teachTable.length - 1 ? 'border-b' : ''} `}
               >
-                {teach.building_no} {teach.room_no}
+                {teach.building_name} {teach.room_name}
               </div>
               <div
                 className={`table-cell align-middle border-r border-gray-200 ${index !== teachTable.length - 1 ? 'border-b' : ''} `}

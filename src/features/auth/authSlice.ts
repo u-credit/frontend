@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import Cookies from 'js-cookie';
-import { fetchAccessToken } from '@/api/authApi';
+import { fetchAccessToken, fetchLogout } from '@/api/authApi';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -46,6 +46,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.tokenExpiration = null;
+      fetchLogout();
     },
   },
   extraReducers: (builder) => {
