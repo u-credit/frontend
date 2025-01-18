@@ -1,6 +1,6 @@
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import { Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -10,7 +10,7 @@ import { CurriSelectGroup, CustomSelectOutlined } from '@/components';
 import { SubjectCategory } from '@/enums';
 import { CurriGroup } from '@/Interfaces';
 import { initSelectOption, SelectOption } from '@/types';
-
+import { ClearButon } from './ClearButton';
 export interface FilterGroup {
   courseCategory: string[];
   yearLevel: SelectOption;
@@ -26,14 +26,13 @@ interface FilterProps {
   facultyOptions: SelectOption[];
   customStartTime: string;
   customEndTime: string;
-  onFilterChange: (
-    group: string,
-    value: SelectOption | string | string[],
+  checkCustomTime: boolean;
+  onClickFilterSearch: (
+    filterValues: FilterGroup,
+    customStart: string,
+    customEnd: string,
+    customTime: boolean,
   ) => void;
-  onSelectCustomTime: (checked: boolean) => void;
-  onCustomStartTimeChange: (customTime: string) => void;
-  onCustomEndTimeChange: (customTime: string) => void;
-  onClickFilterSearch: () => void;
 }
 
 export default function Sidebar({
@@ -41,10 +40,7 @@ export default function Sidebar({
   facultyOptions,
   customStartTime,
   customEndTime,
-  onFilterChange,
-  onSelectCustomTime,
-  onCustomStartTimeChange,
-  onCustomEndTimeChange,
+  checkCustomTime,
   onClickFilterSearch,
 }: FilterProps) {
   const catagory = [
@@ -102,16 +98,82 @@ export default function Sidebar({
     curriculumYear: initSelectOption(),
   });
 
-  const handleFilterChange = (group: string, value: string | SelectOption) => {
-    onFilterChange(group, value);
-  };
+  const [selectedFilter, setSelectedFilter] = useState<FilterGroup>({
+    courseCategory: [],
+    yearLevel: {
+      value: '',
+      label: '',
+    },
+    classDay: [],
+    classTime: [],
+    faculty: initSelectOption(),
+    department: initSelectOption(),
+    curriculum: initSelectOption(),
+  });
+
+  const [selectedCustomStart, setSelectedCustomStart] = useState<string>('');
+  const [selectedCustomEnd, setSelectedCustomEnd] = useState<string>('');
+  const [sendErrorDepartment, setSendErrorDepartment] =
+    useState<boolean>(false);
+  const [sendErrorCurriculum, setSendErrorCurriculum] =
+    useState<boolean>(false);
+  const prevFilterValuesRef = useRef<FilterGroup>(filterValues);
+
+  useEffect(() => {
+    if (
+      JSON.stringify(prevFilterValuesRef.current.curriculum) !==
+        JSON.stringify(filterValues.curriculum) ||
+      JSON.stringify(prevFilterValuesRef.current.faculty) !==
+        JSON.stringify(filterValues.faculty) ||
+      JSON.stringify(prevFilterValuesRef.current.department) !==
+        JSON.stringify(filterValues.department)
+    ) {
+      setSelectedCurriGroup((prev) => ({
+        ...prev,
+        curriculum: filterValues.curriculum,
+        faculty: filterValues.faculty,
+        department: filterValues.department,
+      }));
+    }
+
+    if (
+      JSON.stringify(prevFilterValuesRef.current.courseCategory) !==
+        JSON.stringify(filterValues.courseCategory) ||
+      JSON.stringify(prevFilterValuesRef.current.yearLevel) !==
+        JSON.stringify(filterValues.yearLevel) ||
+      JSON.stringify(prevFilterValuesRef.current.classDay) !==
+        JSON.stringify(filterValues.classDay) ||
+      JSON.stringify(prevFilterValuesRef.current.classTime) !==
+        JSON.stringify(filterValues.classTime)
+    ) {
+      setSelectedFilter((prev) => ({
+        ...prev,
+        courseCategory: filterValues.courseCategory,
+        yearLevel: filterValues.yearLevel,
+        classDay: filterValues.classDay,
+        classTime: filterValues.classTime,
+      }));
+    }
+
+    prevFilterValuesRef.current = filterValues;
+
+    if (customStartTime != selectedCustomStart) {
+      setSelectedCustomStart(customStartTime);
+    }
+    if (customEndTime != selectedCustomEnd) {
+      setSelectedCustomEnd(customEndTime);
+    }
+    if (checkCustomTime != customTimeChecked) {
+      setCustomTimeChecked(checkCustomTime);
+    }
+  }, [filterValues]);
 
   const handleSelectAllClassDays = () => {
     const allClassDays = days.map((day) => day.key);
     const isAllSelected = allClassDays.every((day) =>
-      filterValues.classDay.includes(day),
+      selectedFilter.classDay.includes(day),
     );
-    onFilterChange('classDay', isAllSelected ? [] : allClassDays);
+    handleFilterChange('classDay', isAllSelected ? [] : allClassDays);
   };
 
   const [customTimeChecked, setCustomTimeChecked] = useState(false);
@@ -125,36 +187,88 @@ export default function Sidebar({
   }, [customStartTime, customEndTime]);
 
   useEffect(() => {
-    onFilterChange('faculty', selectedCurriGroup.faculty);
-    onFilterChange('department', selectedCurriGroup.department);
-    onFilterChange('curriculum', selectedCurriGroup.curriculum);
+    handleFilterChange('faculty', selectedCurriGroup.faculty);
+    handleFilterChange('department', selectedCurriGroup.department);
+    handleFilterChange('curriculum', selectedCurriGroup.curriculum);
+    if (
+      selectedCurriGroup.faculty.value &&
+      selectedCurriGroup.department.value
+    ) {
+      setSendErrorDepartment(false);
+    }
+    if (
+      selectedCurriGroup.faculty.value &&
+      selectedCurriGroup.department.value &&
+      selectedCurriGroup.curriculum.value
+    ) {
+      setSendErrorCurriculum(false);
+    }
   }, [selectedCurriGroup]);
 
-  useEffect(() => {
-    if (
-      filterValues.faculty.value !== selectedCurriGroup.faculty.value ||
-      filterValues.department.value !== selectedCurriGroup.department.value ||
-      filterValues.curriculum.value !== selectedCurriGroup.curriculum.value
-    ) {
-      setSelectedCurriGroup((prev) => {
+  const handleFilterChange = (
+    group: string,
+    value: SelectOption | string | string[],
+  ) => {
+    setSelectedFilter((prevValues) => {
+      const currentValue = prevValues[group as keyof FilterGroup];
+      if (
+        group === 'yearLevel' ||
+        group === 'faculty' ||
+        group === 'department' ||
+        group === 'curriculum'
+      ) {
         return {
-          ...prev,
-          faculty: filterValues.faculty,
-          department: filterValues.department,
-          curriculum: filterValues.curriculum,
+          ...prevValues,
+          [group]: value,
         };
-      });
-    }
-  }, [filterValues]);
+      } else {
+        if (Array.isArray(value)) {
+          return {
+            ...prevValues,
+            [group]: value,
+          };
+        }
+        const updatedValues =
+          Array.isArray(currentValue) && currentValue.includes(value as string)
+            ? currentValue.filter((item) => item !== (value as string))
+            : [...(Array.isArray(currentValue) ? currentValue : []), value];
+
+        return {
+          ...prevValues,
+          [group]: updatedValues,
+        };
+      }
+    });
+  };
 
   const handleOnClick = () => {
-    if (filterValues.faculty.value && !filterValues.department.value) {
+    if (selectedFilter.faculty.value && !selectedFilter.department.value) {
+      setSendErrorDepartment(true);
     } else if (
-      filterValues.department.value &&
-      !filterValues.curriculum.value
+      selectedFilter.department.value &&
+      !selectedFilter.curriculum.value
     ) {
+      setSendErrorCurriculum(true);
     } else {
-      onClickFilterSearch();
+      onClickFilterSearch(
+        selectedFilter,
+        selectedCustomStart,
+        selectedCustomEnd,
+        customTimeChecked,
+      );
+    }
+  };
+
+  const handleCheckCustomTime = () => {
+    const toggle = !customTimeChecked;
+    setCustomTimeChecked(toggle);
+    if (customStartTime === '' && customEndTime === '') {
+      setSelectedCustomStart('00:00');
+      setSelectedCustomEnd('00:00');
+    }
+    if (!toggle) {
+      setSelectedCustomStart('');
+      setSelectedCustomEnd('');
     }
   };
 
@@ -164,15 +278,26 @@ export default function Sidebar({
         <FilterAltOutlinedIcon color="primary" />
         <span>ค้นหาแบบละเอียด</span>
       </div>
-
       <FormGroup className="flex flex-col border-solid border-b-[1px] gap-2 pb-3">
-        <span className="font-semibold">หมวดหมู่วิชา</span>
+        <div className="flex flex-row justify-between items-end">
+          <span className="font-semibold">หมวดหมู่วิชา</span>
+          <ClearButon
+            onClick={() => {
+              setSelectedFilter((prev) => {
+                return {
+                  ...prev,
+                  courseCategory: [],
+                };
+              });
+            }}
+          />
+        </div>
         {catagory.map(({ key, label, value }) => (
           <FormControlLabel
             key={key}
             control={
               <Checkbox
-                checked={filterValues.courseCategory.includes(value)}
+                checked={selectedFilter.courseCategory.includes(value)}
                 onChange={() => handleFilterChange('courseCategory', value)}
                 name={key}
                 sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
@@ -187,35 +312,72 @@ export default function Sidebar({
           />
         ))}
       </FormGroup>
-
       <FormGroup className="gap-y-3 border-solid border-b-[1px] pb-3">
-        <span className="font-semibold">หลักสูตร</span>
+        <div className="flex flex-row justify-between items-end">
+          <span className="font-semibold">หลักสูตร</span>
+          <ClearButon
+            onClick={() => {
+              setSelectedCurriGroup({
+                faculty: initSelectOption(),
+                department: initSelectOption(),
+                curriculum: initSelectOption(),
+                curriculumYear: initSelectOption(),
+              });
+              setSendErrorDepartment(false);
+              setSendErrorCurriculum(false);
+            }}
+          />
+        </div>
         <CurriSelectGroup
           selectedCurriGroup={selectedCurriGroup}
           setSelectedCurriGroup={setSelectedCurriGroup}
           facultyOptions={facultyOptions}
           showCurriculumYear={false}
+          errorDepartment={sendErrorDepartment}
+          errorCurriculum={sendErrorCurriculum}
         />
         <CustomSelectOutlined
           onSelectedValueChange={(value) =>
             handleFilterChange('yearLevel', value)
           }
           selectOptions={years}
-          selectedValue={filterValues.yearLevel}
+          selectedValue={selectedFilter.yearLevel}
           label="ชั้นปี"
         />
       </FormGroup>
       <FormGroup className="gap-y-2 border-solid border-b-[1px] pb-3">
         <div className="flex flex-row justify-between items-center">
           <span className="font-semibold">วันที่เรียน</span>
-          <span
+          {/* <span
             className="text-xs text-white cursor-pointer hover:bg-primary-400 active:bg-primary-200 bg-primary-300 rounded-md px-2 py-1"
             onClick={() => handleSelectAllClassDays()}
           >
-            {filterValues.classDay.length === days.length
+            {selectedFilter.classDay.length === days.length
               ? 'ยกเลิกทั้งหมด'
               : 'เลือกทั้งหมด'}
-          </span>{' '}
+          </span> */}
+          <Button
+            variant="contained"
+            sx={{
+              minWidth: '20px',
+              height: '20px',
+              padding: '4px',
+              backgroundColor: 'primary.100',
+              color: 'primary.300',
+              '.MuiButton-startIcon': {
+                margin: 0,
+              },
+              '&:hover': {
+                backgroundColor: 'primary.100',
+                color: 'primary.400',
+              },
+            }}
+            onClick={handleSelectAllClassDays}
+          >
+            {selectedFilter.classDay.length === days.length
+              ? 'ล้าง'
+              : 'เลือกทั้งหมด'}
+          </Button>
         </div>
 
         {days.map(({ key, label, value }) => (
@@ -223,7 +385,7 @@ export default function Sidebar({
             key={key}
             control={
               <Checkbox
-                checked={filterValues.classDay.includes(value)}
+                checked={selectedFilter.classDay.includes(value)}
                 onChange={() => handleFilterChange('classDay', value)}
                 name={key}
                 sx={{
@@ -244,14 +406,29 @@ export default function Sidebar({
         ))}
       </FormGroup>
       <FormGroup className="gap-y-2 border-solid border-b-[1px] pb-3">
-        <span className="font-semibold">ช่วงเวลาที่เรียน</span>
+        <div className="flex flex-row justify-between items-end">
+          <span className="font-semibold">ช่วงเวลาที่เรียน</span>
+          <ClearButon
+            onClick={() => {
+              setSelectedFilter((prev) => {
+                return {
+                  ...prev,
+                  classTime: [],
+                };
+              });
+              setCustomTimeChecked(false);
+              setSelectedCustomStart('');
+              setSelectedCustomEnd('');
+            }}
+          />
+        </div>
 
         {times.map(({ key, label, value, timeRange }) => (
           <FormControlLabel
             key={key}
             control={
               <Checkbox
-                checked={filterValues.classTime.includes(value)}
+                checked={selectedFilter.classTime.includes(value)}
                 onChange={() => handleFilterChange('classTime', value)}
                 name={key}
                 sx={{
@@ -278,10 +455,7 @@ export default function Sidebar({
           control={
             <Checkbox
               checked={customTimeChecked}
-              onChange={(e) => {
-                setCustomTimeChecked(e.target.checked);
-                onSelectCustomTime(e.target.checked);
-              }}
+              onChange={handleCheckCustomTime}
               name="customTime"
               sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
             />
@@ -307,12 +481,12 @@ export default function Sidebar({
                 label="เริ่ม"
                 disabled={!customTimeChecked}
                 value={
-                  customStartTime
-                    ? dayjs(customStartTime, 'HH:mm')
+                  selectedCustomStart
+                    ? dayjs(selectedCustomStart, 'HH:mm')
                     : dayjs().set('hour', 0).set('minute', 0)
                 }
                 onChange={(newValue) => {
-                  onCustomStartTimeChange(
+                  setSelectedCustomStart(
                     newValue ? newValue.format('HH:mm') : '',
                   );
                 }}
@@ -343,12 +517,12 @@ export default function Sidebar({
                 label="สิ้นสุด"
                 disabled={!customTimeChecked}
                 value={
-                  customEndTime
-                    ? dayjs(customEndTime, 'HH:mm')
+                  selectedCustomEnd
+                    ? dayjs(selectedCustomEnd, 'HH:mm')
                     : dayjs().set('hour', 0).set('minute', 0)
                 }
                 onChange={(newValue) => {
-                  onCustomEndTimeChange(
+                  setSelectedCustomEnd(
                     newValue ? newValue.format('HH:mm') : '',
                   );
                 }}
@@ -384,7 +558,7 @@ export default function Sidebar({
         sx={{ minWidth: '115px' }}
         onClick={handleOnClick}
       >
-        search
+        ค้นหา
       </Button>
     </div>
   );

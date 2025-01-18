@@ -43,7 +43,6 @@ export default function CustomSelectOutlined({
       size="small"
       sx={{
         width: '100%',
-        borderColor: 'grey.300',
         borderWidth: '1px',
         '& .MuiInputBase-root': {
           borderRadius: '8px',

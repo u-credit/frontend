@@ -61,7 +61,9 @@ export interface TeachTableDto {
   lecture_or_practice: string;
   section: string;
   room_no: string;
+  room_name: string;
   building_no: string;
+  building_name: string;
   teach_day: number;
   teach_time_start: string;
   teach_time_end: string;
@@ -82,7 +84,7 @@ export interface TeachTableDto {
 export interface CategoryDto {
   category_id: number;
   group_id: number;
-  group_name: number;
+  group_name: string;
   subgroup_name: string;
 }
 

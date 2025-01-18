@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Chip } from '@mui/material';
+import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
 import {
@@ -23,8 +23,12 @@ import { fetchListFaculty } from '@/api/facultyApi';
 import { CustomSearchBar, CustomSelect } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/features/store';
-import { setSemester, setYear } from '@/features/selectorValueSlice';
-
+import {
+  setCurrigroup,
+  setSemester,
+  setYear,
+} from '@/features/selectorValueSlice';
+import TuneIcon from '@mui/icons-material/Tune';
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
@@ -38,6 +42,7 @@ const yearOptions: SelectOption[] = [
   { label: '2566', value: '2566' },
 ];
 
+let controller: AbortController | null = null;
 export default function Course() {
   const dispatch = useDispatch();
   const { semester, year } = useSelector(
@@ -47,10 +52,7 @@ export default function Course() {
   const [selectedYear, setSelectedYear] = useState<string>(year);
   const [filterValues, setFilterValues] = useState<FilterGroup>({
     courseCategory: [],
-    yearLevel: {
-      value: '',
-      label: '',
-    },
+    yearLevel: initSelectOption(),
     classDay: [],
     classTime: [],
     faculty: initSelectOption(),
@@ -70,22 +72,41 @@ export default function Course() {
   });
   const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const { ref, inView } = useInView();
   const [openBookmarkModal, setOpenBookmarkModal] = useState(false);
   const [sendCustomTime, setSendCustomTime] = useState<boolean>(false);
   const [totalSearchSubject, setTotalSearchSubject] = useState<number | null>(
     null,
   );
+  const [isOpenFilter, setIsOpenFilter] = useState(false);
+  const [changeFromDelete, setChangeFromDelete] = useState(false);
+  const toggleFilterModal = () => {
+    const toggleValue = !isOpenFilter;
+    document.documentElement.style.overflowY = toggleValue ? 'hidden' : 'auto';
+    setIsOpenFilter(toggleValue);
+  };
 
-  const handleOpen = () => setOpenBookmarkModal(true);
+  const handleOpen = () => {
+    document.documentElement.style.overflowY = 'hidden';
+    setOpenBookmarkModal(true);
+  };
   const handleClose = () => {
+    document.documentElement.style.overflowY = 'auto';
     setOpenBookmarkModal(false);
   };
 
   const loadSubjects = useCallback(
     async ({ isLoadMore = false, isInit = false }) => {
       if (semester === '' || year === '') return;
+
+      if (controller) {
+        controller.abort();
+      }
+      controller = new AbortController();
+      const signal = controller.signal;
 
       const getCategory = (category: string[]): SubjectCategory => {
         if (category.length === 2) return SubjectCategory.ALL;
@@ -148,7 +169,7 @@ export default function Course() {
       );
 
       try {
-        const response = await fetchListSubject(params);
+        const response = await fetchListSubject(params, signal);
         const newSubjects = response?.data || [];
         if (isLoadMore) {
           setListSubjects((prev) => [...prev, ...newSubjects]);
@@ -162,7 +183,9 @@ export default function Course() {
       } catch (error) {
         console.error('Error loading subjects:', error);
       } finally {
-        setIsLoading(false);
+        if (!signal?.aborted) {
+          setIsLoading(false);
+        }
       }
     },
     [
@@ -190,7 +213,6 @@ export default function Course() {
       selectedCurriGroup.curriculumYear.value,
     ],
   );
-
   useEffect(() => {
     const loadFaculty = async () => {
       try {
@@ -218,35 +240,74 @@ export default function Course() {
     };
 
     loadFaculty();
-    loadSubjects({ isInit: true });
+    loadSubjects({ isInit: true }).then(() => setIsFirstLoad(false));
+    document.documentElement.style.overflowY = 'auto';
   }, []);
 
   useEffect(() => {
-    if (
-      (selectedCurriGroup.faculty &&
-        selectedCurriGroup.department &&
-        selectedCurriGroup.curriculum &&
-        selectedCurriGroup.curriculumYear) ||
-      (!selectedCurriGroup.faculty &&
-        !selectedCurriGroup.department &&
-        !selectedCurriGroup.curriculum &&
-        !selectedCurriGroup.curriculumYear)
-    ) {
-      loadSubjects({ isLoadMore: false });
-    }
-  }, [selectedSemester, selectedYear, selectedCurriGroup]);
+    loadSubjects({ isLoadMore: false });
+  }, [
+    selectedSemester,
+    selectedYear,
+    selectedCurriGroup,
+    filterValues.courseCategory,
+    filterValues.classDay,
+    filterValues.classTime,
+    filterValues.faculty.value,
+    filterValues.department.value,
+    filterValues.curriculum.value,
+    filterValues.yearLevel,
+    sendCustomTime,
+    customStartTimeFilter,
+    customEndTimeFilter,
+  ]);
 
   useEffect(() => {
     if (inView && hasMore && !isLoading) {
-            loadSubjects({
+      setIsLoadingMore(true);
+      loadSubjects({
         isLoadMore: true,
-      });
+      }).then(() => setIsLoadingMore(false));
     }
   }, [inView, hasMore, isLoading]);
 
+  useEffect(() => {
+    if (changeFromDelete) {
+      loadSubjects({ isLoadMore: false });
+      setChangeFromDelete(false);
+    }
+  }, [filterValues, customStartTimeFilter, customEndTimeFilter]);
+
   const handleSearchValueChange = (value: string) => setSearchValue(value);
 
-  const handleSearchAction = () => loadSubjects({ isLoadMore: false });
+  const handleSearchBar = () => {
+    loadSubjects({ isLoadMore: false });
+  };
+
+  const handleSearchAction = (
+    filterValues: FilterGroup,
+    customStart: string,
+    customEnd: string,
+    customTime: boolean,
+  ) => {
+    setFilterValues(filterValues);
+    setCustomStartTimeFilter(customStart);
+    setCustomEndTimeFilter(customEnd);
+    setSendCustomTime(customTime);
+  };
+
+  const handleSearchActionAndClose = (
+    filterValues: FilterGroup,
+    customStart: string,
+    customEnd: string,
+    customTime: boolean,
+  ) => {
+    setFilterValues(filterValues);
+    setCustomStartTimeFilter(customStart);
+    setCustomEndTimeFilter(customEnd);
+    setSendCustomTime(customTime);
+    toggleFilterModal();
+  };
 
   const handleSelectSemester = (value: string) => {
     setSelectedSemester(value);
@@ -263,41 +324,6 @@ export default function Course() {
     setSelectedYear(year);
   }, [semester, year]);
 
-  const handleFilterChange = (
-    group: string,
-    value: SelectOption | string | string[],
-  ) => {
-    setFilterValues((prevValues) => {
-      const currentValue = prevValues[group as keyof FilterGroup];
-      if (
-        group === 'yearLevel' ||
-        group === 'faculty' ||
-        group === 'department' ||
-        group === 'curriculum'
-      ) {
-        return {
-          ...prevValues,
-          [group]: value,
-        };
-      } else {
-        if (Array.isArray(value)) {
-          return {
-            ...prevValues,
-            [group]: value,
-          };
-        }
-        const updatedValues =
-          Array.isArray(currentValue) && currentValue.includes(value as string)
-            ? currentValue.filter((item) => item !== (value as string))
-            : [...(Array.isArray(currentValue) ? currentValue : []), value];
-
-        return {
-          ...prevValues,
-          [group]: updatedValues,
-        };
-      }
-    });
-  };
   const handleCustomStartTimeChange = (value: string) => {
     setCustomStartTimeFilter(value);
   };
@@ -314,35 +340,81 @@ export default function Course() {
           ).filter((item) => item !== value),
         }) as FilterGroup,
     );
+    setChangeFromDelete(true);
   };
 
+  const resetFilter = () => {
+    setFilterValues({
+      courseCategory: [],
+      yearLevel: initSelectOption(),
+      classDay: [],
+      classTime: [],
+      faculty: initSelectOption(),
+      department: initSelectOption(),
+      curriculum: initSelectOption(),
+    });
+    setCustomStartTimeFilter('');
+    setCustomEndTimeFilter('');
+    setSendCustomTime(false);
+    setChangeFromDelete(true);
+  };
+  const handleApplyCurriGroup = (curriGroup: CurriGroup) => {
+    setSelectedCurriGroup(
+      curriGroup
+        ? {
+            faculty: curriGroup.faculty,
+            department: curriGroup.department,
+            curriculum: curriGroup.curriculum,
+            curriculumYear: curriGroup.curriculumYear,
+          }
+        : {
+            faculty: initSelectOption(),
+            department: initSelectOption(),
+            curriculum: initSelectOption(),
+            curriculumYear: initSelectOption(),
+          },
+    );
+    dispatch(setCurrigroup(curriGroup));
+  };
   return (
-    <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
+    <main className="flex flex-row bg-gray-100 w-full ">
       <div className="hidden lg:flex fixed w-60  bg-white h-full">
         <Sidebar
           filterValues={filterValues}
           facultyOptions={facultyOptions}
           customStartTime={customStartTimeFilter}
           customEndTime={customEndTimeFilter}
-          onFilterChange={handleFilterChange}
-          onSelectCustomTime={(e) => setSendCustomTime(e)}
-          onCustomStartTimeChange={handleCustomStartTimeChange}
-          onCustomEndTimeChange={handleCustomEndTimeChange}
+          checkCustomTime={sendCustomTime}
           onClickFilterSearch={handleSearchAction}
         />
       </div>
-      <div className="w-full">
+      <div className="flex flex-col w-full h-fit min-h-[calc(100vh-160px)]">
         <CurriSelectContainer
-          selectedCurriGroup={selectedCurriGroup}
-          setSelectedCurriGroup={setSelectedCurriGroup}
           facultyOptions={facultyOptions}
+          onClickApplyCurri={handleApplyCurriGroup}
         />
-        <div className="flex-grow bg-white max-w-3xl lg:max-w-none rounded-lg mx-auto lg:ml-64 lg:mr-4 my-4">
-          <div className="flex flex-col sm:flex-row p-4 gap-4 justify-between">
-            <CustomSearchBar
-              onSearchValueChange={handleSearchValueChange}
-              onSearchAction={handleSearchAction}
-            />
+        <div className="flex flex-col min-h-[calc(100vh-160px)] bg-white w-11/12 lg:max-w-5xl rounded-lg mx-auto lg:ml-64 lg:mr-4 my-4">
+          <div className="flex flex-col h-full sm:flex-row p-4 gap-4 justify-between">
+            <div className="flex flex-row gap-2 sm:gap-4 w-full">
+              <div className="lg:hidden">
+                <Button
+                  variant="contained"
+                  startIcon={<TuneIcon />}
+                  sx={{
+                    minWidth: '50px',
+                    height: '100%',
+                    '.MuiButton-startIcon': {
+                      margin: 0,
+                    },
+                  }}
+                  onClick={toggleFilterModal}
+                ></Button>
+              </div>
+              <CustomSearchBar
+                onSearchValueChange={handleSearchValueChange}
+                onSearchAction={handleSearchBar}
+              />
+            </div>
             <div className="flex flex-row gap-2 justify-between sm:ml-auto sm:gap-4">
               <CustomSelect
                 onSelectedValueChange={handleSelectSemester}
@@ -375,17 +447,74 @@ export default function Course() {
             setCustomStartTimeFilter={setCustomStartTimeFilter}
             setCustomEndTimeFilter={setCustomEndTimeFilter}
             handleDeleteFilter={handleDeleteFilter}
+            resetFilter={resetFilter}
+            setSendCustomTime={setSendCustomTime}
+            setChangeFromDelete={setChangeFromDelete}
           />
-          <SubjectContainer subjectDetail={listSubjects} />
-          {hasMore && <div ref={ref}>Load more</div>}
-          {!hasMore && !isLoading && (
-            <div className="flex p-10 justify-center items-center">
-              ไม่มีข้อมูล
+          {isLoading && !isLoadingMore ? (
+            <div className="flex flex-col grow justify-center items-center h-full">
+              <div className="w-80">
+                <LinearProgress color="primary" />
+              </div>
+              <div className="text-primary-400 font-medium">Loading</div>
+            </div>
+          ) : (
+            <SubjectContainer subjectDetail={listSubjects} />
+          )}
+          {hasMore && !isLoading ? (
+            <div className="text-center text-lg font-medium pb-4" ref={ref}>
+              Load more
+            </div>
+          ) : null}
+          {isLoadingMore && (
+            <div className="text-center text-lg font-medium pb-4">
+              Loading...
             </div>
           )}
+          {!hasMore &&
+            !isLoading &&
+            listSubjects.length === 0 &&
+            !isFirstLoad && (
+              <div className="flex flex-col grow p-10 justify-center items-center self-center font-mitr text-2xl text-primary-200">
+                <div className="text-6xl pb-10">(｡•́︿•̀｡)</div>
+                <div>ไม่พบผลลัพธ์การค้นหา</div>
+                <div>ลองค้นหาด้วยเงื่อนไขอื่น</div>
+              </div>
+            )}
         </div>
       </div>
+      <div
+        className={`fixed inset-0 bg-gray-500 bg-opacity-50 transition-all duration-300 ${
+          isOpenFilter || openBookmarkModal
+            ? 'opacity-100'
+            : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => {
+          setIsOpenFilter(false);
+          setOpenBookmarkModal(false);
+          document.documentElement.style.overflowY = 'auto';
+        }}
+      ></div>
       <BookmarkModal open={openBookmarkModal} onClose={handleClose} />
+
+      <div
+        className={`lg:hidden fixed z-10 left-0 w-80 bg-white h-full transition-transform duration-300 ${
+          isOpenFilter
+            ? 'transform translate-x-0'
+            : 'transform -translate-x-full'
+        }`}
+      >
+        <div className="p-4 h-full overflow-y-auto">
+          <Sidebar
+            filterValues={filterValues}
+            facultyOptions={facultyOptions}
+            customStartTime={customStartTimeFilter}
+            customEndTime={customEndTimeFilter}
+            checkCustomTime={sendCustomTime}
+            onClickFilterSearch={handleSearchActionAndClose}
+          />
+        </div>
+      </div>
     </main>
   );
 }
