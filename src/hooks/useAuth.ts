@@ -2,9 +2,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { refreshAccessToken, logout, login } from '../features/auth/authSlice';
 import { fetchAccessToken } from '@/api/authApi';
+import { AppDispatch } from '@/features/store';
+import { handleLogout } from '@/features/auth/authAction';
 
 export const useAuth = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, sessionDuration } = useSelector(
     (state: {
       auth: {
@@ -22,7 +24,7 @@ export const useAuth = () => {
         const data = await response.json();
         dispatch(login(data));
       } else {
-        dispatch(logout());
+        dispatch(handleLogout());
       }
     };
     fetchToken();

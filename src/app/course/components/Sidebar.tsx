@@ -323,6 +323,12 @@ export default function Sidebar({
                 curriculum: initSelectOption(),
                 curriculumYear: initSelectOption(),
               });
+              setSelectedFilter((prev) => {
+                return {
+                  ...prev,
+                  yearLevel: initSelectOption(),
+                };
+              });
               setSendErrorDepartment(false);
               setSendErrorCurriculum(false);
             }}
