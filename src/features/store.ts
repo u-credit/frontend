@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import alertReducer from './alertSlice';
 import authReducer from './auth/authSlice';
 import bookmarkReducer from './bookmark/bookmarkSlice';
 import selectorValueReducer from './selectorValueSlice';
@@ -6,6 +7,7 @@ import selectorValueReducer from './selectorValueSlice';
 export const makeStore = () => {
   return configureStore({
     reducer: {
+      alert: alertReducer,
       auth: authReducer,
       bookmark: bookmarkReducer,
       selectorValue: selectorValueReducer,

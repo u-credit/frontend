@@ -8,6 +8,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Navbar from '@/components/common/NavBar';
 import StoreProvider from './StoreProvider';
 import { useAuth } from '@/hooks/useAuth';
+import AlertNotification from '@/components/AlertNotification';
 
 const inter = Inter({ subsets: ['latin'] });
 const mitr = Mitr({
@@ -52,6 +53,7 @@ export default function RootLayout({
               <div className="h-screen bg-gray-100 overflow-auto">
                 <div className="mt-12 max-w-7xl mx-auto">{children}</div>
               </div>
+              <AlertNotification />
             </ThemeProvider>
           </StoreProvider>
         </AppRouterCacheProvider>
