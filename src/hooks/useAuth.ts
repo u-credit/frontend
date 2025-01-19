@@ -18,7 +18,7 @@ export const useAuth = () => {
   useEffect(() => {
     const fetchToken = async () => {
       const response = await fetchAccessToken();
-      if (response.ok) {
+      if (response) {
         const data = await response.json();
         dispatch(login(data));
       } else {

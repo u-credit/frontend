@@ -13,6 +13,7 @@ import {
 
 export const fetchListSubject = async (
   params: ListSubjectQueryParams,
+  signal?: AbortSignal,
 ): Promise<Response<SubjectDto[]>> => {
   const queryParams = new URLSearchParams();
   Object.keys(params).forEach((key) => {
@@ -45,6 +46,7 @@ export const fetchListSubject = async (
       headers: {
         'Content-Type': 'application/json',
       },
+      signal,
     },
   );
   return res.json();

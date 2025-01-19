@@ -9,7 +9,10 @@ interface CurriSelectGroupProps {
   setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
   facultyOptions: SelectOption[];
   showCurriculumYear?: boolean;
-  error?: boolean
+  errorFaculty?: boolean;
+  errorDepartment?: boolean;
+  errorCurriculum?: boolean;
+  errorCurriculumYear?: boolean;
 }
 
 export default function CurriSelectGroup({
@@ -17,6 +20,10 @@ export default function CurriSelectGroup({
   setSelectedCurriGroup,
   facultyOptions,
   showCurriculumYear = true,
+  errorFaculty = false,
+  errorDepartment = false,
+  errorCurriculum = false,
+  errorCurriculumYear = false,
 }: CurriSelectGroupProps) {
   const handleFacultyChange = (value: SelectOption) => {
     setSelectedCurriGroup((prev) => {
@@ -67,6 +74,7 @@ export default function CurriSelectGroup({
         selectOptions={facultyOptions}
         selectedValue={selectedCurriGroup.faculty}
         label="คณะ"
+        error={errorFaculty}
       />
       <CustomSelectOutlined
         onSelectedValueChange={handleDepartmentChange}
@@ -74,6 +82,7 @@ export default function CurriSelectGroup({
         selectedValue={selectedCurriGroup.department}
         label="ภาควิชา"
         disabled={!selectedCurriGroup.faculty.value}
+        error={errorDepartment}
       />
       <CustomSelectOutlined
         onSelectedValueChange={handleCurriculumChange}
@@ -81,6 +90,7 @@ export default function CurriSelectGroup({
         selectedValue={selectedCurriGroup.curriculum}
         label="หลักสูตร"
         disabled={!selectedCurriGroup.department.value}
+        error={errorCurriculum}
       />
       {showCurriculumYear ? (
         <CustomSelectOutlined
@@ -89,6 +99,7 @@ export default function CurriSelectGroup({
           selectedValue={selectedCurriGroup.curriculumYear}
           label="เล่มหลักสูตร"
           disabled={!selectedCurriGroup.curriculum.value}
+          error={errorCurriculumYear}
         />
       ) : null}
     </>

@@ -1,32 +1,45 @@
 'use client';
-import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { SelectOption } from '@/types';
+import { initSelectOption, SelectOption } from '@/types';
 import { CurriSelectGroup } from '@/components';
 import { CurriGroup } from '@/Interfaces';
-import { useDispatch, useSelector } from 'react-redux';
-import { setCurrigroup } from '@/features/selectorValueSlice';
-import { Dispatch, useEffect } from 'react';
+import { useState } from 'react';
 
 interface CurriSelectContainerProps {
-  selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: Dispatch<React.SetStateAction<CurriGroup>>;
   facultyOptions: SelectOption[];
+  onClickApplyCurri: (curriGroup: CurriGroup) => void;
 }
 
 export default function CurriSelectContainer({
-  selectedCurriGroup,
-  setSelectedCurriGroup,
   facultyOptions,
+  onClickApplyCurri,
 }: CurriSelectContainerProps) {
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(setCurrigroup(selectedCurriGroup));
-  }, [selectedCurriGroup]);
-
+  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
+    faculty: initSelectOption(),
+    department: initSelectOption(),
+    curriculum: initSelectOption(),
+    curriculumYear: initSelectOption(),
+  });
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const handleAccordionChange = () => {
+    setIsExpanded((prev) => !prev);
+  };
+  const handleApplyCurri = () => {
+    onClickApplyCurri(selectedCurriGroup);
+    setTimeout(() => {
+      setIsExpanded(false);
+    }, 500);
+  };
   return (
-    <div className="flex-grow bg-white max-w-3xl text-primary-400 lg:max-w-none rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
+    <div className="flex bg-white w-11/12 lg:max-w-5xl text-primary-400 rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
       <Accordion
+        expanded={isExpanded}
         sx={{
           borderRadius: 2,
           borderWidth: 0,
@@ -35,9 +48,11 @@ export default function CurriSelectContainer({
           '&.Mui-expanded': {
             margin: 0,
           },
+          width: '100%',
         }}
       >
         <AccordionSummary
+          onClick={handleAccordionChange}
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1-content"
           id="panel1-header"
@@ -63,15 +78,22 @@ export default function CurriSelectContainer({
           </span>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: 0 }}>
-          <div className="flex flex-row gap-x-7 mt-4">
+          <div className="flex flex-col sm:flex-row gap-y-2 sm:gap-x-4 mt-4">
             <span className="font-semibold whitespace-nowrap content-center">
               หลักสูตรของคุณ
-            </span>{' '}
+            </span>
             <CurriSelectGroup
               selectedCurriGroup={selectedCurriGroup}
               setSelectedCurriGroup={setSelectedCurriGroup}
               facultyOptions={facultyOptions}
             />
+            <Button
+              variant="contained"
+              sx={{ minWidth: '80px' }}
+              onClick={handleApplyCurri}
+            >
+              ปรับใช้
+            </Button>
           </div>
         </AccordionDetails>
       </Accordion>

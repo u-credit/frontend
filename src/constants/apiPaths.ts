@@ -1,5 +1,3 @@
-import { access } from 'fs';
-
 export const API_PATHS = {
   accessToken: '/auth/accessToken',
   bookmark: '/bookmark',
@@ -8,6 +6,7 @@ export const API_PATHS = {
   faculty: '/faculty',
   googleAuth: '/auth/google',
   googleAuthCallback: '/auth/google/callback',
+  logout: '/auth/logout',
 };
 
 export const ROUTES = {

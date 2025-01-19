@@ -7,7 +7,7 @@ interface SubjectListProps {
 
 export default function SubjectContainer({ subjectDetail }: SubjectListProps) {
   return (
-    <div className="flex flex-col p-4 gap-4 bg-b">
+    <div className="flex flex-col p-4 gap-4">
       {subjectDetail?.map((subject) => (
         <SubjectCard key={subject.subject_id} subjectDetail={subject} />
       ))}

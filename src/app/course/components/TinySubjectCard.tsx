@@ -110,13 +110,16 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
       const dayList: string[][] = Array.from({ length: 8 }, () => []);
       const newSectionList: string[] = [];
       subjectDetail.teach_table.forEach((teach) => {
-        daySection[teach.teach_day] += teach.section + ' ';
+        if (daySection[teach.teach_day] != '')
+          daySection[teach.teach_day] += ', ';
+        daySection[teach.teach_day] += teach.section;
         dayList[teach.teach_day].push(teach.section);
         const time_str = teach.teach_time_str?.split(',');
         time_str?.forEach((time) => {
           const day = Number(time.split('x')[0]);
           if (day && !dayList[day].includes(teach.section)) {
-            daySection[day] += teach.section + ' ';
+            if (daySection[day] != '') daySection[day] += ', ';
+            daySection[day] += teach.section;
             dayList[day].push(teach.section);
           }
         });
@@ -129,10 +132,10 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
 
   return (
     <div className="relative">
-      <div className="bg-white rounded-lg border-[1px] p-4 border-gray-300 pb-[70px]">
+      <div className="bg-white rounded-lg border-[1px] p-5 border-gray-300 sm:pb-5 pb-[70px] sm:pr-[230px] pr-5">
         <div className="flex flex-col">
           <div id="subject-card-header" className="flex flex-col gap-[10px]">
-            <div id="row-1" className="flex flex-wrap gap-6 items-center">
+            <div id="row-1" className="flex flex-wrap gap-x-6 items-center">
               <div className="font-bold text-lg">
                 {subjectDetail.subject_id}
               </div>
@@ -149,30 +152,15 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
                     sx={{
                       whiteSpace: 'nowrap',
                       textOverflow: 'ellipsis',
-                      maxWidth: '300px',
+                      '@media (max-width: 600px)': {
+                        maxWidth: '250px',
+                      },
                     }}
                   />
                 ))}
             </div>
-            <div id="row-2" className="flex flex-row gap-3">
+            <div id="row-2" className="flex flex-wrap gap-x-2 gap-y-1">
               <div>{subjectDetail.credit} หน่วยกิต</div>
-              <Rating
-                name="half-rating-read"
-                defaultValue={2.5}
-                precision={0.5}
-                readOnly
-                emptyIcon={<StarIcon fontSize="inherit" />}
-                sx={{
-                  '& .MuiRating-iconEmpty': {
-                    color: 'grey.200',
-                  },
-                  '& .MuiRating-iconFilled': {
-                    color: 'primary.400',
-                  },
-                }}
-              />
-            </div>
-            <div id="row-3" className="flex flex-wrap gap-x-2 gap-y-1">
               {daySection.map((section, index) => {
                 if (section === '') return null;
                 return (
@@ -185,9 +173,8 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
       </div>
       <div
         id="button-area"
-        className="absolute flex items-end justify-between px-4 w-full bottom-4"
+        className="absolute flex items-end justify-end px-4 w-full bottom-4"
       >
-        <span className="text-sm">เปิดในเทอมนี้</span>
         <div className="flex space-x-2">
           <CustomSelect
             onSelectedValueChange={handleSelectSectionChange}
