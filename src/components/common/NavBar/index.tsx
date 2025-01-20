@@ -26,7 +26,7 @@ const navItems: NavItem[] = [
 const navItemsAuthenticated: NavItem[] = [
   { path: '/course', label: 'ค้นหารายวิชา' },
   { path: '/schedule', label: 'ตารางเรียน' },
-  { path: '/', label: 'เช็คหน่วยกิต' },
+  { path: '/transcript', label: 'เช็คหน่วยกิต' },
 ];
 function stringToColor(string: string) {
   let hash = 0;
