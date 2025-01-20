@@ -76,7 +76,13 @@ export default function RecheckPage({
           />
         </div>
         <div className="border-t border-gray-200"></div>
-        <SubjectCard />
+        <div className="font-mitr font-medium text-[18px]/[26px]">
+          รายวิชาที่ไม่ปรากฎในเล่มหลักสูตรของคุณ
+        </div>
+        <div className="flex flex-col gap-5 overflow-y-auto min-h-80 h-[30vh]">
+          <SubjectCard />
+          <SubjectCard />
+        </div>
       </div>
     </div>
   );
