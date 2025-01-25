@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, CircularProgress, Tooltip } from '@mui/material';
@@ -36,6 +36,8 @@ import AuthModal from '@/app/review/components/AuthModal';
 export default function Page({ params }: { params: { slug: string } }) {
   const router = useRouter();
   const dispatch = useDispatch();
+  const resolvedParams = use(params);
+  const slug = resolvedParams.slug;
 
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
@@ -73,7 +75,7 @@ export default function Page({ params }: { params: { slug: string } }) {
       const response = await fetchListSubjectByIds({
         semester,
         year,
-        subjectIds: [params.slug],
+        subjectIds: [slug],
       });
 
       if (response.data?.[0]) {
@@ -84,18 +86,18 @@ export default function Page({ params }: { params: { slug: string } }) {
     };
 
     fetchSubjectDetail();
-  }, [params.slug, semester, year]);
+  }, [slug, semester, year]);
 
   useEffect(() => {
     const isBookmarked = bookmark.find(
-      (item) => item.subjectId === params.slug,
+      (item) => item.subjectId === slug,
     );
     setIsBookmarked(!!isBookmarked);
     setSelectedSection(isBookmarked?.selectedSection || '');
-  }, [params.slug, bookmark]);
+  }, [slug, bookmark]);
 
   const fetchTeachingOptions = async () => {
-    const response = await getTeachingOptions(params.slug);
+    const response = await getTeachingOptions(slug);
     if (response.data) {
       setYearOptions(response.data.years.map(String));
       setSemesterOptions(response.data.semesters.map(String));
@@ -105,7 +107,7 @@ export default function Page({ params }: { params: { slug: string } }) {
   };
 
   const fetchReviews = async () => {
-    const response = await getReviews(params.slug);
+    const response = await getReviews(slug);
     if (!response?.data?.reviews) return;
 
     const reviews = response.data.reviews;
@@ -121,12 +123,12 @@ export default function Page({ params }: { params: { slug: string } }) {
 
   useEffect(() => {
     fetchReviews();
-  }, [params.slug, dispatch]);
+  }, [slug, dispatch]);
 
   const handleToggleBookmark = async () => {
     setIsBookmarked(!isBookmarked);
     const bookmarkData = {
-      subjectId: params.slug,
+      subjectId: slug,
       selectedSection,
       semester: Number(semester),
       year: Number(year),
@@ -139,7 +141,7 @@ export default function Page({ params }: { params: { slug: string } }) {
       }
     } else {
       setSelectedSection('');
-      dispatch(removeBookmark(params.slug));
+      dispatch(removeBookmark(slug));
       if (isAuthenticated) {
         await deleteBookmarkApi({
           ...bookmarkData,
@@ -179,7 +181,7 @@ export default function Page({ params }: { params: { slug: string } }) {
 
     setSubmitting(true);
     const reviewData = {
-      subjectId: params.slug,
+      subjectId: slug,
       rating,
       year: Number(selectedYear),
       semester: Number(selectedSemester),
