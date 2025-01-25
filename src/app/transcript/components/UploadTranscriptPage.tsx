@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import CourseInfo from './CourseInfo';
 import { Button } from '@mui/material';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
@@ -8,7 +8,7 @@ import UploadTranscript from './UploadTranscript';
 
 interface UploadTranscriptPageProps {
   selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: (curriGroup: CurriGroup) => void;
+  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
   onNext: () => void;
 }
 
@@ -17,7 +17,7 @@ export default function UploadTranscriptPage({
   setSelectedCurriGroup,
   onNext,
 }: UploadTranscriptPageProps) {
-  const [studentInfo, setStudenInfo] = useState<StudentInfo>({
+  const [studentInfo, setStudentInfo] = useState<StudentInfo>({
     faculty_id: '',
     dept_id: '',
     curr2_id: '',
@@ -28,22 +28,17 @@ export default function UploadTranscriptPage({
   const [uploadTranscriptSuccess, setUploadTranscriptSuccess] = useState(false);
 
   const handleStudentInfo = (data: StudentInfo) => {
-    setStudenInfo(data);
-    console.log(data);
+    setStudentInfo(data);
+    console.log('from student : ', data);
   };
 
   const handleUploadTranscript = (success: boolean) => {
     setUploadTranscriptSuccess(success);
   };
 
-  const handleCurriGroupChange = (curriGroup: CurriGroup) => {
-    setSelectedCurriGroup(curriGroup);
-    console.log('new curriGroup => ', curriGroup);
-  };
-
-  const isDatacomplete = () => {
+  const isDataComplete = () => {
     return (
-      Object.values(selectedCurriGroup).every((value) => value !== '') &&
+      Object.values(selectedCurriGroup).every((field) => field.value !== '') &&
       uploadTranscriptSuccess
     );
   };
@@ -70,7 +65,8 @@ export default function UploadTranscriptPage({
         <div>
           <CourseInfo
             studentInfo={studentInfo}
-            onCurriGroupChange={handleCurriGroupChange}
+            selectedCurriGroup={selectedCurriGroup}
+            setSelectedCurriGroup={setSelectedCurriGroup}
           />
         </div>
         <div className="border-t border-gray-200"></div>
@@ -78,7 +74,7 @@ export default function UploadTranscriptPage({
           <Button
             size="large"
             variant="contained"
-            disabled={isDatacomplete() ? false : true}
+            disabled={isDataComplete() ? false : true}
             onClick={onNext}
           >
             <div className="text-lg font-semibold">เริ่มการคำนวณ</div>

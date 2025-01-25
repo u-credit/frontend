@@ -4,25 +4,20 @@ import { CurriSelectGroup } from '@/components';
 import { CurriGroup } from '@/Interfaces';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
 import { SelectOption } from '@/types';
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 interface StudentInfoProps {
   studentInfo: StudentInfo;
-  onCurriGroupChange: (curriGroup: CurriGroup) => void;
+  selectedCurriGroup: CurriGroup;
+  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
 }
 
 export default function CourseInfo({
   studentInfo,
-  onCurriGroupChange,
+  selectedCurriGroup,
+  setSelectedCurriGroup,
 }: StudentInfoProps) {
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-
-  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
-    faculty: '',
-    department: '',
-    curriculum: '',
-    curriculumYear: '',
-  });
 
   useEffect(() => {
     const loadFaculty = async () => {
@@ -52,23 +47,46 @@ export default function CourseInfo({
   }, []);
 
   useEffect(() => {
+    if (facultyOptions.length === 0) return; 
+
+    const faculty = facultyOptions.find(
+      (f) => f.value === studentInfo.faculty_id,
+    );
+    const department = faculty?.children?.find(
+      (d) => d.value === studentInfo.dept_id,
+    );
+    const curriculum = department?.children?.find(
+      (c) => c.value === studentInfo.curr2_id,
+    );
+    const curriculumYear = curriculum?.children?.find(
+      (y) => y.value === studentInfo.curr_year,
+    );
+
     const curriGroup = {
-      faculty: studentInfo.faculty_id,
-      department: studentInfo.dept_id,
-      curriculum: studentInfo.curr2_id,
-      curriculumYear: studentInfo.curr_year,
+      faculty: {
+        label: faculty?.label || '',
+        value: studentInfo.faculty_id,
+        children: faculty?.children || [],
+      },
+      department: {
+        label: department?.label || '',
+        value: studentInfo.dept_id,
+        children: department?.children || [],
+      },
+      curriculum: {
+        label: curriculum?.label || '',
+        value: studentInfo.curr2_id,
+        children: curriculum?.children || [],
+      },
+      curriculumYear: {
+        label: curriculumYear?.label || '',
+        value: studentInfo.curr_year,
+        children: curriculumYear?.children || [],
+      },
     };
+
     setSelectedCurriGroup(curriGroup);
   }, [studentInfo]);
-
-  useEffect(() => {
-    onCurriGroupChange(selectedCurriGroup);
-  }, [selectedCurriGroup]);
-
-  const handleCurriGroupChange = (curriGroup: CurriGroup) => {
-    setSelectedCurriGroup(curriGroup);
-    console.log('new curriGroup => ', curriGroup);
-  };
 
   return (
     <div className="flex flex-col gap-10">
@@ -77,7 +95,7 @@ export default function CourseInfo({
         <CurriSelectGroup
           selectedCurriGroup={selectedCurriGroup}
           facultyOptions={facultyOptions}
-          onCurriGroupChange={handleCurriGroupChange}
+          setSelectedCurriGroup={setSelectedCurriGroup}
         />
       </div>
     </div>

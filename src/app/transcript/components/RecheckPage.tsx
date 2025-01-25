@@ -1,6 +1,6 @@
 'use client';
 import { CurriSelectGroup } from '@/components';
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import SubjectCard from './SubjectCard';
 import { CurriGroup } from '@/Interfaces';
 import { fetchListFaculty } from '@/api/facultyApi';
@@ -8,7 +8,7 @@ import { SelectOption } from '@/types';
 
 interface RecheckPageProps {
   selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: (curriGroup: CurriGroup) => void;
+  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
   onNext: () => void;
 }
 
@@ -46,11 +46,6 @@ export default function RecheckPage({
     loadFaculty();
   }, []);
 
-  const handleCurriGroupChange = (curriGroup: CurriGroup) => {
-    setSelectedCurriGroup(curriGroup);
-    console.log('new curriGroup => ', curriGroup);
-  };
-
   return (
     <div>
       <div className="flex flex-col gap-10 justify-center ">
@@ -72,7 +67,7 @@ export default function RecheckPage({
           <CurriSelectGroup
             selectedCurriGroup={selectedCurriGroup}
             facultyOptions={facultyOptions}
-            onCurriGroupChange={handleCurriGroupChange}
+            setSelectedCurriGroup={setSelectedCurriGroup}
           />
         </div>
         <div className="border-t border-gray-200"></div>

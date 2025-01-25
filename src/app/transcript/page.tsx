@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { CurriGroup } from '@/Interfaces';
 import UploadTranscriptPage from './components/UploadTranscriptPage';
 import RecheckPage from './components/RecheckPage';
+import { initSelectOption } from '@/types';
 
 export default function Home() {
   // const [studentInfo, setStudenInfo] = useState<StudentInfo>({
@@ -20,10 +21,10 @@ export default function Home() {
   // const [uploadTranscriptSuccess, setUploadTranscriptSuccess] = useState(false);
   const [currentSection, setCurrentSection] = useState<string>('upload');
   const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
-    faculty: '',
-    department: '',
-    curriculum: '',
-    curriculumYear: '',
+    faculty: initSelectOption(),
+    department: initSelectOption(),
+    curriculum: initSelectOption(),
+    curriculumYear: initSelectOption(),
   });
 
   const handleNext = (section: string) => {
