@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-=======
 import { SelectOption } from '@/types';
 
->>>>>>> 627568dbfc261d653c9b1935f2f78ff4d0ab664a
 export interface CurriculumDto {
   curriculum_id: string;
   curriculum_name: string;
@@ -27,16 +24,8 @@ export interface FacultyDto {
 }
 
 export interface CurriGroup {
-<<<<<<< HEAD
-  faculty: string | number;
-  department: string | number;
-  curriculum: string | number;
-  curriculumYear: string | number;
-}
-=======
   faculty: SelectOption;
   department: SelectOption;
   curriculum: SelectOption;
   curriculumYear: SelectOption;
 }
->>>>>>> 627568dbfc261d653c9b1935f2f78ff4d0ab664a

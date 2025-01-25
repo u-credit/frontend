@@ -1,3 +1,4 @@
+//frontend/src/features/bookmark/bookmarkSlice.ts
 import { BookmarkItem } from '@/Interfaces';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';

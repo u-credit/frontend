@@ -1,50 +1,80 @@
-import React from 'react';
-import { FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
+import * as React from 'react';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { InputLabel } from '@mui/material';
 
 interface SelectInputProps {
   value: string;
   onChange: (value: string) => void;
   options: string[];
-  label: string;
+  label?: string;
+  sx?: Record<string, any>;
 }
 
-const SelectInput: React.FC<SelectInputProps> = ({ value, onChange, options, label }) => {
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    onChange(event.target.value);
+const SelectInput: React.FC<SelectInputProps> = ({
+  value,
+  onChange,
+  options,
+  label,
+  sx = {},
+}) => {
+  const handleSelectClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleChange = (event: SelectChangeEvent) => {
+    onChange(event.target.value as string);
   };
 
   return (
-    <FormControl fullWidth variant="outlined">
-      <InputLabel id={`${label}-label`}>{label}</InputLabel>
-      <Select
-        labelId={`${label}-label`}
-        id={`${label}-select`}
-        value={value || ''}
-        onChange={handleChange}
-        label={label}
-        IconComponent={ArrowDropDownIcon}
-        sx={{
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#e0e0e0',
-          },
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#bdbdbd',
-          },
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    <FormControl
+      id="select-input-form"
+      size="small"
+      sx={{
+        width: '270px',
+        '& .MuiOutlinedInput-root': {
+          height: '40px',
+          borderRadius: '8px',
+          '&:hover fieldset': {
             borderColor: 'primary.main',
           },
-          borderRadius: '8px',
-          '& .MuiSelect-select': {
-            padding: '14px',
-          },
-        }}
+        },
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderWidth: '1px',
+          borderColor: 'grey.300',
+        },
+        ...sx,
+      }}
+    >
+      {label && (
+        <InputLabel
+          id="select-input-label"
+          sx={{
+            backgroundColor: 'white',
+            padding: '0 4px',
+          }}
+        >
+          {label}
+        </InputLabel>
+      )}
+      <Select
+        labelId="select-input-label"
+        id="select-input"
+        value={value}
+        onChange={handleChange}
+        onClick={handleSelectClick}
+        IconComponent={ArrowDropDownIcon}
+        variant="outlined"
+        inputProps={{ MenuProps: { disableScrollLock: true } }}
       >
-        <MenuItem value="" disabled>
-          <em>{label}</em>
-        </MenuItem>
         {options.map((option) => (
-          <MenuItem key={option} value={option}>
+          <MenuItem
+            id={`select-option-${option.toLowerCase().replace(/\s+/g, '-')}`}
+            key={option}
+            value={option}
+          >
             {option}
           </MenuItem>
         ))}
