@@ -5,16 +5,23 @@ import SubjectCard from './SubjectCard';
 import { CurriGroup } from '@/Interfaces';
 import { fetchListFaculty } from '@/api/facultyApi';
 import { SelectOption } from '@/types';
+import { CategoryGroup } from '@/Interfaces/transcript.interface';
 
 interface RecheckPageProps {
   selectedCurriGroup: CurriGroup;
   setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
+  selectedCategory: CategoryGroup;
+  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
+  categoryOptions: SelectOption[];
   onNext: () => void;
 }
 
 export default function RecheckPage({
   selectedCurriGroup,
   setSelectedCurriGroup,
+  selectedCategory,
+  setSelectCategory,
+  categoryOptions,
   onNext,
 }: RecheckPageProps) {
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
@@ -75,8 +82,16 @@ export default function RecheckPage({
           รายวิชาที่ไม่ปรากฎในเล่มหลักสูตรของคุณ
         </div>
         <div className="flex flex-col gap-5 overflow-y-auto min-h-80 h-[30vh]">
-          <SubjectCard />
-          <SubjectCard />
+          <SubjectCard
+            selectedCategory={selectedCategory}
+            setSelectCategory={setSelectCategory}
+            categoryOptions={categoryOptions}
+          />
+          <SubjectCard
+            selectedCategory={selectedCategory}
+            setSelectCategory={setSelectCategory}
+            categoryOptions={categoryOptions}
+          />
         </div>
       </div>
     </div>

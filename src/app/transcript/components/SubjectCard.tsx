@@ -1,9 +1,21 @@
 import { Add } from '@mui/icons-material';
 import { Button } from '@mui/material';
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import ModalAddCategory from './ModalAddCategory';
+import { CategoryGroup } from '@/Interfaces/transcript.interface';
+import { SelectOption } from '@/types';
 
-export default function SubjectCard() {
+interface SubjectCardProps {
+  selectedCategory: CategoryGroup;
+  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
+  categoryOptions: SelectOption[];
+}
+
+export default function SubjectCard({
+  selectedCategory,
+  setSelectCategory,
+  categoryOptions,
+}: SubjectCardProps) {
   const [isModalOpen, setModalOpen] = useState(false);
 
   const handleOpenModal = () => setModalOpen(true);
@@ -29,7 +41,13 @@ export default function SubjectCard() {
             >
               เพิ่มหมวดหมู่
             </Button>
-            <ModalAddCategory open={isModalOpen} onClose={handleCloseModal} />
+            <ModalAddCategory
+              open={isModalOpen}
+              onClose={ handleCloseModal}
+              selectedCategory={selectedCategory}
+              setSelectCategory={setSelectCategory}
+              categoryOptions={categoryOptions}
+            />
           </div>
         </div>
       </div>

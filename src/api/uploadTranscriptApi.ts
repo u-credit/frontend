@@ -23,3 +23,20 @@ export const uploadTranscriptFindStudentInfo = async (file: File) => {
     };
   }
 };
+
+export const fetchListCategory = async (params: Record<string, string>) => {
+  const queryString = new URLSearchParams(
+    params as Record<string, string>,
+  ).toString();
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/requiredAllCredit?${queryString}`,
+    {
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  return res.json();
+};
