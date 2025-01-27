@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { Avatar, Button, Menu, MenuItem, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { RootState } from '@/features/store';
+import { AppDispatch, RootState } from '@/features/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/features/auth/authSlice';
+import { handleLogout } from '@/features/auth/authAction';
 
 interface NavItem {
   path: string;
@@ -20,6 +21,12 @@ const navItems: NavItem[] = [
   { path: '/schedule', label: 'ตารางเรียน' },
   { path: '/', label: 'เช็คหน่วยกิต' },
   { path: '/auth', label: 'เข้าสู่ระบบ' },
+];
+
+const navItemsAuthenticated: NavItem[] = [
+  { path: '/course', label: 'ค้นหารายวิชา' },
+  { path: '/schedule', label: 'ตารางเรียน' },
+  { path: '/', label: 'เช็คหน่วยกิต' },
 ];
 function stringToColor(string: string) {
   let hash = 0;
@@ -53,7 +60,7 @@ function stringAvatar(name: string) {
 export default function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [isMenuMobileOpen, setIsMenuMobileOpen] = useState(false);
   const [activePage, setActivePage] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -109,11 +116,11 @@ export default function NavBar() {
     >
       <MenuItem
         onClick={() => {
-          dispatch(logout());
+          dispatch(handleLogout());
           handleMenuClose();
         }}
       >
-        Logout
+        ออกจากระบบ
       </MenuItem>
     </Menu>
   );
@@ -125,8 +132,8 @@ export default function NavBar() {
 
         {/* Burger Menu*/}
         <div className="md:hidden flex items-center">
-          <button onClick={() => setIsMenuMobileOpen(!isMenuOpen)}>
-            {isMenuOpen ? (
+          <button onClick={() => setIsMenuMobileOpen(!isMenuMobileOpen)}>
+            {isMenuMobileOpen ? (
               <MenuIcon className="h-6 w-6 bg-primary-300 rounded-sm text-primary-100" />
             ) : (
               <MenuIcon className="h-6 w-6 bg-primary-100 rounded-sm text-primary-300 text-5xl" />
@@ -175,18 +182,51 @@ export default function NavBar() {
 
         {/* mobile */}
         <div
-          className={`md:hidden flex flex-col absolute top-12 left-0 w-full bg-white shadow-md ${isMenuOpen ? 'block' : 'hidden'}`}
+          className={`md:hidden flex flex-col absolute top-12 left-0 w-full bg-white shadow-md ${isMenuMobileOpen ? 'block' : 'hidden'}`}
         >
-          {navItems.map((item, index) => (
-            <Link
-              key={index}
-              href={item.path}
-              onClick={() => setActivePage(item.path)}
-              className="p-4 border-b last:border-b-0"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {isAuthenticated ? (
+            <>
+              {navItemsAuthenticated.map((item, index) => (
+                <Link
+                  key={index}
+                  href={item.path}
+                  onClick={() => {
+                    setActivePage(item.path);
+                    setIsMenuMobileOpen(false);
+                  }}
+                  className="p-4 border-b last:border-b-0"
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              <div
+                className="p-4 border-b last:border-b-0 hover:cursor-pointer"
+                onClick={() => {
+                  dispatch(handleLogout());
+                  setIsMenuMobileOpen(false);
+                }}
+              >
+                ออกจากระบบ
+              </div>
+            </>
+          ) : (
+            <>
+              {navItems.map((item, index) => (
+                <Link
+                  key={index}
+                  href={item.path}
+                  onClick={() => {
+                    setActivePage(item.path);
+                    setIsMenuMobileOpen(false);
+                  }}
+                  className="p-4 border-b last:border-b-0"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </>
+          )}
         </div>
 
         {renderMenu}

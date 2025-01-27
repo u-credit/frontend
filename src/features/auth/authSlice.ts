@@ -46,7 +46,6 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.tokenExpiration = null;
-      fetchLogout();
     },
   },
   extraReducers: (builder) => {
