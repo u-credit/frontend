@@ -12,7 +12,7 @@ export const API_PATHS = {
 };
 
 export const ROUTES = {
-  HOME: '/course',
+  HOME: '/',
   AUTH: {
     LOGIN: '/login',
     REGISTER: '/register',

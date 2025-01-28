@@ -10,15 +10,12 @@ import { Response } from '@/Interfaces';
 export const createReview = async (
   data: CreateReviewDto,
 ): Promise<Response<Review>> => {
-  const accessToken = localStorage.getItem('access_token');
-
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.reviews}`,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
       },
       credentials: 'include',
       body: JSON.stringify(data),
