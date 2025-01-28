@@ -39,8 +39,8 @@ export interface ListSubjectQueryParams {
 }
 
 export interface ListSubjectByIdsQueryParams {
-  semester: number;
-  year: number;
+  semester?: number;
+  year?: number;
   subjectIds: string[];
   facultyId?: string;
   department?: string;
@@ -89,6 +89,7 @@ export interface CategoryDto {
 }
 
 export interface SubjectDto {
+  averageRating: number;
   subject_id: string;
   subject_thai_name: string;
   subject_english_name: string;

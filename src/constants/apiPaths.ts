@@ -7,6 +7,8 @@ export const API_PATHS = {
   googleAuth: '/auth/google',
   googleAuthCallback: '/auth/google/callback',
   logout: '/auth/logout',
+  reviews: '/api/reviews',
+  reviewOptions: '/api/reviews/options'
 };
 
 export const ROUTES = {
