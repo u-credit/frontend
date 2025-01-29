@@ -5,11 +5,13 @@ import UploadTranscriptPage from './components/UploadTranscriptPage';
 import RecheckPage from './components/RecheckPage';
 import { initSelectOption, SelectOption } from '@/types';
 import { CategoryGroup } from '@/Interfaces/transcript.interface';
-import { fetchListCategory } from '@/api/uploadTranscriptApi';
+import { fetchListCategory } from '@/api/transcriptApi';
 
 export default function Home() {
   const [currentSection, setCurrentSection] = useState<string>('upload');
   const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
+
+  const [file, setFile] = useState<File | null>(null);
 
   const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
     faculty: initSelectOption(),
@@ -33,32 +35,30 @@ export default function Home() {
     const loadCategory = async () => {
       try {
         const params = {
-          curri_id: '0105',
-          curr_year: '2564',
+          faculty: selectedCurriGroup.faculty.value,
+          department: selectedCurriGroup.department.value,
+          curriculum: selectedCurriGroup.curriculum.value,
+          curriculumYear: selectedCurriGroup.curriculumYear.value,
         };
         const resp = await fetchListCategory(params);
         const data = resp?.data || [];
 
-        const categoryOptions: SelectOption[] =
-          data.map((category: any) => ({
-            label: category.c_cat_name,
-            value: category.category,
-            children:
-              category.group?.map((group: any) => ({
-                label: group.c_group_name,
-                value: group.group,
-                children:
-                  group?.subgroup?.map((subgroup: any) => ({
-                    label: subgroup.c_subgroup_name,
-                    value: subgroup.subgroup,
-                    children:
-                      subgroup.children?.map((childGroup: any) => ({
-                        label: childGroup.c_subgroup_name,
-                        value: childGroup.subgroup,
-                      })),
-                  })),
+        const categoryOptions: SelectOption[] = data.map((category: any) => ({
+          label: category.c_cat_name,
+          value: category.category,
+          children: category.group?.map((group: any) => ({
+            label: group.c_group_name,
+            value: group.group,
+            children: group?.subgroup?.map((subgroup: any) => ({
+              label: subgroup.c_subgroup_name,
+              value: subgroup.subgroup,
+              children: subgroup.children?.map((childGroup: any) => ({
+                label: childGroup.c_subgroup_name,
+                value: childGroup.subgroup,
               })),
-          }));
+            })),
+          })),
+        }));
         setCategoryOptions(categoryOptions);
       } catch (error) {
         console.log('error', error);
@@ -66,6 +66,12 @@ export default function Home() {
     };
 
     loadCategory();
+    setSelectCategory({
+      category: initSelectOption(),
+      group: initSelectOption(),
+      subgroup: initSelectOption(),
+      childgroup: initSelectOption(),
+    });
   }, [selectedCurriGroup]);
 
   return (
@@ -76,6 +82,8 @@ export default function Home() {
             <UploadTranscriptPage
               selectedCurriGroup={selectedCurriGroup}
               setSelectedCurriGroup={setSelectedCurriGroup}
+              file={file}
+              setFile={setFile}
               onNext={() => handleNext('recheck')}
             />
           )}
@@ -86,6 +94,7 @@ export default function Home() {
               selectedCategory={selectedCategory}
               setSelectCategory={setSelectCategory}
               categoryOptions={categoryOptions}
+              file={file!}
               onNext={() => handleNext('summary')}
             />
           )}

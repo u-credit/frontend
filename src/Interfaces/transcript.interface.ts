@@ -6,3 +6,12 @@ export interface CategoryGroup {
     subgroup: SelectOption
     childgroup: SelectOption
 }
+
+export interface SubjectTranscriptDto {
+    subject_id: string;
+    subject_tname: string;
+    subject_ename: string;
+    credit: number;
+    semester: string;
+    year: string;
+  }

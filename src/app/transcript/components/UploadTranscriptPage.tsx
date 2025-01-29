@@ -9,12 +9,16 @@ import UploadTranscript from './UploadTranscript';
 interface UploadTranscriptPageProps {
   selectedCurriGroup: CurriGroup;
   setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
+  file: File | null;
+  setFile: Dispatch<SetStateAction<File | null>>;
   onNext: () => void;
 }
 
 export default function UploadTranscriptPage({
   selectedCurriGroup,
   setSelectedCurriGroup,
+  file,
+  setFile,
   onNext,
 }: UploadTranscriptPageProps) {
   const [studentInfo, setStudentInfo] = useState<StudentInfo>({
@@ -60,6 +64,8 @@ export default function UploadTranscriptPage({
           <UploadTranscript
             extractStudentInfo={handleStudentInfo}
             uploadTranscriptSuccess={handleUploadTranscript}
+            file={file}
+            setFile={setFile}
           />
         </div>
         <div>

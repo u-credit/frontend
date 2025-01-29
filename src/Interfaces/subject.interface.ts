@@ -105,11 +105,3 @@ export interface SubjectDto {
   teach_table: TeachTableDto[];
   category?: CategoryDto[];
 }
-
-export interface SubjectTranscriptDto {
-  subject_id: string;
-  subject_english_name: string;
-  credit: number;
-  semester: string;
-  year: string;
-}

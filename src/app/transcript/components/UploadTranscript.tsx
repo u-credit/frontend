@@ -3,20 +3,24 @@ import { CloudUpload } from '@mui/icons-material';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CloseIcon from '@mui/icons-material/Close';
 import { Button } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { uploadTranscriptFindStudentInfo } from '@/api/uploadTranscriptApi';
+import { uploadTranscriptFindStudentInfo } from '@/api/transcriptApi';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
 interface UploadTranscriptProps {
   extractStudentInfo: (data: StudentInfo) => void;
   uploadTranscriptSuccess: (success: boolean) => void;
+  file: File | null;
+  setFile: Dispatch<SetStateAction<File | null>>;
 }
 
 export default function UploadTranscript({
   extractStudentInfo,
   uploadTranscriptSuccess,
+  file,
+  setFile,
 }: UploadTranscriptProps) {
-  const [file, setFile] = useState<File | null>(null);
+  // const [file, setFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   const onDrop = useCallback(

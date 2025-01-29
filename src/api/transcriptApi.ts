@@ -40,3 +40,32 @@ export const fetchListCategory = async (params: Record<string, string>) => {
   );
   return res.json();
 };
+
+export const calculateCredit = async (file: File, body: any) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  Object.keys(body).forEach((key) => {
+    formData.append(key, body[key]);
+  });
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/calculate`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+    );
+
+    const result = await res.json();
+
+    return result;
+  } catch (error) {
+    console.error('File upload failed', error);
+    return {
+      success: false,
+      error: error || 'An unknown error occurred',
+    };
+  }
+};
