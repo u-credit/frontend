@@ -33,7 +33,11 @@ import CustomAlert from '@/components/CustomAlert';
 import { profanityFilter } from '@/utils/profanityFilter';
 import AuthModal from '@/app/review/components/AuthModal';
 
-export default function Page({ params }: { params: { slug: string } }) {
+export default function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const router = useRouter();
   const dispatch = useDispatch();
   const resolvedParams = use(params);
@@ -73,8 +77,8 @@ export default function Page({ params }: { params: { slug: string } }) {
   useEffect(() => {
     const fetchSubjectDetail = async () => {
       const response = await fetchListSubjectByIds({
-        semester,
-        year,
+        semester: Number(semester),
+        year: Number(year),
         subjectIds: [slug],
       });
 
@@ -89,9 +93,7 @@ export default function Page({ params }: { params: { slug: string } }) {
   }, [slug, semester, year]);
 
   useEffect(() => {
-    const isBookmarked = bookmark.find(
-      (item) => item.subjectId === slug,
-    );
+    const isBookmarked = bookmark.find((item) => item.subjectId === slug);
     setIsBookmarked(!!isBookmarked);
     setSelectedSection(isBookmarked?.selectedSection || '');
   }, [slug, bookmark]);
@@ -370,7 +372,6 @@ export default function Page({ params }: { params: { slug: string } }) {
             onAuthModalOpen={() => setOpenAuthModal(true)}
           />
           <CustomAlert
-            id="review-alert"
             open={openSnackbar}
             message={snackbarMessage}
             onClose={() => setOpenSnackbar(false)}
@@ -394,7 +395,11 @@ export default function Page({ params }: { params: { slug: string } }) {
               <RatingButtons
                 selectedRating={selectedRating}
                 setSelectedRating={setSelectedRating}
-                reviews={reviews}
+                reviews={reviews.map(review => ({
+                  ...review,
+                  year: review.year.toString(),
+                  semester: review.semester.toString(),
+                }))}
               />
             </div>
             <div className="order-1 sm:order-2 w-full sm:w-auto mt-6 sm:mt-9 md:mt-8 lg:mt-5 sm:ml-4 -mb-7">
@@ -411,7 +416,7 @@ export default function Page({ params }: { params: { slug: string } }) {
           </div>
 
           <div id="reviews-container">
-            {reviews
+            {subjectDetail && reviews
               .filter(
                 (review) => !selectedRating || review.rating === selectedRating,
               )

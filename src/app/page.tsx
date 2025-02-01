@@ -4,7 +4,7 @@ import { Box, Typography, Button } from '@mui/material';
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center space-y-2 p-24 bg-primary-white">
-      home
+      home test poll scm 2
       <div className="flex flex-row">
         <div className="bg-primary-100 flex flex-col p-4 m-4 space-y-4 rounded-md max-w-96">
           <Box className="bg-success-200 rounded-md p-3">

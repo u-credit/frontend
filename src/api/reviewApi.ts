@@ -26,7 +26,7 @@ export const createReview = async (
 
 export const getReviews = async (
   subjectId: string,
-): Promise<Response<ReviewResponse>> => {
+): Promise<ReviewResponse> => {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.reviews}?subjectId=${subjectId}`,
