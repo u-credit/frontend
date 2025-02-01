@@ -63,7 +63,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               <div className="flex flex-row gap-4 w-full md:contents lg:flex lg:w-auto">
                 <div className="flex-1 md:w-full lg:w-[250px]">
                   <SelectInput
-                    id="year-select"
                     value={selectedYear}
                     onChange={setSelectedYear}
                     options={yearOptions}
@@ -73,7 +72,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                 </div>
                 <div className="flex-1 md:w-full lg:w-[250px]">
                   <SelectInput
-                    id="semester-select"
                     value={selectedSemester}
                     onChange={setSelectedSemester}
                     options={semesterOptions}
@@ -85,7 +83,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
               <div className="w-full md:col-span-2 lg:w-[250px]">
                 <SelectInput
-                  id="teacher-select"
                   value={selectedTeacherName}
                   onChange={setSelectedTeacherName}
                   options={teacherOptions}

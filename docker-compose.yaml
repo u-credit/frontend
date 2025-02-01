@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    image: asia-southeast1-docker.pkg.dev/sigma-zodiac-448315-p7/frontend/frontend-app:latest
+    ports:
+      - '4000:4000'
+    env_file:
+      - .env
+    # healthcheck:
+    #   test: ['CMD-SHELL', 'curl -f http://10.148.0.2:4000 || exit 1']
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 30s

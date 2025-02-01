@@ -12,7 +12,7 @@ const nextConfig = {
           },
           {
             key: 'Access-Control-Allow-Origin',
-            value: 'http://localhost:4000',
+            value: process.env.NEXT_PUBLIC_FRONTEND_URL,
           },
           {
             key: 'Access-Control-Allow-Methods',

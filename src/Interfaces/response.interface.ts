@@ -3,9 +3,9 @@ import { CursorMetaDto, PageMetaDto } from './page.interface';
 export type Response<T> = {
   status: boolean;
   statusCode: number;
-  path: string;
+  path?: string;
   message: string;
   data: T;
-  timestamp: string;
+  timestamp?: string;
   meta?: CursorMetaDto | PageMetaDto;
 };
