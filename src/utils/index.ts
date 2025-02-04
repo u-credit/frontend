@@ -15,3 +15,5 @@ export * from './formatTime';
 export * from './mui-theme';
 
 export * from './stripHtmlTags';
+
+export * from './transcriptSummaryHelpers';

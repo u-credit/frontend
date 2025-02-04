@@ -29,7 +29,7 @@ export default function ModalAddCategory({
   const [isEnableSave, setIsEnableSave] = useState(false);
 
   useEffect(() => {
-    if (selectedCategory.category.value) {
+    if (selectedCategory?.category.value) {
       if (selectedCategory.category.children?.length === 0) {
         setIsEnableSave(true);
         return;

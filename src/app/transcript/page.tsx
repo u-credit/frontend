@@ -1,24 +1,35 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { CurriGroup } from '@/Interfaces';
 import UploadTranscriptPage from './components/UploadTranscriptPage';
 import RecheckPage from './components/RecheckPage';
 import { initSelectOption, SelectOption } from '@/types';
 import { CategoryGroup } from '@/Interfaces/transcript.interface';
 import { fetchListCategory } from '@/api/transcriptApi';
+import SummaryPage from './components/SummaryPage';
+import TranscriptProvider, {
+  useTranscriptContext,
+} from '@/app/contexts/TranscriptContext';
 
-export default function Home() {
-  const [currentSection, setCurrentSection] = useState<string>('upload');
-  const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
+export default function TranscriptWrapper() {
+  return (
+    <TranscriptProvider>
+      <Transcript />
+    </TranscriptProvider>
+  );
+}
+
+function Transcript() {
+  const {
+    categoryOptions,
+    setCategoryOptions,
+    selectedCurriGroup,
+    setSelectedCurriGroup,
+    setListCategory,
+  } = useTranscriptContext();
+
+  const [currentSection, setCurrentSection] = useState<string>('summary');
 
   const [file, setFile] = useState<File | null>(null);
-
-  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
-    faculty: initSelectOption(),
-    department: initSelectOption(),
-    curriculum: initSelectOption(),
-    curriculumYear: initSelectOption(),
-  });
 
   const [selectedCategory, setSelectCategory] = useState<CategoryGroup>({
     category: initSelectOption(),
@@ -42,7 +53,6 @@ export default function Home() {
         };
         const resp = await fetchListCategory(params);
         const data = resp?.data || [];
-
         const categoryOptions: SelectOption[] = data.map((category: any) => ({
           label: category.c_cat_name,
           value: category.category,
@@ -60,6 +70,7 @@ export default function Home() {
           })),
         }));
         setCategoryOptions(categoryOptions);
+        setListCategory(resp.data);
       } catch (error) {
         console.log('error', error);
       }
@@ -73,6 +84,10 @@ export default function Home() {
       childgroup: initSelectOption(),
     });
   }, [selectedCurriGroup]);
+
+  if (currentSection === 'summary') {
+    return <SummaryPage onNext={(state: string) => handleNext(state)} />;
+  }
 
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
