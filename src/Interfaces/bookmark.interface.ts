@@ -3,7 +3,9 @@ export interface BookmarkItem {
   selectedSection?: string;
   semester: number;
   year: number;
+  is_show: boolean;
 }
+
 export interface BookmarkParam {
   subjectId?: string;
   selectedSection?: string;
