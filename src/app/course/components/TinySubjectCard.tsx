@@ -48,6 +48,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
   }, [subjectDetail.subject_id, bookmark]);
 
   const handleSelectSectionChange = async (value: string) => {
+    console.log(value)
     setSelectedSection('');
 
     if (isBookmarked) {
@@ -183,7 +184,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
               value: section,
             }))}
             selectedValue={selectedSection}
-          />
+            />
           <Button
             variant="contained"
             startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}

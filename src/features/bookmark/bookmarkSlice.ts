@@ -31,13 +31,18 @@ const bookmarkSlice = createSlice({
     },
     editBookmark: (state, action: PayloadAction<BookmarkItem>) => {
       const existingItem = state.items.find(
-        (item) => item.subjectId === action.payload.subjectId,
+        (item) => item.subjectId === action.payload.subjectId
       );
+      
       if (existingItem) {
         existingItem.selectedSection = action.payload.selectedSection;
+        existingItem.is_show = action.payload.is_show; 
+      } else {
+        state.items.push(action.payload);
       }
       Cookies.set('bookmark', JSON.stringify(state), { expires: 7 });
     },
+    
     removeBookmark: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(
         (item) => item.subjectId !== action.payload,
