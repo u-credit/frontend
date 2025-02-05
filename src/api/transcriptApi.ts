@@ -1,4 +1,6 @@
 import { API_PATHS } from '@/constants';
+import { Response } from '@/Interfaces';
+import { RequiredCreditItem } from '@/Interfaces/transcript.interface';
 
 export const uploadTranscriptFindStudentInfo = async (file: File) => {
   const formData = new FormData();
@@ -68,4 +70,23 @@ export const calculateCredit = async (file: File, body: any) => {
       error: error || 'An unknown error occurred',
     };
   }
+};
+
+export const fetchRequiredCredit = async (
+  params: Record<string, string>,
+): Promise<Response<RequiredCreditItem[]>> => {
+  const queryString = new URLSearchParams(
+    params as Record<string, string>,
+  ).toString();
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/requiredCredit?${queryString}`,
+    {
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  return res.json();
 };
