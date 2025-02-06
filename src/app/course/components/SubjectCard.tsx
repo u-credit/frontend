@@ -23,7 +23,6 @@ import { addBookmark, removeBookmark } from '@/features/bookmark/bookmarkSlice';
 import { RootState } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { addBookmarkApi, deleteBookmarkApi } from '@/api/bookmarkApi';
-import { getReviews } from '@/api/reviewApi';
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
@@ -43,8 +42,6 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
-
-  const [rating, setRating] = useState(0); //กีต้าเพิ่มrating
 
   useEffect(() => {
     const isBookmarked = bookmark.find(
@@ -126,15 +123,6 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       setDaySection(daySection);
     }
   }, [subjectDetail]);
-
-  //กีต้าใช้ดึงข้อมูล rating จาก API 
-  useEffect(() => {
-    const fetchRating = async () => {
-      const response = await getReviews(subjectDetail.subject_id);
-      setRating(response?.data?.averageRating || 0);
-    };
-    fetchRating();
-  }, [subjectDetail.subject_id]);
 
   return (
     <div className="relative group">
@@ -222,7 +210,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                 <div className="text-primary-400">รีวิว</div>
                 <Rating
                   name="half-rating-read"
-                  value={rating} //กีต้าแก้ไขrating
+                  value={subjectDetail.averageRating}
                   precision={0.1}
                   readOnly
                   emptyIcon={<StarIcon fontSize="inherit" />}

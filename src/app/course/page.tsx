@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
@@ -29,6 +29,7 @@ import {
   setYear,
 } from '@/features/selectorValueSlice';
 import TuneIcon from '@mui/icons-material/Tune';
+import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
@@ -42,9 +43,17 @@ const yearOptions: SelectOption[] = [
   { label: '2566', value: '2566' },
 ];
 
-let controller: AbortController | null = null;
-export default function Course() {
+export default function CourseWrapper() {
+  return (
+    <CourseProvider>
+      <Course />
+    </CourseProvider>
+  );
+}
+
+function Course() {
   const dispatch = useDispatch();
+  const { listSubjects, setListSubjects } = useCourseContext();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
@@ -70,7 +79,6 @@ export default function Course() {
     curriculum: initSelectOption(),
     curriculumYear: initSelectOption(),
   });
-  const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
@@ -83,6 +91,8 @@ export default function Course() {
   );
   const [isOpenFilter, setIsOpenFilter] = useState(false);
   const [changeFromDelete, setChangeFromDelete] = useState(false);
+  const controllerRef = useRef<AbortController | null>(null);
+
   const toggleFilterModal = () => {
     const toggleValue = !isOpenFilter;
     document.documentElement.style.overflowY = toggleValue ? 'hidden' : 'auto';
@@ -101,13 +111,11 @@ export default function Course() {
   const loadSubjects = useCallback(
     async ({ isLoadMore = false, isInit = false }) => {
       if (semester === '' || year === '') return;
-
-      if (controller) {
-        controller.abort();
+      if (controllerRef.current) {
+        controllerRef.current.abort(); // ยกเลิก request ก่อนหน้า (ถ้ามี)
       }
-      controller = new AbortController();
-      const signal = controller.signal;
 
+      controllerRef.current = new AbortController();
       const getCategory = (category: string[]): SubjectCategory => {
         if (category.length === 2) return SubjectCategory.ALL;
         else if (category.includes(SubjectCategory.GENERAL))
@@ -169,10 +177,13 @@ export default function Course() {
       );
 
       try {
-        const response = await fetchListSubject(params, signal);
+        const response = await fetchListSubject(
+          params,
+          controllerRef.current.signal,
+        );
         const newSubjects = response?.data || [];
         if (isLoadMore) {
-          setListSubjects((prev) => [...prev, ...newSubjects]);
+          setListSubjects([...listSubjects, ...newSubjects]);
         } else {
           setListSubjects(newSubjects);
         }
@@ -181,11 +192,13 @@ export default function Course() {
         }
         setHasMore((response?.meta as CursorMetaDto)?.hasNext ?? false);
       } catch (error) {
-        console.error('Error loading subjects:', error);
-      } finally {
-        if (!signal?.aborted) {
-          setIsLoading(false);
+        if (error.name === 'AbortError') {
+          console.log('Fetch aborted (ไม่ใช่ error จริง)');
+        } else {
+          console.error('Error loading subjects:', error);
         }
+      } finally {
+        setIsLoading(false);
       }
     },
     [
@@ -193,7 +206,6 @@ export default function Course() {
       year,
       isLoading,
       hasMore,
-      listSubjects,
       selectedSemester,
       selectedYear,
       searchValue,
@@ -245,6 +257,8 @@ export default function Course() {
   }, []);
 
   useEffect(() => {
+    if (changeFromDelete) return;
+    if (isFirstLoad) return;
     loadSubjects({ isLoadMore: false });
   }, [
     selectedSemester,
@@ -263,6 +277,7 @@ export default function Course() {
   ]);
 
   useEffect(() => {
+    if (isFirstLoad) return;
     if (inView && hasMore && !isLoading) {
       setIsLoadingMore(true);
       loadSubjects({
@@ -272,6 +287,7 @@ export default function Course() {
   }, [inView, hasMore, isLoading]);
 
   useEffect(() => {
+    if (isFirstLoad) return;
     if (changeFromDelete) {
       loadSubjects({ isLoadMore: false });
       setChangeFromDelete(false);
@@ -388,7 +404,7 @@ export default function Course() {
           onClickFilterSearch={handleSearchAction}
         />
       </div>
-      <div className="flex flex-col w-full h-fit min-h-[calc(100vh-160px)]">
+      <div className="flex flex-col w-full lg:w-[calc(100%-240px)] h-fit min-h-[calc(100vh-160px)]">
         <CurriSelectContainer
           facultyOptions={facultyOptions}
           onClickApplyCurri={handleApplyCurriGroup}
