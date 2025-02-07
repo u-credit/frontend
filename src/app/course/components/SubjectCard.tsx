@@ -19,13 +19,8 @@ import { chipCategory, stripHtmlTags } from '@/utils';
 import { useRouter } from 'next/navigation';
 import { CustomSectionChip } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  addBookmark,
-  removeBookmark,
-  selectBookmarkDetail,
-  selectIsBookmark,
-} from '@/features/bookmark/bookmarkSlice';
-import { AppDispatch, RootState } from '@/features/store';
+import { addBookmark, removeBookmark } from '@/features/bookmark/bookmarkSlice';
+import { RootState } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { addBookmarkApi, deleteBookmarkApi } from '@/api/bookmarkApi';
 
@@ -34,29 +29,32 @@ interface SubjectCardProps {
 }
 
 export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const router = useRouter();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const bookmark = useSelector((state: RootState) => state.bookmark.items);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
-  const hasBookmark = useSelector((state: RootState) =>
-    selectIsBookmark(state, subjectDetail.subject_id),
-  );
-  const bookmarkDetail = useSelector((state: RootState) =>
-    selectBookmarkDetail(state, subjectDetail.subject_id),
-  );
 
   useEffect(() => {
-    setIsBookmarked(hasBookmark);
-    setSelectedSection(bookmarkDetail?.selectedSection || '');
-  }, [hasBookmark, bookmarkDetail]);
+    const isBookmarked = bookmark.find(
+      (item) => item.subjectId === subjectDetail.subject_id,
+    );
+    if (isBookmarked) {
+      setIsBookmarked(true);
+      setSelectedSection(isBookmarked.selectedSection || '');
+    } else {
+      setIsBookmarked(false);
+      setSelectedSection('');
+    }
+  }, [subjectDetail.subject_id, bookmark]);
 
   const handleToggleBookmark = async () => {
     setIsBookmarked(!isBookmarked);
@@ -187,9 +185,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                     <Tooltip
                       title={chipCategory(category)}
                       key={
-                        category.category_id +
-                        category.group_name +
-                        category.subgroup_name
+                        String(category.category_id) + String(category.group_id)
                       }
                     >
                       <Chip

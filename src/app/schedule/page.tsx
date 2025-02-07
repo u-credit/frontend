@@ -5,11 +5,7 @@ import Tabs from './components/tabs/tabs';
 import DownloadButton from './components/downloadButton/Button';
 import * as React from 'react';
 import { RootState } from '@/features/store';
-import {
-  BookmarkItem,
-  ListSubjectByIdsQueryParams,
-  SubjectDto,
-} from '@/Interfaces';
+import { ListSubjectByIdsQueryParams, SubjectDto } from '@/Interfaces';
 import { useCallback, useEffect, useState } from 'react';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,38 +16,31 @@ import { selectIsAuthenticated } from '@/features/auth/authSlice';
 export default function Home() {
   const dispatch = useDispatch();
   const { semester, year, curriGroup } = useSelector(
-    (state: RootState) => state.selectorValue,
+    (state: RootState) => state.selectorValue
   );
-  const bookmarks = useSelector((state: RootState) => state.bookmark);
+  const bookmarks = useSelector((state: RootState) => state.bookmark.items);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
   const [sumCredit, setSumCredit] = useState(0);
-  const [categoryCredit, setCategoryCredit] = useState<{
-    [key: string]: number;
-  }>({});
+  const [categoryCredit, setCategoryCredit] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     const loadBookmark = async () => {
-      try {
-        const data =
-          (
-            await fetchBookmark({
-              semester: Number(semester),
-              year: Number(year),
-            })
-          )?.data || [];
 
+      try {
+        const data = (
+          await fetchBookmark({ semester: Number(semester), year: Number(year) })
+        )?.data || [];
         dispatch(
           setBookmarks(
             data.map((item) => ({
               subjectId: item.subject_id,
-              semester: Number(item.semester),
-              year: Number(item.year),
+              semester: item.semester,
+              year: item.year,
               selectedSection: item.section,
-              isShow: item.is_show,
-            })),
-          ),
+            }))
+          )
         );
         // console.log(bookmarks)
       } catch (error) {
@@ -73,7 +62,7 @@ export default function Home() {
     const getSubjectParams = (): ListSubjectByIdsQueryParams => ({
       semester: Number(semester),
       year: Number(year),
-      subjectIds: bookmarks.map((item: BookmarkItem) => item.subjectId),
+      subjectIds: bookmarks.map((item) => item.subjectId),
       ...(curriGroup &&
         curriGroup.faculty.value &&
         curriGroup.department.value &&
@@ -105,7 +94,14 @@ export default function Home() {
       setCategoryCredit(catCredit);
 
       setSumCredit(
-        listSubjects.reduce((acc, subject) => acc + subject.credit, 0),
+        listSubjects
+          .filter(subject => 
+            bookmarks.some(bookmark => 
+              bookmark.subjectId === subject.subject_id && 
+              bookmark.is_show
+            )
+          )
+          .reduce((acc, subject) => acc + subject.credit, 0)
       );
     } catch (error) {
       console.error('Error loading subjects:', error);
@@ -139,19 +135,19 @@ export default function Home() {
           </div>
         </div>
         <div className="timetable-container">
-          <Timetable
-            subjects={listSubjects.filter((subject) =>
-              bookmarks.some(
-                (bookmark: BookmarkItem) =>
-                  bookmark.subjectId === subject.subject_id && bookmark.isShow,
-              ),
-            )}
-            section={bookmarks
-              .filter((bookmark: BookmarkItem) => bookmark.isShow)
-              .map((bookmark: BookmarkItem) => ({
-                subjectId: bookmark.subjectId,
-                selectedSection: bookmark.selectedSection,
-              }))}
+        <Timetable
+          subjects={listSubjects.filter((subject) => 
+            bookmarks.some((bookmark) => 
+              bookmark.subjectId === subject.subject_id && bookmark.is_show 
+            )
+          )}
+          section={bookmarks
+            .filter(bookmark => bookmark.is_show)
+            .map(bookmark => ({
+              subjectId: bookmark.subjectId,
+              selectedSection: bookmark.selectedSection
+            }))
+          }
           />
         </div>
 

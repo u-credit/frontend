@@ -1,117 +1,66 @@
 import { BookmarkItem } from '@/Interfaces';
-import {
-  createSlice,
-  PayloadAction,
-  createAsyncThunk,
-  createSelector,
-} from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import Cookies from 'js-cookie';
 
-const getBookmarks = (semester: string, year: string) => {
-  const bookmarks = JSON.parse(localStorage.getItem('bookmark') || '{}');
-  const b = bookmarks[`${semester}${year}`];
-  return b ?? [];
+interface BookmarkState {
+  items: BookmarkItem[];
+}
+
+const getInitialBookmarkState = (): BookmarkState => {
+  const cookieBookmark = Cookies.get('bookmark');
+  return cookieBookmark ? JSON.parse(cookieBookmark) : { items: [] };
 };
 
-const saveBookmarks = (
-  semester: string,
-  year: string,
-  data: BookmarkItem[],
-) => {
-  const bookmarks = JSON.parse(localStorage.getItem('bookmark') || '');
-  bookmarks[`${semester}${year}`] = data;
-  localStorage.setItem('bookmark', JSON.stringify(bookmarks));
-};
-
-export const loadBookmarks = createAsyncThunk(
-  'bookmark/loadBookmarks',
-  async (_, { getState, dispatch }) => {
-    const { semester, year } = (getState() as RootState).selectorValue;
-    const b = getBookmarks(semester, year);
-    saveBookmarks(semester, year, b);
-    dispatch(setBookmarks(b));
-  },
-);
-
-export const addBookmark = createAsyncThunk(
-  'bookmark/addBookmark',
-  async (bookmark: BookmarkItem, { getState, dispatch }) => {
-    const { semester, year } = (getState() as RootState).selectorValue;
-    const currentBookmarks = getBookmarks(semester, year);
-
-    if (
-      !currentBookmarks.some(
-        (b: BookmarkItem) => b.subjectId === bookmark.subjectId,
-      )
-    ) {
-      const updatedBookmarks = [...currentBookmarks, bookmark];
-      saveBookmarks(semester, year, updatedBookmarks);
-      dispatch(setBookmarks(updatedBookmarks));
-    }
-  },
-);
-
-export const editBookmark = createAsyncThunk(
-  'bookmark/editBookmark',
-  async (updatedBookmark: BookmarkItem, { getState, dispatch }) => {
-    const { semester, year } = (getState() as RootState).selectorValue;
-    const currentBookmarks = getBookmarks(semester, year);
-
-    const updatedBookmarks = currentBookmarks.map((b: BookmarkItem) =>
-      b.subjectId === updatedBookmark.subjectId ? updatedBookmark : b,
-    );
-
-    saveBookmarks(semester, year, updatedBookmarks);
-    dispatch(setBookmarks(updatedBookmarks));
-  },
-);
-
-export const removeBookmark = createAsyncThunk(
-  'bookmark/removeBookmark',
-  async (subjectId: string, { getState, dispatch }) => {
-    const { semester, year } = (getState() as RootState).selectorValue;
-    const currentBookmarks = getBookmarks(semester, year);
-
-    const updatedBookmarks = currentBookmarks.filter(
-      (b: BookmarkItem) => b.subjectId !== subjectId,
-    );
-    saveBookmarks(semester, year, updatedBookmarks);
-    dispatch(setBookmarks(updatedBookmarks));
-  },
-);
-
-export const clearBookmark = createAsyncThunk(
-  'bookmark/clearBookmark',
-  async (_, { dispatch }) => {
-    localStorage.removeItem('bookmark');
-    dispatch(setBookmarks([]));
-  },
-);
+const initialState: BookmarkState = getInitialBookmarkState();
 
 const bookmarkSlice = createSlice({
   name: 'bookmark',
-  initialState: getBookmarks('1', '2566') ?? [],
+  initialState,
   reducers: {
-    setBookmarks: (_, action: PayloadAction<BookmarkItem[]>) => action.payload,
-  },
-  extraReducers: (builder) => {
-    builder.addCase(loadBookmarks.fulfilled, (_, action) => action.payload);
+    setBookmarks: (state, action) => {
+      state.items = action.payload;
+    },
+    addBookmark: (state, action: PayloadAction<BookmarkItem>) => {
+      const existingItem = state.items.find(
+        (item) => item.subjectId === action.payload.subjectId,
+      );
+      if (!existingItem) {
+        state.items.push(action.payload);
+      }
+      Cookies.set('bookmark', JSON.stringify(state), { expires: 7 });
+    },
+    editBookmark: (state, action: PayloadAction<BookmarkItem>) => {
+      const existingItem = state.items.find(
+        (item) => item.subjectId === action.payload.subjectId
+      );
+      
+      if (existingItem) {
+        existingItem.selectedSection = action.payload.selectedSection;
+        existingItem.is_show = action.payload.is_show; 
+      } else {
+        state.items.push(action.payload);
+      }
+      Cookies.set('bookmark', JSON.stringify(state), { expires: 7 });
+    },
+    
+    removeBookmark: (state, action: PayloadAction<string>) => {
+      state.items = state.items.filter(
+        (item) => item.subjectId !== action.payload,
+      );
+      Cookies.set('bookmark', JSON.stringify(state), { expires: 7 });
+    },
+    clearBookmark: (state) => {
+      state.items = [];
+      Cookies.remove('bookmark');
+    },
   },
 });
 
-export const { setBookmarks } = bookmarkSlice.actions;
+export const {
+  setBookmarks,
+  addBookmark,
+  editBookmark,
+  removeBookmark,
+  clearBookmark,
+} = bookmarkSlice.actions;
 export default bookmarkSlice.reducer;
-
-export const selectBookmarks = (state: RootState) => state.bookmark;
-
-export const selectIsBookmark = createSelector(
-  [selectBookmarks, (_: RootState, subjectId: string) => subjectId],
-  (bookmarks, subjectId) =>
-    bookmarks.some((b: BookmarkItem) => b.subjectId === subjectId),
-);
-
-export const selectBookmarkDetail = createSelector(
-  [selectBookmarks, (_: RootState, subjectId: string) => subjectId],
-  (bookmarks, subjectId) =>
-    bookmarks.find((b: BookmarkItem) => b.subjectId === subjectId),
-);

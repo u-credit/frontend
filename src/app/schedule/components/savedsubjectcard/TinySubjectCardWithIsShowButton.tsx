@@ -1,4 +1,4 @@
-import { Button, Chip } from '@mui/material';
+import { Button, Chip, Rating } from '@mui/material';
 import { SubjectDto } from '@/Interfaces';
 import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
@@ -6,12 +6,13 @@ import { Checkbox } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { CustomSectionChip, CustomSelect } from '@/components';
 import {
+  setBookmarks,
   addBookmark,
   editBookmark,
   removeBookmark,
 } from '@/features/bookmark/bookmarkSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/features/store';
+import { RootState } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import {
   addBookmarkApi,
@@ -26,17 +27,18 @@ interface SubjectCardProps {
 export default function TinySubjectCardWithIsShowButton({
   subjectDetail,
 }: SubjectCardProps) {
-  const dispatch: AppDispatch = useDispatch();
+  const dispatch = useDispatch();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const bookmark = useSelector((state: RootState) => state.bookmark);
+  const bookmark = useSelector((state: RootState) => state.bookmark.items);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [isBookmarked, setIsBookmarked] = useState(true);
   const [isShow, setIsShow] = useState(false);
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
   const [sectionList, setSectionList] = useState<string[]>([]);
+  
 
   useEffect(() => {
     const isBookmarked = bookmark.find(
@@ -60,7 +62,7 @@ export default function TinySubjectCardWithIsShowButton({
           selectedSection: value,
           semester: Number(semester),
           year: Number(year),
-          isShow: isShow,
+          is_show: isShow,
         }),
       );
 
@@ -70,7 +72,7 @@ export default function TinySubjectCardWithIsShowButton({
           selectedSection: value,
           semester: Number(semester),
           year: Number(year),
-          isShow: isShow,
+          is_show: isShow,
         });
       }
     }
@@ -88,7 +90,7 @@ export default function TinySubjectCardWithIsShowButton({
           selectedSection,
           semester: Number(semester),
           year: Number(year),
-          isShow: isShowInSchedule,
+          is_show: isShowInSchedule,
         }),
       );
 
@@ -98,7 +100,7 @@ export default function TinySubjectCardWithIsShowButton({
           selectedSection,
           semester: Number(semester),
           year: Number(year),
-          isShow: isShowInSchedule,
+          is_show: isShowInSchedule,
         });
       }
     }
@@ -113,7 +115,7 @@ export default function TinySubjectCardWithIsShowButton({
           selectedSection: selectedSection,
           semester: Number(semester),
           year: Number(year),
-          isShow: isShow,
+          is_show: isShow,
         }),
       );
       if (isAuthenticated) {
@@ -122,7 +124,7 @@ export default function TinySubjectCardWithIsShowButton({
           selectedSection: '',
           semester: Number(semester),
           year: Number(year),
-          isShow: isShow,
+          is_show: isShow,
         });
       }
     } else {
@@ -134,7 +136,7 @@ export default function TinySubjectCardWithIsShowButton({
           selectedSection: '',
           semester: Number(semester),
           year: Number(year),
-          isShow: isShow,
+          is_show: isShow,
         });
       }
     }
@@ -173,7 +175,7 @@ export default function TinySubjectCardWithIsShowButton({
     if (bookmarkItem) {
       setIsBookmarked(true);
       setSelectedSection(bookmarkItem.selectedSection || '');
-      setIsShow(bookmarkItem.isShow ?? false);
+      setIsShow(bookmarkItem.is_show ?? false);
     } else {
       setIsBookmarked(false);
       setIsShow(false);
@@ -184,47 +186,43 @@ export default function TinySubjectCardWithIsShowButton({
     <div className="relative">
       <div className="flex  bg-white rounded-lg border-[1px]  border-gray-300">
         <div className="  border-r-[1px] w-[100px] sm:w-[148px] ">
-          <div className="flex flex-col  justify-center items-center h-full sm:py-5 px-2 ">
+          <div className='flex flex-col  justify-center items-center h-full sm:py-5 px-2 '>
             <CustomSelect
-              onSelectedValueChange={handleSelectSectionChange}
-              selectOptions={sectionList.map((section) => ({
-                label: section,
-                value: section,
-              }))}
-              selectedValue={selectedSection}
-              label="sec"
-            />
+                onSelectedValueChange={handleSelectSectionChange}
+                selectOptions={sectionList.map((section) => ({
+                  label: section,
+                  value: section,
+                }))}
+                selectedValue={selectedSection}
+                label='sec'
+              />
             <Checkbox
               checked={
                 isBookmarked &&
                 (bookmark.find(
                   (item) => item.subjectId === subjectDetail.subject_id,
-                )?.isShow ??
+                )?.is_show ??
                   false)
               }
               onChange={handleToggleShow}
               disabled={!selectedSection}
             />
             <div className="flex flex-col items-center text-xs sm:text-base">
-              <span
-                className={!selectedSection ? 'text-gray-500' : 'text-black'}
-              >
-                แสดงในตาราง
-              </span>
+            <span className={!selectedSection ? "text-gray-500" : "text-black"}>
+              แสดงในตาราง
+            </span>
               {!selectedSection && (
                 <span className="text-xs text-red-600">กรุณาเลือก sec</span>
               )}
             </div>
           </div>
+          
         </div>
 
         <div className="sm:flex sm:flex-row w-full justify-between">
           <div className=" w-full  p-5">
             <div className="flex flex-col">
-              <div
-                id="subject-card-header"
-                className="flex flex-col gap-[10px]"
-              >
+              <div id="subject-card-header" className="flex flex-col gap-[10px]">
                 <div id="row-1" className="flex flex-wrap gap-x-6 items-center">
                   <div className="font-bold text-sm sm:text-lg">
                     {subjectDetail.subject_id}
@@ -249,19 +247,12 @@ export default function TinySubjectCardWithIsShowButton({
                       />
                     ))}
                 </div>
-                <div
-                  id="row-2"
-                  className="flex flex-wrap gap-x-2 gap-y-1 sm:text-base text-xs"
-                >
+                <div id="row-2" className="flex flex-wrap gap-x-2 gap-y-1 sm:text-base text-xs">
                   <div>{subjectDetail.credit} หน่วยกิต</div>
                   {daySection.map((section, index) => {
                     if (section === '') return null;
                     return (
-                      <CustomSectionChip
-                        key={index}
-                        day={index}
-                        sec={section}
-                      />
+                      <CustomSectionChip key={index} day={index} sec={section} />
                     );
                   })}
                 </div>
@@ -272,25 +263,26 @@ export default function TinySubjectCardWithIsShowButton({
             id="button-area"
             className=" flex items-end justify-end  pb-5 pr-5 "
           >
-            <Button
-              variant="contained"
-              startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}
-              sx={{
-                fontSize: { xs: '12px', sm: '16px' },
-                width: { xs: '80px', sm: '100px' },
-                backgroundColor: isBookmarked ? 'white' : undefined,
-                color: isBookmarked ? 'primary.main' : undefined,
-                borderStyle: 'solid',
-                borderWidth: 1,
-                borderColor: 'primary.main',
-                '&:hover': {
-                  backgroundColor: isBookmarked ? 'primary.100' : undefined,
-                },
-              }}
-              onClick={handleToggleBookmark}
-            >
-              บันทึก
-            </Button>
+              <Button
+                variant="contained"
+                startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}
+                sx={{
+                  fontSize:{ xs: '12px', sm: '16px' },
+                  width: { xs: '80px', sm: '100px' },
+                  backgroundColor: isBookmarked ? 'white' : undefined,
+                  color: isBookmarked ? 'primary.main' : undefined,
+                  borderStyle: 'solid',
+                  borderWidth: 1,
+                  borderColor: 'primary.main',
+                  '&:hover': {
+                    backgroundColor: isBookmarked ? 'primary.100' : undefined,
+                  },
+                }}
+                onClick={handleToggleBookmark}
+              >
+                บันทึก
+              </Button>
+            
           </div>
         </div>
       </div>

@@ -11,15 +11,10 @@ import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 
 import { SubjectDto } from '@/Interfaces';
-import { AppDispatch, RootState } from '@/features/store';
+import { RootState } from '@/features/store';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
 import { createReview, getReviews, getTeachingOptions } from '@/api/reviewApi';
-import {
-  addBookmark,
-  removeBookmark,
-  selectBookmarkDetail,
-  selectIsBookmark,
-} from '@/features/bookmark/bookmarkSlice';
+import { addBookmark, removeBookmark } from '@/features/bookmark/bookmarkSlice';
 import { addBookmarkApi, deleteBookmarkApi } from '@/api/bookmarkApi';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { chipCategory } from '@/utils';
@@ -44,7 +39,7 @@ export default function Page({
   params: Promise<{ slug: string }>;
 }) {
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
 
@@ -52,7 +47,7 @@ export default function Page({
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const bookmark = useSelector((state: RootState) => state.bookmark);
+  const bookmark = useSelector((state: RootState) => state.bookmark.items);
   const reviews = useSelector((state: RootState) => selectAllReviews(state));
 
   const [subjectDetail, setSubjectDetail] = useState<SubjectDto | null>(null);
@@ -78,12 +73,7 @@ export default function Page({
   const [semesterOptions, setSemesterOptions] = useState<string[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(true);
-  const hasBookmark = useSelector((state: RootState) =>
-    selectIsBookmark(state, slug),
-  );
-  const bookmarkDetail = useSelector((state: RootState) =>
-    selectBookmarkDetail(state, slug),
-  );
+
   useEffect(() => {
     const fetchSubjectDetail = async () => {
       const response = await fetchListSubjectByIds({
@@ -103,8 +93,9 @@ export default function Page({
   }, [slug, semester, year]);
 
   useEffect(() => {
-    setIsBookmarked(hasBookmark);
-    setSelectedSection(bookmarkDetail?.selectedSection || '');
+    const isBookmarked = bookmark.find((item) => item.subjectId === slug);
+    setIsBookmarked(!!isBookmarked);
+    setSelectedSection(isBookmarked?.selectedSection || '');
   }, [slug, bookmark]);
 
   const fetchTeachingOptions = async () => {
@@ -148,10 +139,7 @@ export default function Page({
     if (!isBookmarked) {
       dispatch(addBookmark(bookmarkData));
       if (isAuthenticated) {
-        await addBookmarkApi({
-          ...bookmarkData,
-          selectedSection: '',
-        });
+        await addBookmarkApi({ ...bookmarkData, selectedSection: '' });
       }
     } else {
       setSelectedSection('');
@@ -407,7 +395,7 @@ export default function Page({
               <RatingButtons
                 selectedRating={selectedRating}
                 setSelectedRating={setSelectedRating}
-                reviews={reviews.map((review) => ({
+                reviews={reviews.map(review => ({
                   ...review,
                   year: review.year.toString(),
                   semester: review.semester.toString(),
@@ -428,28 +416,26 @@ export default function Page({
           </div>
 
           <div id="reviews-container">
-            {subjectDetail &&
-              reviews
-                .filter(
-                  (review) =>
-                    !selectedRating || review.rating === selectedRating,
-                )
-                .map((review) => (
-                  <ReviewCard
-                    key={review.review_id}
-                    subjectId={subjectDetail.subject_id}
-                    reviewId={review.review_id}
-                    rating={review.rating}
-                    year={Number(review.year)}
-                    semester={Number(review.semester)}
-                    teacherName={review.teacherName}
-                    reviewText={review.reviewText}
-                    createdAt={review.createdAt}
-                    likeCount={review.likeCount}
-                    isLikedByCurrentUser={review.isLikedByCurrentUser || false}
-                    likedBy={review.likedBy || []}
-                  />
-                ))}
+            {subjectDetail && reviews
+              .filter(
+                (review) => !selectedRating || review.rating === selectedRating,
+              )
+              .map((review) => (
+                <ReviewCard
+                  key={review.review_id}
+                  subjectId={subjectDetail.subject_id}
+                  reviewId={review.review_id}
+                  rating={review.rating}
+                  year={Number(review.year)}
+                  semester={Number(review.semester)}
+                  teacherName={review.teacherName}
+                  reviewText={review.reviewText}
+                  createdAt={review.createdAt}
+                  likeCount={review.likeCount}
+                  isLikedByCurrentUser={review.isLikedByCurrentUser || false}
+                  likedBy={review.likedBy || []}
+                />
+              ))}
           </div>
         </div>
       </div>

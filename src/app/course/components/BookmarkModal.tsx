@@ -1,4 +1,3 @@
-'use client';
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import TinySubjectCard from './TinySubjectCard';
@@ -7,12 +6,12 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import IconButton from '@mui/material/IconButton';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/features/store';
-import { BookmarkItem, SubjectDto } from '@/Interfaces';
+import { RootState } from '@/features/store';
+import { ListSubjectByIdsQueryParams, SubjectDto } from '@/Interfaces';
 import { useCallback, useEffect, useState } from 'react';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
 import { fetchBookmark } from '@/api/bookmarkApi';
-import { loadBookmarks, setBookmarks } from '@/features/bookmark/bookmarkSlice';
+import { setBookmarks } from '@/features/bookmark/bookmarkSlice';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import {
   Accordion,
@@ -29,112 +28,111 @@ interface BookmarkModalProps {
 }
 
 export default function BookmarkModal({ open, onClose }: BookmarkModalProps) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const { semester, year, curriGroup } = useSelector(
     (state: RootState) => state.selectorValue,
   );
-  const bookmarks = useSelector((state: RootState) => state.bookmark);
+  const bookmarks = useSelector((state: RootState) => state.bookmark.items);
   const router = useRouter();
   const handleOpenSchedule = () => {
     router.push(`/schedule`);
   };
+  const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
 
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [sumCredit, setSumCredit] = useState(0);
   const [categoryCredit, setCategoryCredit] = useState<{
     [key: string]: number;
   }>({});
-  const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
-
   useEffect(() => {
     const loadBookmark = async () => {
       try {
-        const response = await fetchBookmark({
-          semester: Number(semester),
-          year: Number(year),
-        });
-        const data = response?.data || [];
-
+        const data =
+          (
+            await fetchBookmark({
+              semester: Number(semester),
+              year: Number(year),
+            })
+          )?.data || [];
         dispatch(
           setBookmarks(
-            data.map((item) => ({
-              subjectId: item.subject_id,
-              semester: Number(item.semester),
-              year: Number(item.year),
-              selectedSection: item.section,
-              isShow: item.is_show,
-            })),
+            data.map((item) => {
+              return {
+                subjectId: item.subject_id,
+                semester: item.semester,
+                year: item.year,
+                selectedSection: item.section,
+              };
+            }),
           ),
         );
       } catch (error) {
-        console.error('Error loading bookmarks:', error);
+        console.error('Error loading bookmark:', error);
       }
     };
-
     if (isAuthenticated) {
       loadBookmark();
     }
   }, [dispatch, isAuthenticated, semester, year]);
 
-  const loadSubjects = useCallback(async () => {
-    if (bookmarks.length === 0) {
-      setListSubjects([]);
-      setSumCredit(0);
-      setCategoryCredit({});
+  const loadSubjects = useCallback(
+    async (isLoadMore = false) => {
+      if (bookmarks.length === 0) {
+        setSumCredit(0);
+        return;
+      }
 
-      return;
-    }
-
-    const getSubjectParams = () => ({
-      semester: Number(semester),
-      year: Number(year),
-      subjectIds: bookmarks.map((item: BookmarkItem) => item.subjectId),
-      ...(curriGroup &&
-        curriGroup.faculty?.value &&
-        curriGroup.department?.value &&
-        curriGroup.curriculum?.value &&
-        curriGroup.curriculumYear?.value && {
-          categoryFacultyId: curriGroup.faculty.value,
-          categoryDepartmentId: curriGroup.department.value,
-          categoryCurriculumId: curriGroup.curriculum.value,
-          categoryCurriculumYear: curriGroup.curriculumYear.value,
-        }),
-    });
-
-    try {
-      const response = await fetchListSubjectByIds(getSubjectParams());
-      const newSubjects = response?.data || [];
-
-      setListSubjects(newSubjects);
-
-      let catCredit: { [key: string]: number } = {};
-      newSubjects.forEach((subject) => {
-        if (!subject?.category || !subject.category[0]?.subgroup_name) return;
-        const key = subject.category
-          .map((cur) => cur.group_name + cur.subgroup_name)
-          .join(' หรือ ');
-        catCredit[key] = (catCredit[key] || 0) + (subject.credit || 0);
+      const getSubjectParams = (): ListSubjectByIdsQueryParams => ({
+        semester: Number(semester),
+        year: Number(year),
+        subjectIds: bookmarks.map((item) => item.subjectId),
+        ...(curriGroup &&
+          curriGroup.faculty.value &&
+          curriGroup.department.value &&
+          curriGroup.curriculum.value &&
+          curriGroup.curriculumYear.value && {
+            categoryFacultyId: curriGroup.faculty.value,
+            categoryDepartmentId: curriGroup.department.value,
+            categoryCurriculumId: curriGroup.curriculum.value,
+            categoryCurriculumYear: curriGroup.curriculumYear.value,
+          }),
       });
 
-      setCategoryCredit(catCredit);
-      const totalCredits = newSubjects
-        .filter(
-          (subject) =>
-            typeof subject.credit === 'number' && !isNaN(subject.credit),
-        )
-        .reduce((acc, subject) => acc + subject.credit, 0);
-      setSumCredit(totalCredits);
+      const params = getSubjectParams();
 
-    } catch (error) {
-      console.error('Error loading subjects:', error);
-    }
-  }, [bookmarks, curriGroup, semester, year]);
+      try {
+        const response = await fetchListSubjectByIds(params);
+        const newSubjects = response?.data || [];
+        setListSubjects((prev) =>
+          isLoadMore ? [...prev, ...newSubjects] : newSubjects,
+        );
+        let catCredit: { [key: string]: number } = {};
+        response?.data?.forEach((subject) => {
+          if (!subject?.category || !subject.category[0]?.subgroup_name) return;
+          const key =
+            subject.category[0].group_name + subject.category[0].subgroup_name;
+          catCredit[key] = catCredit[key]
+            ? catCredit[key] + subject.credit
+            : subject.credit;
+        });
+        setCategoryCredit(catCredit);
+      } catch (error) {
+        console.error('Error loading subjects:', error);
+      } finally {
+      }
+    },
+    [bookmarks, curriGroup, semester, year],
+  );
 
-  //ไม่ใส่ semester&year เพราะ bookmark จะเปลี่ยนตาม semester&year ที่เลือกอยู่แล้ว
   useEffect(() => {
     loadSubjects();
-  }, [bookmarks, curriGroup]);
+  }, [loadSubjects]);
 
+  useEffect(() => {
+    setSumCredit(
+      listSubjects.reduce((acc, subject) => acc + subject.credit, 0),
+    );
+  }, [listSubjects]);
   if (!open) return null;
   return (
     <div className="z-10 flex flex-col bg-white p-5 gap-y-2 lg:gap-y-5 absolute top-[52%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-[10px] max-w-5xl max-h-[90vh] w-11/12 overflow-y-auto ">
@@ -160,17 +158,23 @@ export default function BookmarkModal({ open, onClose }: BookmarkModalProps) {
         </div>
       </div>
       <div className="overflow-y-auto">
-        <div className="flex flex-col gap-y-5 max-h-[50vh]">
-          {bookmarks.map((item: BookmarkItem) => (
-            <TinySubjectCard
-              key={item.subjectId}
-              subjectDetail={
-                listSubjects.find(
-                  (subject) => subject.subject_id === item.subjectId,
-                ) || ({} as SubjectDto)
-              }
-            />
-          ))}
+        <div className="flex flex-col gap-y-5 max-h-[80vh]">
+          {bookmarks
+            .filter(
+              (bookmark) =>
+                bookmark.semester === Number(semester) &&
+                bookmark.year === Number(year),
+            )
+            .map((item) => (
+              <TinySubjectCard
+                key={item.subjectId}
+                subjectDetail={
+                  listSubjects.find(
+                    (subject) => subject.subject_id === item.subjectId,
+                  ) || ({} as SubjectDto)
+                }
+              />
+            ))}
         </div>
       </div>
       {bookmarks.length === 0 && (
@@ -229,7 +233,7 @@ export default function BookmarkModal({ open, onClose }: BookmarkModalProps) {
           </Accordion>
         </div>
       ) : null}
-      <div className="hidden lg:flex flex-col w-full gap-2 lg:max-h-[20vh] lg:overflow-y-auto">
+      <div className="hidden lg:flex flex-col w-full gap-2">
         {Object.entries(categoryCredit).map(([key, value]) => (
           <div key={key}>
             {value} หน่วยกิต{' '}
