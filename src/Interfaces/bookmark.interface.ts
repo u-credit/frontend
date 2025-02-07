@@ -3,7 +3,7 @@ export interface BookmarkItem {
   selectedSection?: string;
   semester: number;
   year: number;
-  is_show: boolean;
+  isShow?: boolean;
 }
 
 export interface BookmarkParam {
@@ -12,9 +12,9 @@ export interface BookmarkParam {
   semester?: number;
   year?: number;
   isShow?: boolean;
-  facultyId?: string;
-  curriculumId?: string;
-  curriculumYear: string;
+  categoryId?: string;
+  groupId?: string;
+  subgroupId?: string;
 }
 
 export interface BookmarkDto {
