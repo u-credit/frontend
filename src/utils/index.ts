@@ -1,7 +1,5 @@
 export * from './arrayHelpers';
 
-export * from './bookmarkHelpers';
-
 export * from './filterValueHelpers';
 
 export * from './formatCategory';

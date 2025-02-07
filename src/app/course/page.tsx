@@ -22,7 +22,7 @@ import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
 import { CustomSearchBar, CustomSelect } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/features/store';
+import { AppDispatch, RootState } from '@/features/store';
 import {
   setCurrigroup,
   setSemester,
@@ -30,6 +30,7 @@ import {
 } from '@/features/selectorValueSlice';
 import TuneIcon from '@mui/icons-material/Tune';
 import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
+import { loadBookmarks } from '@/features/bookmark/bookmarkSlice';
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
@@ -52,7 +53,7 @@ export default function CourseWrapper() {
 }
 
 function Course() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { listSubjects, setListSubjects } = useCourseContext();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
@@ -192,7 +193,7 @@ function Course() {
         }
         setHasMore((response?.meta as CursorMetaDto)?.hasNext ?? false);
       } catch (error) {
-        if (error.name === 'AbortError') {
+        if ((error as Error).name === 'AbortError') {
           console.log('Fetch aborted (ไม่ใช่ error จริง)');
         } else {
           console.error('Error loading subjects:', error);
@@ -392,6 +393,11 @@ function Course() {
     );
     dispatch(setCurrigroup(curriGroup));
   };
+
+  useEffect(() => {
+    dispatch(loadBookmarks());
+  }, [dispatch, semester, year]);
+
   return (
     <main className="flex flex-row bg-gray-100 w-full ">
       <div className="hidden lg:flex fixed w-60  bg-white h-full">
