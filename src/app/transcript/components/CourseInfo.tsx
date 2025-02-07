@@ -1,5 +1,6 @@
 'use client';
 import { fetchListFaculty } from '@/api/facultyApi';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 import { CurriSelectGroup } from '@/components';
 import { CurriGroup } from '@/Interfaces';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
@@ -8,15 +9,12 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 interface StudentInfoProps {
   studentInfo: StudentInfo;
-  selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
 }
 
 export default function CourseInfo({
   studentInfo,
-  selectedCurriGroup,
-  setSelectedCurriGroup,
 }: StudentInfoProps) {
+  const { selectedCurriGroup, setSelectedCurriGroup } = useTranscriptContext();
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
@@ -47,7 +45,7 @@ export default function CourseInfo({
   }, []);
 
   useEffect(() => {
-    if (facultyOptions.length === 0) return; 
+    if (facultyOptions.length === 0) return;
 
     const faculty = facultyOptions.find(
       (f) => f.value === studentInfo.faculty_id,

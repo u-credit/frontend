@@ -11,29 +11,29 @@ import {
 import { calculateCredit } from '@/api/transcriptApi';
 import SubjectContainer from './SubjectContainer';
 import { Box, Button, CircularProgress } from '@mui/material';
-import { setCurrigroup } from '@/features/selectorValueSlice';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 
 interface RecheckPageProps {
-  selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
-  selectedCategory: CategoryGroup;
-  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
-  categoryOptions: SelectOption[];
   file: File;
   onNext: () => void;
 }
 
 export default function RecheckPage({
-  selectedCurriGroup,
-  setSelectedCurriGroup,
-  selectedCategory,
-  setSelectCategory,
-  categoryOptions,
   file,
   onNext,
 }: RecheckPageProps) {
+  const {
+    categoryOptions,
+    selectedCurriGroup,
+    setSelectedCurriGroup,
+    selectedCategory,
+    setSelectCategory,
+  } = useTranscriptContext();
+
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-  const [unknowDetail, setUnknowDetail] = useState<SubjectTranscriptDto[]>([]);
+  const [allUnknowSubject, setAllUnknowSubject] = useState<
+    SubjectTranscriptDto[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   const isDataComplete = () => {
@@ -65,7 +65,7 @@ export default function RecheckPage({
     } catch (error) {}
   };
 
-  const calculate = async () => {
+  const calculate = async (): Promise<void> => {
     try {
       const body = {
         faculty: selectedCurriGroup.faculty.value,
@@ -74,12 +74,8 @@ export default function RecheckPage({
         curriculumYear: selectedCurriGroup.curriculumYear.value,
       };
       const data = (await calculateCredit(file, body))?.data;
-
-      console.log('body', body);
-
-      console.log('file => ', file);
-      const unknowDetail = data?.unknowDetail || [];
-      setUnknowDetail(unknowDetail);
+      const allUnknowSubject = data?.unknowDetail || [];
+      setAllUnknowSubject(allUnknowSubject);
     } catch (error) {}
   };
 
@@ -95,8 +91,8 @@ export default function RecheckPage({
   }, []);
 
   useEffect(() => {
-    console.log('unknowDetail => ', unknowDetail);
-  }, [unknowDetail]);
+    console.log('subjectDetail => ', allUnknowSubject);
+  }, [allUnknowSubject]);
 
   const handleApplyCurriGroup = () => {
     const fetchData = async () => {
@@ -161,10 +157,7 @@ export default function RecheckPage({
             {/* <div className="overflow-y-auto min-h-80 h-[30vh]"> */}
             <div>
               <SubjectContainer
-                subjectDetail={unknowDetail}
-                selectedCategory={selectedCategory}
-                setSelectCategory={setSelectCategory}
-                categoryOptions={categoryOptions}
+                allUnknowSubject={allUnknowSubject}
               />
             </div>
           </div>

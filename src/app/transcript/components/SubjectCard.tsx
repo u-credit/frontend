@@ -1,25 +1,18 @@
 import { Add } from '@mui/icons-material';
 import { Button } from '@mui/material';
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import ModalAddCategory from './ModalAddCategory';
 import {
   CategoryGroup,
   SubjectTranscriptDto,
 } from '@/Interfaces/transcript.interface';
-import { SelectOption } from '@/types';
 
 interface SubjectCardProps {
-  selectedCategory: CategoryGroup;
-  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
-  categoryOptions: SelectOption[];
-  subjectDetail: SubjectTranscriptDto;
+  subject: SubjectTranscriptDto;
 }
 
 export default function SubjectCard({
-  selectedCategory,
-  setSelectCategory,
-  categoryOptions,
-  subjectDetail,
+  subject,
 }: SubjectCardProps) {
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -32,20 +25,16 @@ export default function SubjectCard({
         <div className="flex justify-between w-full h-full">
           <div className="flex flex-col justify-between">
             <div id="row-1" className="flex flex-wrap gap-2 items-center">
-              <div className="font-bold text-md">
-                {subjectDetail.subject_id}
-              </div>
-              <div className="font-bold text-md">
-                {subjectDetail.subject_ename}
-              </div>
-              {subjectDetail.year && subjectDetail.semester ? (
+              <div className="font-bold text-md">{subject.subject_id}</div>
+              <div className="font-bold text-md">{subject.subject_ename}</div>
+              {subject.year && subject.semester ? (
                 <div>
-                  ปี {subjectDetail.year} เทอม {subjectDetail.semester}
+                  ปี {subject.year} เทอม {subject.semester}
                 </div>
               ) : null}
             </div>
             <div id="row-2" className="flex flex-wrap gap-2 items-center">
-              <div>{subjectDetail.credit} หน่วยกิต</div>
+              <div>{subject.credit} หน่วยกิต</div>
             </div>
           </div>
           <div className="flex items-center">
@@ -60,10 +49,7 @@ export default function SubjectCard({
             <ModalAddCategory
               open={isModalOpen}
               onClose={handleCloseModal}
-              selectedCategory={selectedCategory}
-              setSelectCategory={setSelectCategory}
-              categoryOptions={categoryOptions}
-              subjectDetail={subjectDetail}
+              subject={subject}
             />
           </div>
         </div>

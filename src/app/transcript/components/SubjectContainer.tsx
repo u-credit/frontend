@@ -3,31 +3,21 @@ import {
   CategoryGroup,
   SubjectTranscriptDto,
 } from '@/Interfaces/transcript.interface';
-import { Dispatch, SetStateAction } from 'react';
-import { SelectOption } from '@/types';
+import { Dispatch, SetStateAction, use, useEffect } from 'react';
 
 interface SubjectContainerProps {
-  subjectDetail?: SubjectTranscriptDto[];
-  selectedCategory: CategoryGroup;
-  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
-  categoryOptions: SelectOption[];
+  allUnknowSubject?: SubjectTranscriptDto[];
 }
 
 export default function SubjectContainer({
-  subjectDetail,
-  selectedCategory,
-  setSelectCategory,
-  categoryOptions,
+  allUnknowSubject,
 }: SubjectContainerProps) {
   return (
     <div className="flex flex-col gap-4">
-      {subjectDetail?.map((subject) => (
+      {allUnknowSubject?.map((subject) => (
         <SubjectCard
           key={subject.subject_id}
-          selectedCategory={selectedCategory}
-          setSelectCategory={setSelectCategory}
-          categoryOptions={categoryOptions}
-          subjectDetail={subject}
+          subject={subject}
         />
       ))}
     </div>

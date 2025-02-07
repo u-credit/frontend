@@ -8,24 +8,22 @@ import {
 import { initSelectOption, SelectOption } from '@/types';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 
 interface ModalAddCategoryProps {
   open: boolean;
-  selectedCategory: CategoryGroup;
-  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
-  categoryOptions: SelectOption[];
-  subjectDetail: SubjectTranscriptDto;
+  subject: SubjectTranscriptDto;
   onClose: () => void;
 }
 
 export default function ModalAddCategory({
   open,
   onClose,
-  selectedCategory,
-  setSelectCategory,
-  categoryOptions,
-  subjectDetail,
+  subject,
 }: ModalAddCategoryProps) {
+  const { categoryOptions, selectedCategory, setSelectCategory } =
+    useTranscriptContext();
+
   const [isEnableSave, setIsEnableSave] = useState(false);
 
   useEffect(() => {
@@ -87,12 +85,8 @@ export default function ModalAddCategory({
               </IconButton>
             </div>
             <div className="bg-gray-100 rounded-lg flex flex-wrap gap-6 items-center h-14 px-4 border-[1px] border-gray-300">
-              <div className="font-bold text-xl">
-                {subjectDetail.subject_id}
-              </div>
-              <div className="font-bold text-xl">
-                {subjectDetail.subject_ename}
-              </div>
+              <div className="font-bold text-xl">{subject?.subject_id}</div>
+              <div className="font-bold text-xl">{subject?.subject_ename}</div>
             </div>
             <div className="font-mitr font-medium text-[18px]/[26px]">
               เลือกหมวดหมู่ของรายวิชานี้ *

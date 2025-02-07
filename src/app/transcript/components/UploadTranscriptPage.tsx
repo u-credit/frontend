@@ -5,22 +5,21 @@ import { Button } from '@mui/material';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
 import { CurriGroup } from '@/Interfaces';
 import UploadTranscript from './UploadTranscript';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 
 interface UploadTranscriptPageProps {
-  selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
   file: File | null;
   setFile: Dispatch<SetStateAction<File | null>>;
   onNext: () => void;
 }
 
 export default function UploadTranscriptPage({
-  selectedCurriGroup,
-  setSelectedCurriGroup,
   file,
   setFile,
   onNext,
 }: UploadTranscriptPageProps) {
+  const { selectedCurriGroup, setSelectedCurriGroup } = useTranscriptContext();
+
   const [studentInfo, setStudentInfo] = useState<StudentInfo>({
     faculty_id: '',
     dept_id: '',
@@ -33,7 +32,6 @@ export default function UploadTranscriptPage({
 
   const handleStudentInfo = (data: StudentInfo) => {
     setStudentInfo(data);
-    console.log('from student : ', data);
   };
 
   const handleUploadTranscript = (success: boolean) => {
@@ -71,8 +69,6 @@ export default function UploadTranscriptPage({
         <div>
           <CourseInfo
             studentInfo={studentInfo}
-            selectedCurriGroup={selectedCurriGroup}
-            setSelectedCurriGroup={setSelectedCurriGroup}
           />
         </div>
         <div className="border-t border-gray-200"></div>

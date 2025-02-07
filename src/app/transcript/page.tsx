@@ -25,18 +25,13 @@ function Transcript() {
     selectedCurriGroup,
     setSelectedCurriGroup,
     setListCategory,
+    selectedCategory,
+    setSelectCategory,
   } = useTranscriptContext();
 
-  const [currentSection, setCurrentSection] = useState<string>('summary');
+  const [currentSection, setCurrentSection] = useState<string>('upload');
 
   const [file, setFile] = useState<File | null>(null);
-
-  const [selectedCategory, setSelectCategory] = useState<CategoryGroup>({
-    category: initSelectOption(),
-    group: initSelectOption(),
-    subgroup: initSelectOption(),
-    childgroup: initSelectOption(),
-  });
 
   const handleNext = (section: string) => {
     setCurrentSection(section);
@@ -95,8 +90,6 @@ function Transcript() {
         <div className="bg-white h-full rounded-3xl p-10">
           {currentSection === 'upload' && (
             <UploadTranscriptPage
-              selectedCurriGroup={selectedCurriGroup}
-              setSelectedCurriGroup={setSelectedCurriGroup}
               file={file}
               setFile={setFile}
               onNext={() => handleNext('recheck')}
@@ -104,11 +97,6 @@ function Transcript() {
           )}
           {currentSection === 'recheck' && (
             <RecheckPage
-              selectedCurriGroup={selectedCurriGroup}
-              setSelectedCurriGroup={setSelectedCurriGroup}
-              selectedCategory={selectedCategory}
-              setSelectCategory={setSelectCategory}
-              categoryOptions={categoryOptions}
               file={file!}
               onNext={() => handleNext('summary')}
             />
