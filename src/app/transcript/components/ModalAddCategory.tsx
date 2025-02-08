@@ -12,17 +12,23 @@ import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 
 interface ModalAddCategoryProps {
   open: boolean;
-  subject: SubjectTranscriptDto;
   onClose: () => void;
+  subject: SubjectTranscriptDto;
+  isSubjectAddCategory?: boolean;
 }
 
 export default function ModalAddCategory({
   open,
   onClose,
   subject,
+  isSubjectAddCategory,
 }: ModalAddCategoryProps) {
-  const { categoryOptions, selectedCategory, setSelectCategory } =
-    useTranscriptContext();
+  const {
+    categoryOptions,
+    selectedCategory,
+    setSelectCategory,
+    setAllUnknowSubject,
+  } = useTranscriptContext();
 
   const [isEnableSave, setIsEnableSave] = useState(false);
 
@@ -61,6 +67,35 @@ export default function ModalAddCategory({
     setIsEnableSave(false);
   }, [selectedCategory]);
 
+  useEffect(() => {
+    if (open && isSubjectAddCategory) {
+      const category = categoryOptions.find(
+        (c) => c.value == String(subject.category),
+      );
+
+      const group = category?.children?.find(
+        (g) => g.value == String(subject.group),
+      );
+
+      const subgroup = group?.children?.find(
+        (sg) => sg.value == String(subject.subgroup),
+      );
+
+      const childgroup = subgroup?.children?.find(
+        (cg) => cg.value == String(subject.childgroup),
+      );
+
+      const selectCategory = {
+        category: category || initSelectOption(),
+        group: group || initSelectOption(),
+        subgroup: subgroup || initSelectOption(),
+        childgroup: childgroup || initSelectOption(),
+      };
+
+      setSelectCategory(selectCategory);
+    }
+  }, [open, isSubjectAddCategory]);
+
   const handleClose = () => {
     setSelectCategory({
       category: initSelectOption(),
@@ -69,6 +104,24 @@ export default function ModalAddCategory({
       childgroup: initSelectOption(),
     });
     onClose();
+  };
+
+  const handleSave = () => {
+    setAllUnknowSubject((prev) =>
+      prev.map((prev_subject) =>
+        prev_subject.subject_id === subject.subject_id
+          ? {
+              ...prev_subject,
+              category: Number(selectedCategory.category.value),
+              group: Number(selectedCategory.group.value),
+              subgroup: Number(selectedCategory.subgroup.value),
+              childgroup: Number(selectedCategory.childgroup.value),
+            }
+          : prev_subject,
+      ),
+    );
+
+    handleClose();
   };
 
   return (
@@ -101,7 +154,7 @@ export default function ModalAddCategory({
             <div className="flex justify-end pt-1">
               <Button
                 startIcon={<SaveIcon />}
-                onClick={handleClose}
+                onClick={handleSave}
                 size="large"
                 variant="contained"
                 disabled={!isEnableSave}

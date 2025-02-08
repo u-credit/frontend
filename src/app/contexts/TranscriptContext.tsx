@@ -9,7 +9,7 @@ import {
   useEffect,
 } from 'react';
 import { mockSelectedCurriGroup } from '../transcript/components/mock';
-import { CategoryGroup } from '@/Interfaces/transcript.interface';
+import { CategoryGroup, SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
 
 interface TranscriptContextType {
   categoryOptions: SelectOption[];
@@ -20,6 +20,8 @@ interface TranscriptContextType {
   setListCategory: React.Dispatch<React.SetStateAction<any>>;
   selectedCategory: CategoryGroup;
   setSelectCategory: React.Dispatch<React.SetStateAction<CategoryGroup>>;
+  allUnknowSubject?: SubjectTranscriptDto[];
+  setAllUnknowSubject: React.Dispatch<React.SetStateAction<SubjectTranscriptDto[]>>;
 }
 
 const TranscriptContext = createContext<TranscriptContextType | null>(null);
@@ -53,6 +55,10 @@ function TranscriptProvider({ children }: { children: ReactNode }) {
     childgroup: initSelectOption(),
   });
 
+  const [allUnknowSubject, setAllUnknowSubject] = useState<
+    SubjectTranscriptDto[]
+  >([]);
+
   const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
   const [listCategory, setListCategory] = useState<SelectOption[]>([]);
 
@@ -67,6 +73,8 @@ function TranscriptProvider({ children }: { children: ReactNode }) {
         setListCategory,
         selectedCategory,
         setSelectCategory,
+        allUnknowSubject,
+        setAllUnknowSubject,
       }}
     >
       {children}

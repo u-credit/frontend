@@ -18,25 +18,21 @@ interface RecheckPageProps {
   onNext: () => void;
 }
 
-export default function RecheckPage({
-  file,
-  onNext,
-}: RecheckPageProps) {
+export default function RecheckPage({ file, onNext }: RecheckPageProps) {
   const {
     categoryOptions,
     selectedCurriGroup,
     setSelectedCurriGroup,
     selectedCategory,
     setSelectCategory,
+    allUnknowSubject,
+    setAllUnknowSubject,
   } = useTranscriptContext();
 
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-  const [allUnknowSubject, setAllUnknowSubject] = useState<
-    SubjectTranscriptDto[]
-  >([]);
   const [loading, setLoading] = useState(true);
 
-  const isDataComplete = () => {
+  const isCurriGroupComplete = () => {
     return Object.values(selectedCurriGroup).every(
       (field) => field.value !== '',
     );
@@ -109,6 +105,17 @@ export default function RecheckPage({
     fetchData();
   };
 
+  const isSubjectComplete = () => {
+    return allUnknowSubject?.every((subject) =>
+      Object.values({
+        category: subject.category,
+        group: subject.group,
+        subgroup: subject.subgroup,
+        childgroup: subject.childgroup,
+      }).every((value) => value !== null),
+    );
+  };
+
   return (
     <div>
       <div className="flex flex-col gap-10 justify-center ">
@@ -134,7 +141,7 @@ export default function RecheckPage({
           />
           <Button
             onClick={handleApplyCurriGroup}
-            disabled={isDataComplete() ? false : true}
+            disabled={isCurriGroupComplete() ? false : true}
           >
             บันทึก
           </Button>
@@ -150,17 +157,28 @@ export default function RecheckPage({
             <CircularProgress />
           </Box>
         ) : (
-          <div className="flex flex-col gap-10">
-            <div className="font-mitr font-medium text-[18px]/[26px]">
-              รายวิชาที่ไม่ปรากฎในเล่มหลักสูตรของคุณ
+          <>
+            <div className="flex flex-col gap-10">
+              <div className="font-mitr font-medium text-[18px]/[26px]">
+                รายวิชาที่ไม่ปรากฎในเล่มหลักสูตรของคุณ
+              </div>
+              {/* <div className="overflow-y-auto min-h-80 h-[30vh]"> */}
+              <div>
+                <SubjectContainer allUnknowSubject={allUnknowSubject} />
+              </div>
             </div>
-            {/* <div className="overflow-y-auto min-h-80 h-[30vh]"> */}
-            <div>
-              <SubjectContainer
-                allUnknowSubject={allUnknowSubject}
-              />
+
+            <div className="flex justify-center">
+              <Button
+                size="large"
+                variant="contained"
+                disabled={isSubjectComplete() ? false : true}
+                onClick={onNext}
+              >
+                <div className="text-lg font-semibold">ไปต่อ</div>
+              </Button>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

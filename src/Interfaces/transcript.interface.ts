@@ -14,6 +14,7 @@ export interface SubjectTranscriptDto {
   category?: number;
   group?: number;
   subgroup?: number;
+  childgroup?: number;
   credit: number;
   semester: string | null;
   year: string | null;
