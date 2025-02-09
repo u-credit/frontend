@@ -46,12 +46,7 @@ export const addBookmarkApi = async (
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({
-        subject_id: params.subjectId,
-        semester: params.semester,
-        year: params.year,
-        section: params.selectedSection,
-      }),
+      body: JSON.stringify(params),
     },
   );
 
@@ -69,12 +64,7 @@ export const deleteBookmarkApi = async (
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({
-        subject_id: params.subjectId,
-        semester: params.semester,
-        year: params.year,
-        section: params.selectedSection,
-      }),
+      body: JSON.stringify(params),
     },
   );
 
@@ -92,12 +82,7 @@ export const updateBookmarkApi = async (
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({
-        subject_id: params.subjectId,
-        semester: params.semester,
-        year: params.year,
-        section: params.selectedSection,
-      }),
+      body: JSON.stringify(params),
     },
   );
 
@@ -130,5 +115,22 @@ export const fetchBookmarkDetail = async (
     },
   );
 
+  return res.json();
+};
+
+export const addMultipleBookmarkApi = async (
+  params: BookmarkItem[],
+): Promise<Response<BookmarkDto[]>> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/bulk`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(params),
+    },
+  );
   return res.json();
 };

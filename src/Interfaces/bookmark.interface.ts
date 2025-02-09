@@ -1,20 +1,23 @@
 export interface BookmarkItem {
   subjectId: string;
-  selectedSection?: string;
+  section?: string | null;
   semester: number;
   year: number;
-  is_show: boolean;
+  isShow?: boolean;
+  category?: string | null;
+  group?: string | null;
+  subgroup?: string | null;
 }
 
 export interface BookmarkParam {
   subjectId?: string;
-  selectedSection?: string;
+  section?: string | null;
   semester?: number;
   year?: number;
   isShow?: boolean;
-  facultyId?: string;
-  curriculumId?: string;
-  curriculumYear: string;
+  category?: string | null;
+  group?: string | null;
+  subgroup?: string | null;
 }
 
 export interface BookmarkDto {
@@ -22,12 +25,12 @@ export interface BookmarkDto {
   subject_tname: string;
   subject_ename: string;
   credit: number;
-  category?: number;
-  group?: number;
-  subgroup?: number;
+  category?: number | null;
+  group?: number | null;
+  subgroup?: number | null;
   semester: string;
   year: string;
-  section?: string;
+  section?: string | null;
   created_at?: string;
   updated_at?: string;
   is_show?: boolean;
