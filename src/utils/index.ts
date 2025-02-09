@@ -2,6 +2,8 @@ export * from './arrayHelpers';
 
 export * from './bookmarkHelpers';
 
+export * from './facultyHelpers';
+
 export * from './filterValueHelpers';
 
 export * from './formatCategory';

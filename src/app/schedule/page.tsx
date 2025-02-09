@@ -4,113 +4,91 @@ import Timetable from './components/timetable/components/Timetable';
 import Tabs from './components/tabs/tabs';
 import DownloadButton from './components/downloadButton/Button';
 import * as React from 'react';
-import { RootState } from '@/features/store';
-import { ListSubjectByIdsQueryParams, SubjectDto } from '@/Interfaces';
-import { useCallback, useEffect, useState } from 'react';
-import { fetchListSubjectByIds } from '@/api/subjectApi';
+import { AppDispatch, RootState } from '@/features/store';
+import { BookmarkItem } from '@/Interfaces';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBookmark } from '@/api/bookmarkApi';
-import { setBookmarks } from '@/features/bookmark/bookmarkSlice';
+import {
+  BookmarkStateItem,
+  loadBookmarks,
+  saveBookmarks,
+  selectScheduledItems,
+  setBookmarks,
+} from '@/features/bookmark/bookmarkSlice';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import { fetchListSubjectByIds } from '@/api/subjectApi';
+import { formatBookmarksDtoToItem, getCategoryCredit } from '@/utils';
 
 export default function Home() {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
   const { semester, year, curriGroup } = useSelector(
-    (state: RootState) => state.selectorValue
+    (state: RootState) => state.selectorValue,
   );
   const bookmarks = useSelector((state: RootState) => state.bookmark.items);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
   const [sumCredit, setSumCredit] = useState(0);
-  const [categoryCredit, setCategoryCredit] = useState<{ [key: string]: number }>({});
+  const [categoryCredit, setCategoryCredit] = useState<{
+    [key: string]: number;
+  }>({});
+  const scheduledItems = useSelector((state: RootState) =>
+    selectScheduledItems(state),
+  );
 
   useEffect(() => {
     const loadBookmark = async () => {
-
       try {
-        const data = (
-          await fetchBookmark({ semester: Number(semester), year: Number(year) })
-        )?.data || [];
-        dispatch(
-          setBookmarks(
-            data.map((item) => ({
-              subjectId: item.subject_id,
-              semester: item.semester,
-              year: item.year,
-              selectedSection: item.section,
-            }))
-          )
-        );
-        // console.log(bookmarks)
+        const response = await fetchBookmark({
+          semester: Number(semester),
+          year: Number(year),
+        });
+        const data = response?.data || [];
+        const formatData = formatBookmarksDtoToItem(data);
+        const response2 = (
+          await fetchListSubjectByIds({
+            semester: Number(semester),
+            year: Number(year),
+            subjectIds: [...formatData.map((item) => item.subjectId)],
+          })
+        ).data;
+
+        if (response.data.length > 0) {
+          const updatedBookmarksWithDetail: BookmarkStateItem[] =
+            formatData.map((item) => {
+              const subject = response2.find(
+                (subject) => subject.subject_id === item.subjectId,
+              );
+              return {
+                ...item,
+                detail: subject,
+              };
+            });
+
+          saveBookmarks(semester, year, updatedBookmarksWithDetail);
+          dispatch(setBookmarks(updatedBookmarksWithDetail));
+        } else {
+          saveBookmarks(semester, year, formatData);
+          dispatch(setBookmarks(formatData));
+          console.log('No subject details found for bookmarks');
+        }
       } catch (error) {
-        console.error('Error loading bookmark:', error);
+        console.error('Error loading bookmarks:', error);
       }
     };
 
     if (isAuthenticated) {
       loadBookmark();
+    } else {
+      dispatch(loadBookmarks());
     }
   }, [dispatch, isAuthenticated, semester, year]);
 
-  const loadSubjects = useCallback(async () => {
-    if (bookmarks.length === 0) {
-      setSumCredit(0);
-      return;
-    }
-
-    const getSubjectParams = (): ListSubjectByIdsQueryParams => ({
-      semester: Number(semester),
-      year: Number(year),
-      subjectIds: bookmarks.map((item) => item.subjectId),
-      ...(curriGroup &&
-        curriGroup.faculty.value &&
-        curriGroup.department.value &&
-        curriGroup.curriculum.value &&
-        curriGroup.curriculumYear.value && {
-          categoryFacultyId: curriGroup.faculty.value,
-          categoryDepartmentId: curriGroup.department.value,
-          categoryCurriculumId: curriGroup.curriculum.value,
-          categoryCurriculumYear: curriGroup.curriculumYear.value,
-        }),
-    });
-
-    const params = getSubjectParams();
-
-    try {
-      const response = await fetchListSubjectByIds(params);
-      const newSubjects = response?.data || [];
-      setListSubjects(newSubjects);
-
-      let catCredit: { [key: string]: number } = {};
-      response?.data?.forEach((subject) => {
-        if (!subject?.category || !subject.category[0]?.subgroup_name) return;
-        const key =
-          subject.category[0].group_name + subject.category[0].subgroup_name;
-        catCredit[key] = catCredit[key]
-          ? catCredit[key] + subject.credit
-          : subject.credit;
-      });
-      setCategoryCredit(catCredit);
-
-      setSumCredit(
-        listSubjects
-          .filter(subject => 
-            bookmarks.some(bookmark => 
-              bookmark.subjectId === subject.subject_id && 
-              bookmark.is_show
-            )
-          )
-          .reduce((acc, subject) => acc + subject.credit, 0)
-      );
-    } catch (error) {
-      console.error('Error loading subjects:', error);
-    }
-  }, [bookmarks, curriGroup, semester, year]);
-
   useEffect(() => {
-    loadSubjects();
-  }, [loadSubjects]);
+    const { categoryCredit, total } = getCategoryCredit(bookmarks);
+    setCategoryCredit(categoryCredit);
+    setSumCredit(total);
+  }, [bookmarks]);
 
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
@@ -135,19 +113,12 @@ export default function Home() {
           </div>
         </div>
         <div className="timetable-container">
-        <Timetable
-          subjects={listSubjects.filter((subject) => 
-            bookmarks.some((bookmark) => 
-              bookmark.subjectId === subject.subject_id && bookmark.is_show 
-            )
-          )}
-          section={bookmarks
-            .filter(bookmark => bookmark.is_show)
-            .map(bookmark => ({
-              subjectId: bookmark.subjectId,
-              selectedSection: bookmark.selectedSection
-            }))
-          }
+          <Timetable
+            subjects={scheduledItems}
+            section={scheduledItems.map((item: BookmarkItem) => ({
+              subjectId: item.subjectId,
+              selectedSection: item.section,
+            }))}
           />
         </div>
 
@@ -156,11 +127,7 @@ export default function Home() {
         </div>
 
         <div className="my-[40px]">
-          <Tabs
-            listSubjects={listSubjects}
-            sumCredit={sumCredit}
-            categoryCredit={categoryCredit}
-          />
+          <Tabs sumCredit={sumCredit} categoryCredit={categoryCredit} />
         </div>
       </div>
     </main>
