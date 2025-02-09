@@ -15,23 +15,27 @@ import {
   saveBookmarks,
   selectScheduledItems,
   setBookmarks,
+  summaryCategoryShedule,
 } from '@/features/bookmark/bookmarkSlice';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
-import { formatBookmarksDtoToItem, getCategoryCredit } from '@/utils';
+import { formatBookmarksDtoToItem } from '@/utils';
 
 export default function Home() {
   const dispatch: AppDispatch = useDispatch();
-  const { semester, year, curriGroup } = useSelector(
+  const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
-  const bookmarks = useSelector((state: RootState) => state.bookmark.items);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const [sumCredit, setSumCredit] = useState(0);
+  const summaryCredit = useSelector((state: RootState) =>
+    summaryCategoryShedule(state),
+  );
   const [categoryCredit, setCategoryCredit] = useState<{
     [key: string]: number;
-  }>({});
+  }>(summaryCredit.categoryCredit);
+  const [sumCredit, setSumCredit] = useState(summaryCredit.total);
+
   const scheduledItems = useSelector((state: RootState) =>
     selectScheduledItems(state),
   );
@@ -85,10 +89,9 @@ export default function Home() {
   }, [dispatch, isAuthenticated, semester, year]);
 
   useEffect(() => {
-    const { categoryCredit, total } = getCategoryCredit(bookmarks);
-    setCategoryCredit(categoryCredit);
-    setSumCredit(total);
-  }, [bookmarks]);
+    setCategoryCredit(summaryCredit.categoryCredit);
+    setSumCredit(summaryCredit.total);
+  }, [summaryCredit]);
 
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">

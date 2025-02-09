@@ -33,11 +33,13 @@ export const getCategoryCredit = (
   let totalCredits = 0;
   bookmarks.forEach((bm) => {
     const detail = bm.detail;
-    if (!detail?.category || !detail?.category[0]?.subgroup_name) return;
-    const key = detail.category
-      .map((cur) => cur.group_name + cur.subgroup_name)
-      .join(' หรือ ');
-    catCredit[key] = (catCredit[key] || 0) + (detail.credit || 0);
+    if (!detail) return;
+    if (detail?.category && detail?.category[0]?.subgroup_name) {
+      const key = detail.category
+        .map((cur) => cur.group_name + cur.subgroup_name)
+        .join(' หรือ ');
+      catCredit[key] = (catCredit[key] || 0) + (detail.credit || 0);
+    }
     totalCredits += detail.credit || 0;
   });
 

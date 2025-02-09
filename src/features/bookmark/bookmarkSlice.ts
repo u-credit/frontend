@@ -7,7 +7,7 @@ import {
 } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
-import { getCurriGroupParam } from '@/utils';
+import { getCategoryCredit, getCurriGroupParam } from '@/utils';
 
 export interface BookmarkStateItem extends BookmarkItem {
   detail?: SubjectDto;
@@ -198,4 +198,30 @@ export const selectBookmarkDetail = createSelector(
   [selectBookmarks, (_: RootState, subjectId: string) => subjectId],
   (bookmarks, subjectId) =>
     bookmarks.find((b: BookmarkStateItem) => b.subjectId === subjectId),
+);
+
+export const summaryCategoryBookmark = createSelector(
+  [selectBookmarks],
+  (
+    bookmarks,
+  ): {
+    categoryCredit: { [key: string]: number };
+    total: number;
+  } => {
+    const { categoryCredit, total } = getCategoryCredit(bookmarks);
+    return { categoryCredit, total };
+  },
+);
+
+export const summaryCategoryShedule = createSelector(
+  [selectScheduledItems],
+  (
+    bookmarks,
+  ): {
+    categoryCredit: { [key: string]: number };
+    total: number;
+  } => {
+    const { categoryCredit, total } = getCategoryCredit(bookmarks);
+    return { categoryCredit, total };
+  },
 );

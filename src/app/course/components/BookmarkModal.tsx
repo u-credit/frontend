@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/features/store';
 import { SubjectDto } from '@/Interfaces';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -16,35 +16,36 @@ import {
   Chip,
   Typography,
 } from '@mui/material';
-
+import { summaryCategoryBookmark } from '@/features/bookmark/bookmarkSlice';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
-import { getCategoryCredit } from '@/utils';
 interface BookmarkModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-export default function BookmarkModal({ open, onClose }: BookmarkModalProps) {
-  const { semester, year, curriGroup } = useSelector(
+export default function BookmarkModal({ onClose }: BookmarkModalProps) {
+  const { curriGroup } = useSelector(
     (state: RootState) => state.selectorValue,
   );
   const bookmarks = useSelector((state: RootState) => state.bookmark.items);
+  const summaryCredit = useSelector((state: RootState) =>
+    summaryCategoryBookmark(state),
+  );
   const router = useRouter();
   const handleOpenSchedule = () => {
     router.push(`/schedule`);
   };
 
-  const [sumCredit, setSumCredit] = useState(0);
+  const [sumCredit, setSumCredit] = useState(summaryCredit.total);
   const [categoryCredit, setCategoryCredit] = useState<{
     [key: string]: number;
-  }>({});
+  }>(summaryCredit.categoryCredit);
 
   useEffect(() => {
-    const { categoryCredit, total } = getCategoryCredit(bookmarks);
-    setCategoryCredit(categoryCredit);
-    setSumCredit(total);
-  }, [bookmarks]);
+    setCategoryCredit(summaryCredit.categoryCredit);
+    setSumCredit(summaryCredit.total);
+  }, [summaryCredit]);
 
   return (
     <div className="z-10 flex flex-col bg-white p-5 gap-y-2 lg:gap-y-5 absolute top-[52%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-[10px] max-w-5xl max-h-[90vh] w-11/12 overflow-y-auto ">
