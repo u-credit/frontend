@@ -9,7 +9,10 @@ import {
   useEffect,
 } from 'react';
 import { mockSelectedCurriGroup } from '../transcript/components/mock';
-import { CategoryGroup, SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
+import {
+  CategoryGroup,
+  SubjectTranscriptDto,
+} from '@/Interfaces/transcript.interface';
 
 interface TranscriptContextType {
   categoryOptions: SelectOption[];
@@ -20,8 +23,14 @@ interface TranscriptContextType {
   setListCategory: React.Dispatch<React.SetStateAction<any>>;
   selectedCategory: CategoryGroup;
   setSelectCategory: React.Dispatch<React.SetStateAction<CategoryGroup>>;
-  allUnknowSubject?: SubjectTranscriptDto[];
-  setAllUnknowSubject: React.Dispatch<React.SetStateAction<SubjectTranscriptDto[]>>;
+  unmatchSubjects?: SubjectTranscriptDto[];
+  setUnmatchSubjects: React.Dispatch<
+    React.SetStateAction<SubjectTranscriptDto[]>
+  >;
+  matchSubjects?: SubjectTranscriptDto[];
+  setMatchSubjects: React.Dispatch<
+    React.SetStateAction<SubjectTranscriptDto[]>
+  >;
 }
 
 const TranscriptContext = createContext<TranscriptContextType | null>(null);
@@ -55,7 +64,11 @@ function TranscriptProvider({ children }: { children: ReactNode }) {
     childgroup: initSelectOption(),
   });
 
-  const [allUnknowSubject, setAllUnknowSubject] = useState<
+  const [unmatchSubjects, setUnmatchSubjects] = useState<
+    SubjectTranscriptDto[]
+  >([]);
+
+  const [matchSubjects, setMatchSubjects] = useState<
     SubjectTranscriptDto[]
   >([]);
 
@@ -73,8 +86,10 @@ function TranscriptProvider({ children }: { children: ReactNode }) {
         setListCategory,
         selectedCategory,
         setSelectCategory,
-        allUnknowSubject,
-        setAllUnknowSubject,
+        unmatchSubjects,
+        setUnmatchSubjects,
+        matchSubjects,
+        setMatchSubjects,
       }}
     >
       {children}

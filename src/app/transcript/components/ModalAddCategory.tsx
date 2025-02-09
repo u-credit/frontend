@@ -27,7 +27,7 @@ export default function ModalAddCategory({
     categoryOptions,
     selectedCategory,
     setSelectCategory,
-    setAllUnknowSubject,
+    setUnmatchSubjects,
   } = useTranscriptContext();
 
   const [isEnableSave, setIsEnableSave] = useState(false);
@@ -107,7 +107,7 @@ export default function ModalAddCategory({
   };
 
   const handleSave = () => {
-    setAllUnknowSubject((prev) =>
+    setUnmatchSubjects((prev) =>
       prev.map((prev_subject) =>
         prev_subject.subject_id === subject.subject_id
           ? {

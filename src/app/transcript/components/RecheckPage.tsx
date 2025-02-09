@@ -8,10 +8,11 @@ import {
   CategoryGroup,
   SubjectTranscriptDto,
 } from '@/Interfaces/transcript.interface';
-import { calculateCredit } from '@/api/transcriptApi';
+import { calculateCredit, createTranscript } from '@/api/transcriptApi';
 import SubjectContainer from './SubjectContainer';
 import { Box, Button, CircularProgress } from '@mui/material';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
+import { formatDataForCreateTranscript } from '@/utils/transcriptRecheckHelper';
 
 interface RecheckPageProps {
   file: File;
@@ -25,8 +26,10 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
     setSelectedCurriGroup,
     selectedCategory,
     setSelectCategory,
-    allUnknowSubject,
-    setAllUnknowSubject,
+    unmatchSubjects,
+    setUnmatchSubjects,
+    matchSubjects,
+    setMatchSubjects,
   } = useTranscriptContext();
 
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
@@ -70,8 +73,11 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
         curriculumYear: selectedCurriGroup.curriculumYear.value,
       };
       const data = (await calculateCredit(file, body))?.data;
-      const allUnknowSubject = data?.unknowDetail || [];
-      setAllUnknowSubject(allUnknowSubject);
+      const unmatchSubjects = data?.unmatchSubjects || [];
+      setUnmatchSubjects(unmatchSubjects);
+
+      const matchSubjects = data?.matchSubjects || [];
+      setMatchSubjects(matchSubjects);
     } catch (error) {}
   };
 
@@ -87,8 +93,8 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
   }, []);
 
   useEffect(() => {
-    console.log('subjectDetail => ', allUnknowSubject);
-  }, [allUnknowSubject]);
+    console.log('subjectDetail => ', unmatchSubjects);
+  }, [unmatchSubjects]);
 
   const handleApplyCurriGroup = () => {
     const fetchData = async () => {
@@ -106,7 +112,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
   };
 
   const isSubjectComplete = () => {
-    return allUnknowSubject?.every((subject) =>
+    return unmatchSubjects?.every((subject) =>
       Object.values({
         category: subject.category,
         group: subject.group,
@@ -114,6 +120,17 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
         childgroup: subject.childgroup,
       }).every((value) => value !== null),
     );
+  };
+
+  const handleUploadTranscript = async () => {
+    const data = formatDataForCreateTranscript(
+      selectedCurriGroup,
+      matchSubjects || [],
+      unmatchSubjects || [],
+    );
+
+    await createTranscript(data);
+    onNext();
   };
 
   return (
@@ -164,7 +181,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
               </div>
               {/* <div className="overflow-y-auto min-h-80 h-[30vh]"> */}
               <div>
-                <SubjectContainer allUnknowSubject={allUnknowSubject} />
+                <SubjectContainer unmatchSubjects={unmatchSubjects} />
               </div>
             </div>
 
@@ -172,8 +189,8 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
               <Button
                 size="large"
                 variant="contained"
-                disabled={isSubjectComplete() ? false : true}
-                onClick={onNext}
+                // disabled={isSubjectComplete() ? false : true}
+                onClick={handleUploadTranscript}
               >
                 <div className="text-lg font-semibold">ไปต่อ</div>
               </Button>

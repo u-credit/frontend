@@ -6,15 +6,15 @@ import {
 import { Dispatch, SetStateAction, use, useEffect } from 'react';
 
 interface SubjectContainerProps {
-  allUnknowSubject?: SubjectTranscriptDto[];
+  unmatchSubjects?: SubjectTranscriptDto[];
 }
 
 export default function SubjectContainer({
-  allUnknowSubject,
+  unmatchSubjects,
 }: SubjectContainerProps) {
   return (
     <div className="flex flex-col gap-4">
-      {allUnknowSubject?.map((subject) => (
+      {unmatchSubjects?.map((subject) => (
         <SubjectCard
           key={subject.subject_id}
           subject={subject}

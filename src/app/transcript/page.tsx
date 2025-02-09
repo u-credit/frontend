@@ -9,6 +9,8 @@ import SummaryPage from './components/SummaryPage';
 import TranscriptProvider, {
   useTranscriptContext,
 } from '@/app/contexts/TranscriptContext';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '@/features/auth/authSlice';
 
 export default function TranscriptWrapper() {
   return (
@@ -29,9 +31,15 @@ function Transcript() {
     setSelectCategory,
   } = useTranscriptContext();
 
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
   const [currentSection, setCurrentSection] = useState<string>('upload');
 
   const [file, setFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    console.log('isAuthenticated', isAuthenticated);
+  }, []);
 
   const handleNext = (section: string) => {
     setCurrentSection(section);
@@ -96,10 +104,7 @@ function Transcript() {
             />
           )}
           {currentSection === 'recheck' && (
-            <RecheckPage
-              file={file!}
-              onNext={() => handleNext('summary')}
-            />
+            <RecheckPage file={file!} onNext={() => handleNext('summary')} />
           )}
         </div>
       </div>
