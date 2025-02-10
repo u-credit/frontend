@@ -50,17 +50,14 @@ export const fetchListSubjectByIds = async (
     }
   });
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.subjectByIds}?${queryParams}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.subjectByIds}?${queryParams}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    );
-    return res.json();
-  } catch (error) {}
-  return { data: [] };
+    },
+  );
+  return res.json();
 };

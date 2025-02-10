@@ -91,7 +91,6 @@ export default function CurriSelectContainer({
               variant="contained"
               sx={{ minWidth: '80px' }}
               onClick={handleApplyCurri}
-              disabled={selectedCurriGroup.curriculumYear.value === ''}
             >
               ปรับใช้
             </Button>

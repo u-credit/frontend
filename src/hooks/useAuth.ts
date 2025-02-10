@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
-import { login, refreshAccessToken } from '@/features/auth/authSlice';
-import { AppDispatch } from '@/features/store';
+import { refreshAccessToken, logout, login } from '../features/auth/authSlice';
 import { fetchAccessToken } from '@/api/authApi';
+import { AppDispatch } from '@/features/store';
 import { handleLogout } from '@/features/auth/authAction';
 
 export const useAuth = () => {
@@ -28,15 +28,15 @@ export const useAuth = () => {
       }
     };
     fetchToken();
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
       const timer = setTimeout(
         () => {
-          dispatch(refreshAccessToken());
+          dispatch<any>(refreshAccessToken());
         },
-        sessionDuration - 60 * 1000,
+        sessionDuration - 60 * 1000, // รีเฟรชก่อนหมดเวลา 1 นาที
       );
 
       return () => clearTimeout(timer);

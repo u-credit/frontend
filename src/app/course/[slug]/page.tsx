@@ -11,15 +11,10 @@ import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 
 import { SubjectDto } from '@/Interfaces';
-import { AppDispatch, RootState } from '@/features/store';
+import { RootState } from '@/features/store';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
 import { createReview, getReviews, getTeachingOptions } from '@/api/reviewApi';
-import {
-  addBookmark,
-  removeBookmark,
-  selectBookmarkDetail,
-  selectIsBookmark,
-} from '@/features/bookmark/bookmarkSlice';
+import { addBookmark, removeBookmark } from '@/features/bookmark/bookmarkSlice';
 import { addBookmarkApi, deleteBookmarkApi } from '@/api/bookmarkApi';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { chipCategory } from '@/utils';
@@ -37,7 +32,6 @@ import RatingButtons from '@/app/review/components/RatingButtons';
 import CustomAlert from '@/components/CustomAlert';
 import { profanityFilter } from '@/utils/profanityFilter';
 import AuthModal from '@/app/review/components/AuthModal';
-import Backdrop from '@/components/Backdrop';
 
 export default function Page({
   params,
@@ -45,7 +39,7 @@ export default function Page({
   params: Promise<{ slug: string }>;
 }) {
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
 
@@ -79,12 +73,7 @@ export default function Page({
   const [semesterOptions, setSemesterOptions] = useState<string[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(true);
-  const hasBookmark = useSelector((state: RootState) =>
-    selectIsBookmark(state, slug),
-  );
-  const bookmarkDetail = useSelector((state: RootState) =>
-    selectBookmarkDetail(state, slug),
-  );
+
   useEffect(() => {
     const fetchSubjectDetail = async () => {
       const response = await fetchListSubjectByIds({
@@ -104,8 +93,9 @@ export default function Page({
   }, [slug, semester, year]);
 
   useEffect(() => {
-    setIsBookmarked(hasBookmark);
-    setSelectedSection(bookmarkDetail?.section || '');
+    const isBookmarked = bookmark.find((item) => item.subjectId === slug);
+    setIsBookmarked(!!isBookmarked);
+    setSelectedSection(isBookmarked?.selectedSection || '');
   }, [slug, bookmark]);
 
   const fetchTeachingOptions = async () => {
@@ -141,7 +131,7 @@ export default function Page({
     setIsBookmarked(!isBookmarked);
     const bookmarkData = {
       subjectId: slug,
-      section: selectedSection,
+      selectedSection,
       semester: Number(semester),
       year: Number(year),
     };
@@ -149,9 +139,7 @@ export default function Page({
     if (!isBookmarked) {
       dispatch(addBookmark(bookmarkData));
       if (isAuthenticated) {
-        await addBookmarkApi({
-          ...bookmarkData,
-        });
+        await addBookmarkApi({ ...bookmarkData, selectedSection: '' });
       }
     } else {
       setSelectedSection('');
@@ -159,6 +147,7 @@ export default function Page({
       if (isAuthenticated) {
         await deleteBookmarkApi({
           ...bookmarkData,
+          selectedSection: '',
         });
       }
     }
@@ -240,7 +229,7 @@ export default function Page({
   }
 
   return (
-    <div id="course-page" className="bg-white font-bai-jamjuree">
+    <div id="course-page" className="bg-white font-bai-jamjuree relative">
       <div className="max-w-8xl mx-auto p-6">
         <div
           id="header-nav"
@@ -265,6 +254,26 @@ export default function Page({
             วิชาที่บันทึกไว้
           </Button>
         </div>
+
+        {isModalMounted && (
+          <>
+            <div
+              className={`fixed inset-0 bg-gray-500 transition-all duration-300
+                ${openBookmarkModal ? 'opacity-50' : 'opacity-0 pointer-events-none'}`}
+              style={{ zIndex: 9998 }}
+              onClick={handleClose}
+            />
+            <div
+              className={`fixed inset-0 flex items-center justify-center transition-all duration-300 pointer-events-none
+                ${openBookmarkModal ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+              style={{ zIndex: 9999 }}
+            >
+              <div className="pointer-events-auto">
+                <BookmarkModal open={openBookmarkModal} onClose={handleClose} />
+              </div>
+            </div>
+          </>
+        )}
 
         <div id="course-info" className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -386,7 +395,7 @@ export default function Page({
               <RatingButtons
                 selectedRating={selectedRating}
                 setSelectedRating={setSelectedRating}
-                reviews={reviews.map((review) => ({
+                reviews={reviews.map(review => ({
                   ...review,
                   year: review.year.toString(),
                   semester: review.semester.toString(),
@@ -407,39 +416,29 @@ export default function Page({
           </div>
 
           <div id="reviews-container">
-            {subjectDetail &&
-              reviews
-                .filter(
-                  (review) =>
-                    !selectedRating || review.rating === selectedRating,
-                )
-                .map((review) => (
-                  <ReviewCard
-                    key={review.review_id}
-                    subjectId={subjectDetail.subject_id}
-                    reviewId={review.review_id}
-                    rating={review.rating}
-                    year={Number(review.year)}
-                    semester={Number(review.semester)}
-                    teacherName={review.teacherName}
-                    reviewText={review.reviewText}
-                    createdAt={review.createdAt}
-                    likeCount={review.likeCount}
-                    isLikedByCurrentUser={review.isLikedByCurrentUser || false}
-                    likedBy={review.likedBy || []}
-                  />
-                ))}
+            {subjectDetail && reviews
+              .filter(
+                (review) => !selectedRating || review.rating === selectedRating,
+              )
+              .map((review) => (
+                <ReviewCard
+                  key={review.review_id}
+                  subjectId={subjectDetail.subject_id}
+                  reviewId={review.review_id}
+                  rating={review.rating}
+                  year={Number(review.year)}
+                  semester={Number(review.semester)}
+                  teacherName={review.teacherName}
+                  reviewText={review.reviewText}
+                  createdAt={review.createdAt}
+                  likeCount={review.likeCount}
+                  isLikedByCurrentUser={review.isLikedByCurrentUser || false}
+                  likedBy={review.likedBy || []}
+                />
+              ))}
           </div>
         </div>
       </div>
-      {isModalMounted && (
-        <>
-          <Backdrop open={openBookmarkModal} onClose={handleClose} />
-          {openBookmarkModal && (
-            <BookmarkModal open={openBookmarkModal} onClose={handleClose} />
-          )}
-        </>
-      )}
     </div>
   );
 }

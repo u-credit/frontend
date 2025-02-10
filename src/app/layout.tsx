@@ -1,8 +1,16 @@
-import { Mitr, Rubik, Bai_Jamjuree } from 'next/font/google';
+'use client';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
+import { Inter, Mitr, Rubik, Bai_Jamjuree } from 'next/font/google';
+import { ThemeProvider } from '@mui/material/styles';
 import './globals.css';
-import ClientLayout from './ClientLayout';
-import { Metadata } from 'next';
+import theme from '@/utils/mui-theme';
+import CssBaseline from '@mui/material/CssBaseline';
+import Navbar from '@/components/common/NavBar';
+import StoreProvider from './StoreProvider';
+import { useAuth } from '@/hooks/useAuth';
+import AlertNotification from '@/components/AlertNotification';
 
+const inter = Inter({ subsets: ['latin'] });
 const mitr = Mitr({
   subsets: ['latin'],
   weight: ['200', '300', '400', '500', '600', '700'],
@@ -18,21 +26,15 @@ const baiJamjuree = Bai_Jamjuree({
   weight: ['200', '300', '400', '500', '600', '700'],
   variable: '--font-bai-jamjuree',
 });
-
-export const metadata: Metadata = {
-  title: 'u-credit',
-  description:
-    'แพลตฟอร์มการศึกษาสำหรับนักศึกษาสถาบันเทคโนโลยีพระจอมเก้าเจ้าคุณทหารลาดกระบัง',
-  icons: {
-    icon: '/icon.ico',
-  },
+const AuthChecker = () => {
+  useAuth();
+  return null;
 };
-
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html
       lang="en"
@@ -41,8 +43,20 @@ export default function RootLayout({
       <head>
         <script src="https://accounts.google.com/gsi/client" async></script>
       </head>
-      <body className={`${baiJamjuree.className}`}>
-        <ClientLayout>{children}</ClientLayout>
+      <body className={baiJamjuree.className}>
+        <AppRouterCacheProvider>
+          <StoreProvider>
+            <AuthChecker />
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <Navbar />
+              <div className="h-screen bg-gray-100 overflow-auto">
+                <div className="mt-12 max-w-7xl mx-auto">{children}</div>
+              </div>
+              <AlertNotification />
+            </ThemeProvider>
+          </StoreProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

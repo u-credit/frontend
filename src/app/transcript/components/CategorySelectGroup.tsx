@@ -61,7 +61,7 @@ export default function CategorySelectGroup({
       <CustomSelectOutlined
         onSelectedValueChange={handleCategoryChange}
         selectOptions={categoryOptions}
-        selectedValue={selectedCategory?.category}
+        selectedValue={selectedCategory.category}
         label="หมวดหมู่รายวิชา"
       />
       <CustomSelectOutlined

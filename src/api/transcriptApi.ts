@@ -1,6 +1,4 @@
 import { API_PATHS } from '@/constants';
-import { Response } from '@/Interfaces';
-import { RequiredCreditDto } from '@/Interfaces/transcript.interface';
 
 export const uploadTranscriptFindStudentInfo = async (file: File) => {
   const formData = new FormData();
@@ -11,7 +9,6 @@ export const uploadTranscriptFindStudentInfo = async (file: File) => {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/curriculum`,
       {
         method: 'POST',
-        credentials: 'include',
         body: formData,
       },
     );
@@ -57,7 +54,6 @@ export const calculateCredit = async (file: File, body: any) => {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/calculate`,
       {
         method: 'POST',
-        credentials: 'include',
         body: formData,
       },
     );
@@ -72,39 +68,4 @@ export const calculateCredit = async (file: File, body: any) => {
       error: error || 'An unknown error occurred',
     };
   }
-};
-
-export const fetchRequiredCredit = async (
-  params: Record<string, string>,
-): Promise<Response<RequiredCreditDto[]>> => {
-  const queryString = new URLSearchParams(
-    params as Record<string, string>,
-  ).toString();
-
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/requiredCredit?${queryString}`,
-    {
-      method: 'get',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    },
-  );
-  return res.json();
-};
-
-export const createTranscript = async (data: any) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/create/transcript`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(data),
-    },
-  );
-
-  return res.json();
 };
