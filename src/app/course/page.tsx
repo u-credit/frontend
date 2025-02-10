@@ -1,5 +1,5 @@
 'use client';
-import { use, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, use, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
@@ -19,7 +19,7 @@ import {
 import { useInView } from 'react-intersection-observer';
 import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
-import { CustomSearchBar, CustomSelect } from '@/components';
+import { CustomSearchBar, CustomSelect, Loading } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/features/store';
 import {
@@ -46,7 +46,6 @@ import {
 import AddBookmarkModal from './components/AddBookmarkModal';
 import Backdrop from '@/components/Backdrop';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
@@ -63,7 +62,9 @@ const yearOptions: SelectOption[] = [
 export default function CourseWrapper() {
   return (
     <CourseProvider>
-      <Course />
+      <Suspense fallback={<Loading />}>
+        <Course />
+      </Suspense>
     </CourseProvider>
   );
 }
@@ -402,7 +403,7 @@ function Course() {
   };
 
   useEffect(() => {
-    if (openAddBookmarkModal === true) return;
+    if (openAddBookmarkModal === true || addMultipleBookmark === null) return;
     const loadBookmark = async () => {
       try {
         if (addMultipleBookmark) {
@@ -423,7 +424,7 @@ function Course() {
           })
         ).data;
 
-        if (response.data.length > 0) {
+        if (response.data?.length > 0) {
           const updatedBookmarksWithDetail: BookmarkStateItem[] =
             formatData.map((item) => {
               const subject = response2.find(
