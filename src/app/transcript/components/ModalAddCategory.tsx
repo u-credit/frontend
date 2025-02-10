@@ -1,8 +1,7 @@
 import { Box, Button, IconButton, Modal } from '@mui/material';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CategorySelectGroup from './CategorySelectGroup';
 import {
-  CategoryGroup,
   SubjectTranscriptDto,
 } from '@/Interfaces/transcript.interface';
 import { initSelectOption, SelectOption } from '@/types';

@@ -1,13 +1,10 @@
 import { Add } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { Button } from '@mui/material';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ModalAddCategory from './ModalAddCategory';
 import CreateIcon from '@mui/icons-material/Create';
-import {
-  CategoryGroup,
-  SubjectTranscriptDto,
-} from '@/Interfaces/transcript.interface';
+import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
 
 interface SubjectCardProps {
   subject: SubjectTranscriptDto;

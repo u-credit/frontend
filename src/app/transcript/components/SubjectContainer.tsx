@@ -1,9 +1,7 @@
 import SubjectCard from './SubjectCard';
 import {
-  CategoryGroup,
   SubjectTranscriptDto,
 } from '@/Interfaces/transcript.interface';
-import { Dispatch, SetStateAction, use, useEffect } from 'react';
 
 interface SubjectContainerProps {
   unmatchSubjects?: SubjectTranscriptDto[];

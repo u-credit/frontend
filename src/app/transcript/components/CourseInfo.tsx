@@ -2,10 +2,9 @@
 import { fetchListFaculty } from '@/api/facultyApi';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 import { CurriSelectGroup } from '@/components';
-import { CurriGroup } from '@/Interfaces';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
 import { SelectOption } from '@/types';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface StudentInfoProps {
   studentInfo: StudentInfo;

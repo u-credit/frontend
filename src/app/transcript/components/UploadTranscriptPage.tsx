@@ -1,9 +1,8 @@
 'use client';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import CourseInfo from './CourseInfo';
 import { Button } from '@mui/material';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
-import { CurriGroup } from '@/Interfaces';
 import UploadTranscript from './UploadTranscript';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 
@@ -18,7 +17,7 @@ export default function UploadTranscriptPage({
   setFile,
   onNext,
 }: UploadTranscriptPageProps) {
-  const { selectedCurriGroup, setSelectedCurriGroup } = useTranscriptContext();
+  const { selectedCurriGroup } = useTranscriptContext();
 
   const [studentInfo, setStudentInfo] = useState<StudentInfo>({
     faculty_id: '',
@@ -67,9 +66,7 @@ export default function UploadTranscriptPage({
           />
         </div>
         <div>
-          <CourseInfo
-            studentInfo={studentInfo}
-          />
+          <CourseInfo studentInfo={studentInfo} />
         </div>
         <div className="border-t border-gray-200"></div>
         <div className="flex justify-center">
