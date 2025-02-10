@@ -19,45 +19,49 @@ import { chipCategory, stripHtmlTags } from '@/utils';
 import { useRouter } from 'next/navigation';
 import { CustomSectionChip } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
-import { addBookmark, removeBookmark } from '@/features/bookmark/bookmarkSlice';
-import { RootState } from '@/features/store';
+import {
+  addBookmark,
+  removeBookmark,
+  selectBookmarkDetail,
+  selectIsBookmark,
+} from '@/features/bookmark/bookmarkSlice';
+import { AppDispatch, RootState } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { addBookmarkApi, deleteBookmarkApi } from '@/api/bookmarkApi';
-import { getReviews } from '@/api/reviewApi';
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
 }
 
 export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const bookmark = useSelector((state: RootState) => state.bookmark.items);
-  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
-
-  const [rating, setRating] = useState(0); //กีต้าเพิ่มrating
+  const hasBookmark = useSelector((state: RootState) =>
+    selectIsBookmark(state, subjectDetail.subject_id),
+  );
+  const bookmarkDetail = useSelector((state: RootState) =>
+    selectBookmarkDetail(state, subjectDetail.subject_id),
+  );
 
   useEffect(() => {
-    const isBookmarked = bookmark.find(
-      (item) => item.subjectId === subjectDetail.subject_id,
-    );
-    if (isBookmarked) {
-      setIsBookmarked(true);
-      setSelectedSection(isBookmarked.selectedSection || '');
-    } else {
-      setIsBookmarked(false);
-      setSelectedSection('');
-    }
-  }, [subjectDetail.subject_id, bookmark]);
+    setIsBookmarked(hasBookmark);
+    setSelectedSection(bookmarkDetail?.section || '');
+  }, []);
+
+  useEffect(() => {
+    setIsBookmarked(hasBookmark);
+    setSelectedSection(bookmarkDetail?.section || '');
+  }, [hasBookmark, bookmarkDetail]);
 
   const handleToggleBookmark = async () => {
     setIsBookmarked(!isBookmarked);
@@ -65,7 +69,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       dispatch(
         addBookmark({
           subjectId: subjectDetail.subject_id,
-          selectedSection: selectedSection,
+          section: selectedSection,
           semester: Number(semester),
           year: Number(year),
         }),
@@ -74,7 +78,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       if (isAuthenticated) {
         await addBookmarkApi({
           subjectId: subjectDetail.subject_id,
-          selectedSection: '',
+          section: null,
           semester: Number(semester),
           year: Number(year),
         });
@@ -86,7 +90,6 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       if (isAuthenticated) {
         await deleteBookmarkApi({
           subjectId: subjectDetail.subject_id,
-          selectedSection: '',
           semester: Number(semester),
           year: Number(year),
         });
@@ -126,15 +129,6 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
       setDaySection(daySection);
     }
   }, [subjectDetail]);
-
-  //กีต้าใช้ดึงข้อมูล rating จาก API 
-  useEffect(() => {
-    const fetchRating = async () => {
-      const response = await getReviews(subjectDetail.subject_id);
-      setRating(response?.data?.averageRating || 0);
-    };
-    fetchRating();
-  }, [subjectDetail.subject_id]);
 
   return (
     <div className="relative group">
@@ -197,7 +191,9 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                     <Tooltip
                       title={chipCategory(category)}
                       key={
-                        String(category.category_id) + String(category.group_id)
+                        category.category_id +
+                        category.group_name +
+                        category.subgroup_name
                       }
                     >
                       <Chip
@@ -222,7 +218,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                 <div className="text-primary-400">รีวิว</div>
                 <Rating
                   name="half-rating-read"
-                  value={rating} //กีต้าแก้ไขrating
+                  value={subjectDetail.averageRating}
                   precision={0.1}
                   readOnly
                   emptyIcon={<StarIcon fontSize="inherit" />}

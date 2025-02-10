@@ -1,6 +1,7 @@
 export const API_PATHS = {
   accessToken: '/auth/accessToken',
   bookmark: '/bookmark',
+  bookmarkDetail: '/bookmark/detail',
   subject: '/subjects',
   subjectByIds: '/subjects/by-ids',
   faculty: '/faculty',

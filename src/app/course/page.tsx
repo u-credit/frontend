@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
@@ -7,9 +7,8 @@ import {
   CurriGroup,
   CursorMetaDto,
   ListSubjectQueryParams,
-  SubjectDto,
 } from '@/Interfaces';
-import { fetchListSubject } from '@/api/subjectApi';
+import { fetchListSubject, fetchListSubjectByIds } from '@/api/subjectApi';
 import { initSelectOption, SelectOption } from '@/types';
 import {
   BookmarkModal,
@@ -22,13 +21,32 @@ import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
 import { CustomSearchBar, CustomSelect } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/features/store';
+import { AppDispatch, RootState } from '@/features/store';
 import {
   setCurrigroup,
   setSemester,
   setYear,
 } from '@/features/selectorValueSlice';
 import TuneIcon from '@mui/icons-material/Tune';
+import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
+import {
+  BookmarkStateItem,
+  loadBookmarks,
+  saveBookmarks,
+  setBookmarks,
+  updateBookmarksOnCurriChange,
+} from '@/features/bookmark/bookmarkSlice';
+import { addMultipleBookmarkApi, fetchBookmark } from '@/api/bookmarkApi';
+import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import {
+  formatBookmarksDtoToItem,
+  formatFacultyOption,
+  getAllBookmarks,
+} from '@/utils';
+import AddBookmarkModal from './components/AddBookmarkModal';
+import Backdrop from '@/components/Backdrop';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
@@ -42,12 +60,21 @@ const yearOptions: SelectOption[] = [
   { label: '2566', value: '2566' },
 ];
 
-let controller: AbortController | null = null;
-export default function Course() {
-  const dispatch = useDispatch();
+export default function CourseWrapper() {
+  return (
+    <CourseProvider>
+      <Course />
+    </CourseProvider>
+  );
+}
+
+function Course() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { listSubjects, setListSubjects } = useCourseContext();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const [selectedSemester, setSelectedSemester] = useState<string>(semester);
   const [selectedYear, setSelectedYear] = useState<string>(year);
   const [filterValues, setFilterValues] = useState<FilterGroup>({
@@ -70,19 +97,25 @@ export default function Course() {
     curriculum: initSelectOption(),
     curriculumYear: initSelectOption(),
   });
-  const [listSubjects, setListSubjects] = useState<SubjectDto[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const { ref, inView } = useInView();
   const [openBookmarkModal, setOpenBookmarkModal] = useState(false);
+  const [openAddBookmarkModal, setOpenAddBookmarkModal] = useState(false);
   const [sendCustomTime, setSendCustomTime] = useState<boolean>(false);
   const [totalSearchSubject, setTotalSearchSubject] = useState<number | null>(
     null,
   );
   const [isOpenFilter, setIsOpenFilter] = useState(false);
   const [changeFromDelete, setChangeFromDelete] = useState(false);
+  const [clickBackdropToClose, setClickBackdropToClose] = useState(true);
+  const controllerRef = useRef<AbortController | null>(null);
+  const [addMultipleBookmark, setAddMultipleBookmark] = useState<
+    boolean | null
+  >(null);
+
   const toggleFilterModal = () => {
     const toggleValue = !isOpenFilter;
     document.documentElement.style.overflowY = toggleValue ? 'hidden' : 'auto';
@@ -101,13 +134,11 @@ export default function Course() {
   const loadSubjects = useCallback(
     async ({ isLoadMore = false, isInit = false }) => {
       if (semester === '' || year === '') return;
-
-      if (controller) {
-        controller.abort();
+      if (controllerRef.current) {
+        controllerRef.current.abort(); // ยกเลิก request ก่อนหน้า (ถ้ามี)
       }
-      controller = new AbortController();
-      const signal = controller.signal;
 
+      controllerRef.current = new AbortController();
       const getCategory = (category: string[]): SubjectCategory => {
         if (category.length === 2) return SubjectCategory.ALL;
         else if (category.includes(SubjectCategory.GENERAL))
@@ -169,10 +200,13 @@ export default function Course() {
       );
 
       try {
-        const response = await fetchListSubject(params, signal);
+        const response = await fetchListSubject(
+          params,
+          controllerRef.current.signal,
+        );
         const newSubjects = response?.data || [];
         if (isLoadMore) {
-          setListSubjects((prev) => [...prev, ...newSubjects]);
+          setListSubjects([...listSubjects, ...newSubjects]);
         } else {
           setListSubjects(newSubjects);
         }
@@ -181,11 +215,12 @@ export default function Course() {
         }
         setHasMore((response?.meta as CursorMetaDto)?.hasNext ?? false);
       } catch (error) {
-        console.error('Error loading subjects:', error);
-      } finally {
-        if (!signal?.aborted) {
-          setIsLoading(false);
+        if ((error as Error).name === 'AbortError') {
+          console.log('Fetch aborted (ไม่ใช่ error จริง)');
+        } else {
         }
+      } finally {
+        setIsLoading(false);
       }
     },
     [
@@ -193,7 +228,6 @@ export default function Course() {
       year,
       isLoading,
       hasMore,
-      listSubjects,
       selectedSemester,
       selectedYear,
       searchValue,
@@ -217,22 +251,7 @@ export default function Course() {
     const loadFaculty = async () => {
       try {
         const data = (await fetchListFaculty())?.data || [];
-        const facultyOptions: SelectOption[] = data.map((faculty) => ({
-          label: faculty.faculty_name,
-          value: faculty.faculty_id,
-          children: faculty.department?.map((department) => ({
-            label: department.department_name,
-            value: department.department_id,
-            children: department.curriculum?.map((curriculum) => ({
-              label: curriculum.curriculum_name,
-              value: curriculum.curriculum_id,
-              children: curriculum.curriculum_year?.map((year) => ({
-                label: year,
-                value: year,
-              })),
-            })),
-          })),
-        }));
+        const facultyOptions: SelectOption[] = formatFacultyOption(data);
         setFacultyOptions(facultyOptions);
       } catch (error) {
         console.error('Error loading faculty:', error);
@@ -245,6 +264,8 @@ export default function Course() {
   }, []);
 
   useEffect(() => {
+    if (changeFromDelete) return;
+    if (isFirstLoad) return;
     loadSubjects({ isLoadMore: false });
   }, [
     selectedSemester,
@@ -263,6 +284,7 @@ export default function Course() {
   ]);
 
   useEffect(() => {
+    if (isFirstLoad) return;
     if (inView && hasMore && !isLoading) {
       setIsLoadingMore(true);
       loadSubjects({
@@ -272,6 +294,7 @@ export default function Course() {
   }, [inView, hasMore, isLoading]);
 
   useEffect(() => {
+    if (isFirstLoad) return;
     if (changeFromDelete) {
       loadSubjects({ isLoadMore: false });
       setChangeFromDelete(false);
@@ -375,7 +398,92 @@ export default function Course() {
           },
     );
     dispatch(setCurrigroup(curriGroup));
+    dispatch(updateBookmarksOnCurriChange());
   };
+
+  useEffect(() => {
+    if (openAddBookmarkModal === true) return;
+    const loadBookmark = async () => {
+      try {
+        if (addMultipleBookmark) {
+          await addMultipleBookmarkApi(getAllBookmarks());
+          setAddMultipleBookmark(false);
+        }
+        const response = await fetchBookmark({
+          semester: Number(semester),
+          year: Number(year),
+        });
+        const data = response?.data || [];
+        const formatData = formatBookmarksDtoToItem(data);
+        const response2 = (
+          await fetchListSubjectByIds({
+            semester: Number(semester),
+            year: Number(year),
+            subjectIds: [...formatData.map((item) => item.subjectId)],
+          })
+        ).data;
+
+        if (response.data.length > 0) {
+          const updatedBookmarksWithDetail: BookmarkStateItem[] =
+            formatData.map((item) => {
+              const subject = response2.find(
+                (subject) => subject.subject_id === item.subjectId,
+              );
+              return {
+                ...item,
+                detail: subject,
+              };
+            });
+
+          saveBookmarks(semester, year, updatedBookmarksWithDetail);
+          dispatch(setBookmarks(updatedBookmarksWithDetail));
+        } else {
+          saveBookmarks(semester, year, formatData);
+          dispatch(setBookmarks(formatData));
+          console.log('No subject details found for bookmarks');
+        }
+      } catch (error) {
+        console.error('Error loading bookmarks:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadBookmark();
+    } else {
+      dispatch(loadBookmarks());
+    }
+  }, [dispatch, isAuthenticated, semester, year, addMultipleBookmark]);
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  useEffect(() => {
+    const login = searchParams.get('login');
+    if (!localStorage.getItem('bookmark')) {
+      setAddMultipleBookmark(false);
+    } else {
+      if (login === 'true') {
+        setOpenAddBookmarkModal(true);
+      }
+    }
+    const updatedSearchParams = new URLSearchParams(searchParams.toString());
+    updatedSearchParams.delete('login');
+
+    const newUrl = `${pathname}?${updatedSearchParams.toString()}`;
+    router.replace(newUrl);
+  }, [pathname, router, searchParams]);
+
+  const handleCloseBackdrop = () => {
+    setIsOpenFilter(false);
+    setOpenBookmarkModal(false);
+    setOpenAddBookmarkModal(false);
+    document.documentElement.style.overflowY = 'auto';
+  };
+
+  useEffect(() => {
+    setClickBackdropToClose(!openAddBookmarkModal);
+  }, [openAddBookmarkModal]);
+
   return (
     <main className="flex flex-row bg-gray-100 w-full ">
       <div className="hidden lg:flex fixed w-60  bg-white h-full">
@@ -388,7 +496,7 @@ export default function Course() {
           onClickFilterSearch={handleSearchAction}
         />
       </div>
-      <div className="flex flex-col w-full h-fit min-h-[calc(100vh-160px)]">
+      <div className="flex flex-col w-full lg:w-[calc(100%-240px)] h-fit min-h-[calc(100vh-160px)]">
         <CurriSelectContainer
           facultyOptions={facultyOptions}
           onClickApplyCurri={handleApplyCurriGroup}
@@ -483,20 +591,25 @@ export default function Course() {
             )}
         </div>
       </div>
-      <div
-        className={`fixed inset-0 bg-gray-500 bg-opacity-50 transition-all duration-300 ${
-          isOpenFilter || openBookmarkModal
-            ? 'opacity-100'
-            : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => {
-          setIsOpenFilter(false);
-          setOpenBookmarkModal(false);
-          document.documentElement.style.overflowY = 'auto';
-        }}
-      ></div>
-      <BookmarkModal open={openBookmarkModal} onClose={handleClose} />
-
+      <Backdrop
+        open={isOpenFilter || openBookmarkModal || openAddBookmarkModal}
+        onClose={handleCloseBackdrop}
+        clickToClose={clickBackdropToClose}
+      />
+      {openBookmarkModal && (
+        <BookmarkModal open={openBookmarkModal} onClose={handleClose} />
+      )}
+      {openAddBookmarkModal && (
+        <AddBookmarkModal
+          open={openAddBookmarkModal}
+          onClose={(add: boolean) => {
+            setAddMultipleBookmark(add);
+            setOpenBookmarkModal(false);
+            setOpenAddBookmarkModal(false);
+            document.documentElement.style.overflowY = 'auto';
+          }}
+        />
+      )}
       <div
         className={`lg:hidden fixed z-10 left-0 w-80 bg-white h-full transition-transform duration-300 ${
           isOpenFilter
