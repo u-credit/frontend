@@ -9,6 +9,8 @@ import SummaryPage from './components/SummaryPage';
 import TranscriptProvider, {
   useTranscriptContext,
 } from '@/app/contexts/TranscriptContext';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '@/features/auth/authSlice';
 
 export default function TranscriptWrapper() {
   return (
@@ -25,18 +27,19 @@ function Transcript() {
     selectedCurriGroup,
     setSelectedCurriGroup,
     setListCategory,
+    selectedCategory,
+    setSelectCategory,
   } = useTranscriptContext();
 
-  const [currentSection, setCurrentSection] = useState<string>('summary');
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
+  const [currentSection, setCurrentSection] = useState<string>('upload');
 
   const [file, setFile] = useState<File | null>(null);
 
-  const [selectedCategory, setSelectCategory] = useState<CategoryGroup>({
-    category: initSelectOption(),
-    group: initSelectOption(),
-    subgroup: initSelectOption(),
-    childgroup: initSelectOption(),
-  });
+  useEffect(() => {
+    console.log('isAuthenticated', isAuthenticated);
+  }, []);
 
   const handleNext = (section: string) => {
     setCurrentSection(section);
@@ -95,23 +98,13 @@ function Transcript() {
         <div className="bg-white h-full rounded-3xl p-10">
           {currentSection === 'upload' && (
             <UploadTranscriptPage
-              selectedCurriGroup={selectedCurriGroup}
-              setSelectedCurriGroup={setSelectedCurriGroup}
               file={file}
               setFile={setFile}
               onNext={() => handleNext('recheck')}
             />
           )}
           {currentSection === 'recheck' && (
-            <RecheckPage
-              selectedCurriGroup={selectedCurriGroup}
-              setSelectedCurriGroup={setSelectedCurriGroup}
-              selectedCategory={selectedCategory}
-              setSelectCategory={setSelectCategory}
-              categoryOptions={categoryOptions}
-              file={file!}
-              onNext={() => handleNext('summary')}
-            />
+            <RecheckPage file={file!} onNext={() => handleNext('summary')} />
           )}
         </div>
       </div>

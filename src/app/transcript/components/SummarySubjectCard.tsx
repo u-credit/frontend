@@ -115,10 +115,7 @@ export default function SummarySubjectCard({
       <ModalAddCategory
         open={isModalOpen}
         onClose={handleCloseModal}
-        selectedCategory={selectedCategory}
-        setSelectCategory={setSelectedCategory}
-        categoryOptions={categoryOptions}
-        subjectDetail={subjectDetail}
+        subject={subjectDetail}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { Key, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import SummarySubjectCard from './SummarySubjectCard';
 
 interface SubjectContainerProps {
