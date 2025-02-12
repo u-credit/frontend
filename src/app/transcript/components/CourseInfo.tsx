@@ -86,9 +86,9 @@ export default function CourseInfo({
   }, [studentInfo]);
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="font-mitr font-medium text-xl">ข้อมูลหลักสูตรของคุณ</div>
-      <div className="flex gap-x-10">
+    <div className="flex flex-col md:gap-10 gap-5">
+      <div className="font-mitr font-medium text-lg md:text-xl">ข้อมูลหลักสูตรของคุณ</div>
+      <div className="flex flex-col md:flex-row md:gap-x-4 gap-y-2 md:gap-y-2">
         <CurriSelectGroup
           selectedCurriGroup={selectedCurriGroup}
           facultyOptions={facultyOptions}

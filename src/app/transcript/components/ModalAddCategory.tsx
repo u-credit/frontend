@@ -1,9 +1,7 @@
 import { Box, Button, IconButton, Modal } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import CategorySelectGroup from './CategorySelectGroup';
-import {
-  SubjectTranscriptDto,
-} from '@/Interfaces/transcript.interface';
+import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
 import { initSelectOption, SelectOption } from '@/types';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
@@ -127,23 +125,30 @@ export default function ModalAddCategory({
     <div>
       <Modal open={open} onClose={onClose}>
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <Box className="bg-white rounded-lg border-[1px] p-4 border-gray-300 flex flex-col gap-5 w-full max-w-5xl">
-            <div className="flex justify-between w-full h-full">
-              <div className="font-mitr font-medium text-2xl">
+          <Box className="bg-white rounded-lg border-[1px] p-4 border-gray-300 flex flex-col gap-2 md:gap-5 w-[100vh-16px] max-w-5xl">
+            <div className="flex justify-between items-center">
+              <div className="font-mitr font-medium text-lg md:text-2xl">
                 เพิ่มหมวดหมู่
               </div>
               <IconButton onClick={handleClose}>
-                <CloseIcon fontSize="large" />
+                <CloseIcon fontSize="medium" />
               </IconButton>
             </div>
-            <div className="bg-gray-100 rounded-lg flex flex-wrap gap-6 items-center h-14 px-4 border-[1px] border-gray-300">
-              <div className="font-bold text-xl">{subject?.subject_id}</div>
-              <div className="font-bold text-xl">{subject?.subject_ename}</div>
+            <div className="bg-gray-100 rounded-lg flex flex-wrap gap-2 md:gap-6 p-4 items-center min-h-14 border-[1px] border-gray-300">
+              <p className="font-bold text-md md:text-xl">
+                {subject?.subject_id}
+              </p>
+              <p className="font-bold text-md md:text-xl">
+                {subject?.subject_ename}
+              </p>
             </div>
-            <div className="font-mitr font-medium text-[18px]/[26px]">
-              เลือกหมวดหมู่ของรายวิชานี้ *
+            <div className="flex gap-2">
+              <p className="font-mitr font-medium text-md md:text-xl">
+                เลือกหมวดหมู่ของรายวิชานี้
+              </p>
+              <p className="text-primary-400">*</p>
             </div>
-            <div className="flex gap-x-10">
+            <div className="flex flex-col md:flex-row md:gap-x-4 gap-y-2 md:gap-y-2">
               <CategorySelectGroup
                 selectedCategory={selectedCategory}
                 setSelectCategory={setSelectCategory}
@@ -154,7 +159,7 @@ export default function ModalAddCategory({
               <Button
                 startIcon={<SaveIcon />}
                 onClick={handleSave}
-                size="large"
+                size="medium"
                 variant="contained"
                 disabled={!isEnableSave}
               >

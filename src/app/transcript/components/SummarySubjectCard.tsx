@@ -53,10 +53,10 @@ export default function SummarySubjectCard({
             id="row1"
             className="flex flex-wrap flex-row gap-4 items-center "
           >
-            <div className="font-rubik font-medium text-lg">
+            <div className="font-rubik font-medium text-md md:text-lg">
               {subjectDetail.subject_id}
             </div>
-            <div className="font-rubik font-medium text-lg">
+            <div className="font-rubik font-medium text-md md:text-lg">
               {subjectDetail.subject_ename}
             </div>
             <Chip

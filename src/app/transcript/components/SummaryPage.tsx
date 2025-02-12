@@ -13,7 +13,7 @@ import SummaryTable, { Row } from './SummaryTable';
 import { mockSelectedCurriGroup, scheduledData, transcriptData } from './mock';
 
 import TabsContainer from './TabsContainer';
-import { fetchRequiredCredit } from '@/api/transcriptApi';
+import { fetchRequiredCredit, fetchTranscript } from '@/api/transcriptApi';
 import {
   calculateCurrentCredit,
   calculateRequiredCredit,
@@ -56,9 +56,12 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
   };
 
   const fetchTrancsriptApi = async (): Promise<SubjectTranscriptDto[]> => {
-    const data: SubjectTranscriptDto[] = transcriptData; // await fetcht transcript จาก ucredit database
-    setTranscript(data);
-    return data;
+    // const data: SubjectTranscriptDto[] = transcriptData; // await fetcht transcript จาก ucredit database
+    // setTranscript(data);
+    // return data;
+    const response = await fetchTranscript();
+    setTranscript(response.data.subjects);
+    return response.data.subjects;
   };
 
   const fetchScheduleApi = async (): Promise<BookmarkDto[]> => {

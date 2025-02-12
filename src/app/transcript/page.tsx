@@ -94,8 +94,8 @@ function Transcript() {
 
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
-      <div className="w-full border-solid px-20 my-[10px]">
-        <div className="bg-white h-full rounded-3xl p-10">
+      <div className="w-full border-solid md:my-[10px]">
+        <div className="bg-white h-full md:rounded-3xl p-10">
           {currentSection === 'upload' && (
             <UploadTranscriptPage
               file={file}

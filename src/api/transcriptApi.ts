@@ -108,3 +108,18 @@ export const createTranscript = async (data: any) => {
 
   return res.json();
 };
+
+export const fetchTranscript = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}`,
+    {
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    },
+  );
+
+  return res.json();
+};

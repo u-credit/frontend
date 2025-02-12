@@ -45,13 +45,13 @@ export default function UploadTranscriptPage({
   };
 
   return (
-    <div>
-      <div className="flex flex-col gap-10 justify-center ">
-        <div className="flex flex-col gap-5 ">
-          <div className="font-mitr font-medium text-[34px]/[44px] text-center ">
+    <>
+      <div className="flex flex-col md:gap-10 gap-5 justify-center ">
+        <div className="flex flex-col gap-2 md:gap-5 ">
+          <div className="font-mitr font-medium text-center text-lg sm:text-xl md:text-2xl lg:text-3xl">
             เริ่มตรวจสอบหน่วยกิต
           </div>
-          <div className="text-[18px]/[26px] text-center ">
+          <div className="text-md md:text-lg lg:text-xl text-center ">
             อัปโหลดทรานสคริปต์ของคุณ <br />
             เพื่อตรวจเช็คหน่วยกิตที่ลงไปแล้ว และหน่วยกิตที่ยังขาดอยู่
           </div>
@@ -76,10 +76,12 @@ export default function UploadTranscriptPage({
             disabled={isDataComplete() ? false : true}
             onClick={onNext}
           >
-            <div className="text-lg font-semibold">เริ่มการคำนวณ</div>
+            <div className="text-md md:text-lg font-semibold">
+              เริ่มการคำนวณ
+            </div>
           </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
