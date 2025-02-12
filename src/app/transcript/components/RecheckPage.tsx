@@ -129,28 +129,28 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
       unmatchSubjects || [],
     );
 
-    await createTranscript(data);
+    // await createTranscript(data);
     onNext();
   };
 
   return (
     <div>
-      <div className="flex flex-col gap-10 justify-center ">
+      <div className="flex flex-col md:gap-10 gap-5 justify-center ">
         <div className="flex flex-col gap-5 ">
-          <div className="font-mitr font-medium text-[34px]/[44px] text-center ">
+          <div className="font-mitr font-medium text-center text-lg sm:text-xl md:text-2xl lg:text-3xl">
             ตรวจสอบหมวดหมู่รายวิชาของคุณ
           </div>
-          <div className="text-[18px]/[26px] text-center ">
+          <div className="text-md md:text-lg lg:text-xl text-center ">
             <div>
               ระบบได้ทำการดึงข้อมูลจากไฟล์ที่คุณทำการอัปโหลดลงมาในระบบเรียบร้อยแล้ว
             </div>
-            <div className="text-primary-400">
+            <div className="text-md md:text-lg lg:text-xl text-primary-400">
               เพื่อความถูกต้องแม่นยำ กรุณาตรวจสอบและแก้ไขอีกครั้ง
             </div>
           </div>
         </div>
         <div className="border-t border-gray-200"></div>
-        <div className="flex gap-x-10">
+        <div className="flex flex-col md:flex-row md:gap-x-4 gap-y-2">
           <CurriSelectGroup
             selectedCurriGroup={selectedCurriGroup}
             facultyOptions={facultyOptions}
@@ -176,7 +176,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
         ) : (
           <>
             <div className="flex flex-col gap-10">
-              <div className="font-mitr font-medium text-[18px]/[26px]">
+              <div className="font-mitr font-medium text-md md:text-lg lg:text-xl">
                 รายวิชาที่ไม่ปรากฎในเล่มหลักสูตรของคุณ
               </div>
               {/* <div className="overflow-y-auto min-h-80 h-[30vh]"> */}
@@ -187,12 +187,12 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
 
             <div className="flex justify-center">
               <Button
-                size="large"
+                size="medium"
                 variant="contained"
                 // disabled={isSubjectComplete() ? false : true}
                 onClick={handleUploadTranscript}
               >
-                <div className="text-lg font-semibold">ไปต่อ</div>
+                <div className="text-md md:text-lg font-semibold">ไปต่อ</div>
               </Button>
             </div>
           </>
