@@ -194,6 +194,7 @@ export default function TinySubjectCardWithIsShowButton({
             </div>
           </div>
         </div>
+        
 
         <div className="sm:flex sm:flex-row w-full justify-between">
           <div className=" w-full  p-5">
