@@ -1,35 +1,36 @@
 import { Box, Button, IconButton, Modal } from '@mui/material';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CategorySelectGroup from './CategorySelectGroup';
-import {
-  CategoryGroup,
-  SubjectTranscriptDto,
-} from '@/Interfaces/transcript.interface';
+import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
 import { initSelectOption, SelectOption } from '@/types';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 
 interface ModalAddCategoryProps {
   open: boolean;
-  selectedCategory: CategoryGroup;
-  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
-  categoryOptions: SelectOption[];
-  subjectDetail: SubjectTranscriptDto;
   onClose: () => void;
+  subject: SubjectTranscriptDto;
+  isSubjectAddCategory?: boolean;
 }
 
 export default function ModalAddCategory({
   open,
   onClose,
-  selectedCategory,
-  setSelectCategory,
-  categoryOptions,
-  subjectDetail,
+  subject,
+  isSubjectAddCategory,
 }: ModalAddCategoryProps) {
+  const {
+    categoryOptions,
+    selectedCategory,
+    setSelectCategory,
+    setUnmatchSubjects,
+  } = useTranscriptContext();
+
   const [isEnableSave, setIsEnableSave] = useState(false);
 
   useEffect(() => {
-    if (selectedCategory.category.value) {
+    if (selectedCategory?.category.value) {
       if (selectedCategory.category.children?.length === 0) {
         setIsEnableSave(true);
         return;
@@ -63,6 +64,35 @@ export default function ModalAddCategory({
     setIsEnableSave(false);
   }, [selectedCategory]);
 
+  useEffect(() => {
+    if (open && isSubjectAddCategory) {
+      const category = categoryOptions.find(
+        (c) => c.value == String(subject.category),
+      );
+
+      const group = category?.children?.find(
+        (g) => g.value == String(subject.group),
+      );
+
+      const subgroup = group?.children?.find(
+        (sg) => sg.value == String(subject.subgroup),
+      );
+
+      const childgroup = subgroup?.children?.find(
+        (cg) => cg.value == String(subject.childgroup),
+      );
+
+      const selectCategory = {
+        category: category || initSelectOption(),
+        group: group || initSelectOption(),
+        subgroup: subgroup || initSelectOption(),
+        childgroup: childgroup || initSelectOption(),
+      };
+
+      setSelectCategory(selectCategory);
+    }
+  }, [open, isSubjectAddCategory]);
+
   const handleClose = () => {
     setSelectCategory({
       category: initSelectOption(),
@@ -73,31 +103,52 @@ export default function ModalAddCategory({
     onClose();
   };
 
+  const handleSave = () => {
+    setUnmatchSubjects((prev) =>
+      prev.map((prev_subject) =>
+        prev_subject.subject_id === subject.subject_id
+          ? {
+              ...prev_subject,
+              category: Number(selectedCategory.category.value),
+              group: Number(selectedCategory.group.value),
+              subgroup: Number(selectedCategory.subgroup.value),
+              childgroup: Number(selectedCategory.childgroup.value),
+            }
+          : prev_subject,
+      ),
+    );
+
+    handleClose();
+  };
+
   return (
     <div>
       <Modal open={open} onClose={onClose}>
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <Box className="bg-white rounded-lg border-[1px] p-4 border-gray-300 flex flex-col gap-5 w-full max-w-5xl">
-            <div className="flex justify-between w-full h-full">
-              <div className="font-mitr font-medium text-2xl">
+          <Box className="bg-white rounded-lg border-[1px] p-4 border-gray-300 flex flex-col gap-2 md:gap-5 w-[100vh-16px] max-w-5xl">
+            <div className="flex justify-between items-center">
+              <div className="font-mitr font-medium text-lg md:text-2xl">
                 เพิ่มหมวดหมู่
               </div>
               <IconButton onClick={handleClose}>
-                <CloseIcon fontSize="large" />
+                <CloseIcon fontSize="medium" />
               </IconButton>
             </div>
-            <div className="bg-gray-100 rounded-lg flex flex-wrap gap-6 items-center h-14 px-4 border-[1px] border-gray-300">
-              <div className="font-bold text-xl">
-                {subjectDetail.subject_id}
-              </div>
-              <div className="font-bold text-xl">
-                {subjectDetail.subject_ename}
-              </div>
+            <div className="bg-gray-100 rounded-lg flex flex-wrap gap-2 md:gap-6 p-4 items-center min-h-14 border-[1px] border-gray-300">
+              <p className="font-bold text-md md:text-xl">
+                {subject?.subject_id}
+              </p>
+              <p className="font-bold text-md md:text-xl">
+                {subject?.subject_ename}
+              </p>
             </div>
-            <div className="font-mitr font-medium text-[18px]/[26px]">
-              เลือกหมวดหมู่ของรายวิชานี้ *
+            <div className="flex gap-2">
+              <p className="font-mitr font-medium text-md md:text-xl">
+                เลือกหมวดหมู่ของรายวิชานี้
+              </p>
+              <p className="text-primary-400">*</p>
             </div>
-            <div className="flex gap-x-10">
+            <div className="flex flex-col md:flex-row md:gap-x-4 gap-y-2 md:gap-y-2">
               <CategorySelectGroup
                 selectedCategory={selectedCategory}
                 setSelectCategory={setSelectCategory}
@@ -107,8 +158,8 @@ export default function ModalAddCategory({
             <div className="flex justify-end pt-1">
               <Button
                 startIcon={<SaveIcon />}
-                onClick={handleClose}
-                size="large"
+                onClick={handleSave}
+                size="medium"
                 variant="contained"
                 disabled={!isEnableSave}
               >

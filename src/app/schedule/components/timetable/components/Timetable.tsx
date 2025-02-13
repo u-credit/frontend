@@ -7,6 +7,7 @@ import SubjectBox from '../components/SubjectBox';
 import { generateDays } from '../utils/generateDays';
 import { generateTimeRange } from '../utils/generateTimeRange';
 import { ScheduleItem } from './types';
+import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
 
 export interface Table {
   teach_day: number;
@@ -47,22 +48,23 @@ const convertToDecimalHour = (time: string): number => {
 };
 
 const transformSubjectsToSchedule = (
-  subjects: any[],
+  subjects: BookmarkStateItem[],
   selectedSections: { subjectId: string; selectedSection: string }[],
 ): ScheduleItem[] => {
   const scheduleData: ScheduleItem[] = [];
 
-  subjects.forEach((subject) => {
+  subjects?.forEach((subject) => {
+    if (!subject.detail) return;
     const matchingSection = selectedSections.find(
-      (section) => section.subjectId === subject.subject_id,
+      (section) => section.subjectId === subject.detail?.subject_id,
     );
 
     if (
       matchingSection &&
-      subject.teach_table &&
-      Array.isArray(subject.teach_table)
+      subject.detail.teach_table &&
+      Array.isArray(subject.detail.teach_table)
     ) {
-      subject.teach_table.forEach((table: Table) => {
+      subject.detail.teach_table.forEach((table: Table) => {
         if (
           table.section === matchingSection.selectedSection &&
           table.teach_day
@@ -72,8 +74,8 @@ const transformSubjectsToSchedule = (
               day: thaiDayMap[table.teach_day],
               timeStart: table.teach_time_start,
               timeEnd: table.teach_time_end,
-              subject: subject.subject_english_name,
-              code: subject.subject_id,
+              subject: subject.detail?.subject_english_name || '',
+              code: subject.detail?.subject_id || '',
               section: `sec ${table.section}`,
               room: table.room_name,
             });
@@ -89,8 +91,8 @@ const transformSubjectsToSchedule = (
                 day: thaiDayMap[parseInt(day)],
                 timeStart,
                 timeEnd,
-                subject: subject.subject_english_name,
-                code: subject.subject_id,
+                subject: subject.detail?.subject_english_name || '',
+                code: subject.detail?.subject_id || '',
                 section: `sec ${table.section}`,
                 room: table.room_name,
               });
@@ -105,7 +107,7 @@ const transformSubjectsToSchedule = (
 };
 
 interface TimetableProps {
-  subjects: any[];
+  subjects: BookmarkStateItem[];
   section: any[];
 }
 
