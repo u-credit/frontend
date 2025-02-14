@@ -29,6 +29,7 @@ import {
   setYear,
 } from '@/features/selectorValueSlice';
 import TuneIcon from '@mui/icons-material/Tune';
+import { fetchActiveSetting } from '@/features/admin/semesterSettingsSlice';
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
@@ -277,6 +278,19 @@ export default function Course() {
       setChangeFromDelete(false);
     }
   }, [filterValues, customStartTimeFilter, customEndTimeFilter]);
+
+  useEffect(() => {
+    const initializeSettings = async () => {
+      if (!semester || !year || semester === '0' || year === '0') {
+        try {
+          dispatch(fetchActiveSetting());
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    };
+    initializeSettings();
+  }, []);
 
   const handleSearchValueChange = (value: string) => setSearchValue(value);
 
