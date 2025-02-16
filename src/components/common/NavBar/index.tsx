@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { AppDispatch, RootState } from '@/features/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '@/features/auth/authSlice';
 import { handleLogout } from '@/features/auth/authAction';
 
 interface NavItem {
@@ -68,6 +67,7 @@ export default function NavBar() {
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated,
   );
+  const user = useSelector((state: RootState) => state.auth.user);
   useEffect(() => {
     setActivePage(pathname);
   }, [pathname]);
@@ -159,7 +159,7 @@ export default function NavBar() {
 
           {isAuthenticated ? (
             <Avatar
-              {...stringAvatar('Kent Dodds')}
+              {...stringAvatar(user?.username || '')}
               sx={{
                 width: '32px',
                 height: '32px',

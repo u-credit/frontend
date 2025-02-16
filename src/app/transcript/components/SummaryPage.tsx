@@ -1,121 +1,133 @@
 'use client';
 import * as React from 'react';
-import { CurriSelectGroup } from '@/components';
-import { BookmarkDto, CurriGroup } from '@/Interfaces';
-import { SelectOption } from '@/types';
+import { CurriSelectGroupDisable } from '@/components';
 import { useEffect, useState } from 'react';
-import { fetchListFaculty } from '@/api/facultyApi';
 import Checkbox from '@mui/material/Checkbox/Checkbox';
 import { Button, FormControlLabel } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import SummaryTable, { Row } from './SummaryTable';
-import { mockSelectedCurriGroup, scheduledData, transcriptData } from './mock';
 
 import TabsContainer from './TabsContainer';
-import { fetchRequiredCredit, fetchTranscript } from '@/api/transcriptApi';
+import { fetchRequiredCredit } from '@/api/transcriptApi';
 import {
   calculateCurrentCredit,
   calculateRequiredCredit,
   calculateScheduledCredit,
+  findStartEnd,
   formatCategoryForTranscript,
 } from '@/utils';
-import {
-  RequiredCreditDto,
-  SubjectTranscriptDto,
-} from '@/Interfaces/transcript.interface';
+import { RequiredCreditDto } from '@/Interfaces';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  BookmarkStateItem,
+  editBookmark,
+  selectScheduledItems,
+} from '@/features/bookmark/bookmarkSlice';
+import { calculateBookmark } from '@/api/bookmarkApi';
+import { AppDispatch, RootState } from '@/features/store';
+import { selectUser } from '@/features/auth/authSlice';
+import { selectUserFacultyOptions } from '@/features/facultySlice';
+import { selectTranscripts } from '@/features/transcriptSlice';
 
 interface SummaryPageProps {
   onNext: (section: string) => void;
 }
-mockSelectedCurriGroup;
 export default function SummaryPage({ onNext }: SummaryPageProps) {
-  const { listCategory } = useTranscriptContext();
-  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>(
-    mockSelectedCurriGroup,
+  const schedule = useSelector(selectScheduledItems);
+  const transcriptSubject = useSelector(selectTranscripts);
+  const { listCategory, selectedCurriGroup } = useTranscriptContext();
+  const { semester, year } = useSelector(
+    (state: RootState) => state.selectorValue,
   );
+  const isFirstFetchSchedule = useSelector(
+    (state: RootState) => state.bookmark.isFirstFetch,
+  );
+  const user = useSelector(selectUser);
+  const userFacultyOptions = useSelector(selectUserFacultyOptions);
+
+  const dispatch: AppDispatch = useDispatch();
+
   const [tableData, setTableData] = useState<Row[]>([]);
-  const [transcript, setTranscript] = useState<SubjectTranscriptDto[]>([]);
-  const [schedule, setSchedule] = useState<BookmarkDto[]>([]);
   const [includeSchedule, setIncludeSchedule] = useState<boolean>(false);
   const [requiredCredit, setRequiredCredit] = useState<RequiredCreditDto[]>([]);
-
+  const [startYear, setStartYear] = useState<string>('');
+  const [startSemester, setStartSemester] = useState<string>('');
+  const [endYear, setEndYear] = useState<string>('');
+  const [endSemester, setEndSemester] = useState<string>('');
   const fetchRequiredCreditApi = async (): Promise<RequiredCreditDto[]> => {
     const data: RequiredCreditDto[] = (
       await fetchRequiredCredit({
-        faculty_id: selectedCurriGroup.faculty.value,
-        dept_id: selectedCurriGroup.department.value,
-        curr2_id: selectedCurriGroup.curriculum.value,
-        curri_id: '0105',
-        curr_year: selectedCurriGroup.curriculumYear.value,
+        faculty: selectedCurriGroup.faculty.value || user?.faculty_id || '',
+        department:
+          selectedCurriGroup.department.value || user?.department_id || '',
+        curriculum: selectedCurriGroup.curriculum.value || user?.curr2_id || '',
+        curriculumYear:
+          selectedCurriGroup.curriculumYear.value ||
+          user?.curriculum_year ||
+          '',
       })
     ).data;
     setRequiredCredit(data);
     return data;
   };
 
-  const fetchTrancsriptApi = async (): Promise<SubjectTranscriptDto[]> => {
-    // const data: SubjectTranscriptDto[] = transcriptData; // await fetcht transcript จาก ucredit database
-    // setTranscript(data);
-    // return data;
-    const response = await fetchTranscript();
-    setTranscript(response.data.subjects);
-    return response.data.subjects;
+  const fetchCalculateScheduledCredit = async (): Promise<
+    BookmarkStateItem[]
+  > => {
+    const data = (
+      await calculateBookmark({
+        semester: Number(semester),
+        year: Number(year),
+        isShow: true,
+      })
+    ).data;
+
+    const updatedSchedule = schedule.map((s) => {
+      const matchItem = data.result.find(
+        (item) => item.subject_id === s.subjectId,
+      );
+      if (matchItem) {
+        return {
+          ...s,
+          category: matchItem.category,
+          group: matchItem.group,
+          subgroup: matchItem.subgroup,
+        };
+      }
+      return s;
+    });
+
+    dispatch(editBookmark(updatedSchedule));
+    return updatedSchedule;
   };
 
-  const fetchScheduleApi = async (): Promise<BookmarkDto[]> => {
-    const data: BookmarkDto[] = scheduledData; // await fetcht schedule จาก bookmark database
-    setSchedule(data);
-    return data;
+  const fetchData = async (listCategory: any) => {
+    const requiredCreditData = await fetchRequiredCreditApi();
+    const newSchedule = await fetchCalculateScheduledCredit();
+
+    let newTableData = formatCategoryForTranscript(listCategory);
+    newTableData = calculateRequiredCredit(newTableData, requiredCreditData);
+    newTableData = calculateCurrentCredit(newTableData, transcriptSubject);
+    newTableData = calculateScheduledCredit(newTableData, newSchedule);
+
+    setTableData(newTableData);
+    const { startSemester, startYear, endSemester, endYear } =
+      findStartEnd(transcriptSubject);
+
+    setStartYear(startYear + 543);
+    setStartSemester(startSemester);
+    setEndYear(endYear + 543);
+    setEndSemester(endSemester);
   };
 
   useEffect(() => {
-    if (listCategory.length === 0) return;
-    const fetchData = async () => {
-      const requiredCreditData = await fetchRequiredCreditApi();
-      const transcriptData = await fetchTrancsriptApi();
-      const scheduleData = await fetchScheduleApi();
-
-      let newTableData = formatCategoryForTranscript(listCategory);
-      newTableData = calculateRequiredCredit(newTableData, requiredCreditData);
-      newTableData = calculateCurrentCredit(newTableData, transcriptData);
-      newTableData = calculateScheduledCredit(newTableData, scheduleData);
-
-      setTableData(newTableData);
-    };
-
-    fetchData();
-  }, [listCategory]);
-
-  const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-  useEffect(() => {
-    const loadFaculty = async () => {
-      const data = (await fetchListFaculty())?.data || [];
-      const facultyOptions: SelectOption[] = data.map((faculty) => ({
-        label: faculty.faculty_name,
-        value: faculty.faculty_id,
-        children: faculty.department?.map((department) => ({
-          label: department.department_name,
-          value: department.department_id,
-          children: department.curriculum?.map((curriculum) => ({
-            label: curriculum.curriculum_name,
-            value: curriculum.curriculum_id,
-            children: curriculum.curriculum_year?.map((year) => ({
-              label: year,
-              value: year,
-            })),
-          })),
-        })),
-      }));
-      setFacultyOptions(facultyOptions);
-    };
-
-    loadFaculty();
-  }, []);
+    if (listCategory.length > 0 && isFirstFetchSchedule && transcriptSubject) {
+      fetchData(listCategory);
+    }
+  }, [listCategory, isFirstFetchSchedule, transcriptSubject]);
 
   const handleUploadTranscript = () => {
-    console.log('upload new transcript');
     onNext('upload');
   };
 
@@ -126,32 +138,19 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
           <span className="font-mitr font-medium whitespace-nowrap content-center">
             หลักสูตรของคุณ
           </span>
-
-          <Button variant="outlined" onClick={() => {}}>
-            แก้ไขหลักสูตร
-          </Button>
         </div>
         <div className="flex flex-col mobile:flex-row mobile:gap-x-4 gap-y-2 mobile:gap-y-0">
-          <CurriSelectGroup
-            selectedCurriGroup={selectedCurriGroup}
-            facultyOptions={facultyOptions}
-            setSelectedCurriGroup={setSelectedCurriGroup}
-          />
+          <CurriSelectGroupDisable selectedCurriGroup={userFacultyOptions} />
         </div>
       </div>
       <div className="bg-gray-200 w-full h-[1px] my-5 "></div>
       <div className="flex flex-col gap-5">
         <div className="flex flex-col md:flex-row justify-between items-center gap-5 md:gap-0">
           <div className="font-mitr font-medium nowrap">
-            จากข้อมูลทรานสคริปต์ 2564/1 ถึง 2566/1
+            จากข้อมูลทรานสคริปต์ {startYear}/{startSemester} ถึง {endYear}/
+            {endSemester}
           </div>
           <div className="flex flex-col md:flex-row gap-5 items-center">
-            <div className="flex flex-row gap-2 border-b-[1px] border-black hover:border-primary-400 hover:cursor-pointer hover:text-primary-400 active:text-primary-500 active:border-primary-500 font-rubik font-medium ease-out duration-200">
-              <div className="pb-[1px]">
-                <InsertDriveFileOutlinedIcon />
-              </div>
-              mytranscript.pdf
-            </div>
             <Button
               variant="contained"
               startIcon={<CloudUploadIcon />}
@@ -176,7 +175,7 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
           label="นำหน่วยกิตจากตารางเรียนที่จัดไว้มาคำนวนด้วย"
         />
         <SummaryTable data={tableData} showScheduleCredit={includeSchedule} />
-        <TabsContainer transcript={transcript} schedule={schedule} />
+        <TabsContainer />
       </div>
     </main>
   );

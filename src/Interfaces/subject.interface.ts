@@ -42,10 +42,9 @@ export interface ListSubjectByIdsQueryParams {
   semester?: number;
   year?: number;
   subjectIds: string[];
-  facultyId?: string;
-  department?: string;
-  curriculumId?: string;
-  curriculumYear?: string;
+  categoryFacultyId?: string;
+  categoryCurriculumId?: string;
+  categoryCurriculumYear?: string;
 }
 
 export interface TeacherDto {

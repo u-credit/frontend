@@ -2,10 +2,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import Cookies from 'js-cookie';
 import { fetchAccessToken } from '@/api/authApi';
-
+import { UserEntity } from '@/Interfaces';
 interface AuthState {
   isAuthenticated: boolean;
-  user: any;
+  user: UserEntity | null;
   tokenExpiration: string | null;
   error: string | null;
 }
@@ -14,8 +14,8 @@ export const refreshAccessToken = createAsyncThunk(
   'auth/refreshAccessToken',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetchAccessToken();
-      return response;
+      const data = await fetchAccessToken();
+      return data;
     } catch (error) {
       return rejectWithValue('Refresh token invalid or expired');
     }
@@ -26,7 +26,7 @@ const getInitialState = (): AuthState => {
   return {
     isAuthenticated: false,
     user: null,
-    tokenExpiration: Cookies.get('sessionDuration') || null,
+    tokenExpiration: Cookies.get('session_duration') || null,
     error: null,
   };
 };
@@ -52,7 +52,8 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(refreshAccessToken.fulfilled, (state, action) => {
-        state.tokenExpiration = Cookies.get('sessionDuration') ?? null;
+        state.tokenExpiration = Cookies.get('session_duration') ?? null;
+        state.user = action.payload?.user ?? null;
         state.error = null;
       })
       .addCase(refreshAccessToken.rejected, (state, action) => {
@@ -68,5 +69,7 @@ export const { login, logout } = authSlice.actions;
 
 export const selectIsAuthenticated = (state: RootState) =>
   state.auth.isAuthenticated;
+
+export const selectUser = (state: RootState) => state.auth.user;
 
 export default authSlice.reducer;

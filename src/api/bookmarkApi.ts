@@ -3,8 +3,10 @@ import {
   BookmarkDto,
   BookmarkItem,
   BookmarkParam,
+  CalculateBookmarkQueryParams,
   Response,
 } from '@/Interfaces';
+import { CalculatedDto } from '@/Interfaces/transcript.interface';
 
 export const fetchBookmark = async (
   params: BookmarkParam,
@@ -132,5 +134,23 @@ export const addMultipleBookmarkApi = async (
       body: JSON.stringify(params),
     },
   );
+  return res.json();
+};
+
+export const calculateBookmark = async (
+  params: CalculateBookmarkQueryParams,
+): Promise<Response<CalculatedDto>> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(params),
+    },
+  );
+
   return res.json();
 };

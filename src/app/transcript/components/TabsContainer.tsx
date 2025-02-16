@@ -1,21 +1,17 @@
-import exp from 'constants';
-import React, { use, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { CustomSearchBar } from '@/components';
 import SubjectContainerSummary from './SubjectContainerSummary';
-import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
-import { SelectOption } from '@/types';
+import { selectScheduledItems } from '@/features/bookmark/bookmarkSlice';
+import { useSelector } from 'react-redux';
+import { selectTranscripts } from '@/features/transcriptSlice';
 
-interface TabsContainerProps {
-  transcript: SubjectTranscriptDto[];
-  schedule: any;
-}
+interface TabsContainerProps {}
 
-const TabsContainer = ({
-  transcript,
-  schedule,
-}: TabsContainerProps) => {
+const TabsContainer = ({}: TabsContainerProps) => {
+  const schedule = useSelector(selectScheduledItems);
+  const transcript = useSelector(selectTranscripts);
   const [activeTab, setActiveTab] = React.useState(0);
   const [searchValue, setSearchValue] = useState<string>('');
   const [semesterYear, setSemesterYear] = useState<
@@ -66,7 +62,7 @@ const TabsContainer = ({
         />
       </div>
       <SubjectContainerSummary
-        subjects={activeTab === 0 ? transcript : schedule}
+        subjectFlag={activeTab === 0 ? 'transcript' : 'schedule'}
         semester={activeSemesterYear.semester}
         year={activeSemesterYear.year}
         searchValue={searchValue}

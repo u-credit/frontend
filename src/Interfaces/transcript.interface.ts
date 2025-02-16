@@ -30,3 +30,33 @@ export interface RequiredCreditDto {
   c_group_name: string;
   c_subgroup_name: string;
 }
+
+export interface CurriculumGroupParams {
+  faculty: string;
+  department: string;
+  curriculum: string;
+  curriculumYear: string;
+}
+
+export interface CalculatedDto {
+  result: SubjectProcessDto[];
+  unmatchSubjects: SubjectProcessDto[];
+}
+
+export interface SubjectProcessDto {
+  subject_id: string;
+  subject_tname: string;
+  subject_ename: string;
+  credit: number;
+  category: number;
+  group: number;
+  subgroup: number;
+  childgroup?: number;
+  semester: string;
+  year: string;
+}
+
+export interface fetchTranscriptResponse {
+  result: CalculatedDto[];
+  subjects: SubjectTranscriptDto[];
+}

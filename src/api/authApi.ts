@@ -1,5 +1,7 @@
 import { API_PATHS } from '@/constants';
-export const fetchAccessToken = async () => {
+import { FetchAccessTokenResponse } from '@/Interfaces';
+
+export const fetchAccessToken = async (): Promise<FetchAccessTokenResponse> => {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.accessToken}`,
@@ -11,9 +13,21 @@ export const fetchAccessToken = async () => {
         credentials: 'include',
       },
     );
-    return res;
+    return res.json();
   } catch (e) {}
-  return null;
+  return {
+    access_token: '',
+    user: {
+      id: '',
+      username: '',
+      email: '',
+      role: '',
+      faculty_id: '',
+      department_id: '',
+      curr2_id: '',
+      curriculum_year: '',
+    },
+  };
 };
 
 export const fetchLogout = async () => {

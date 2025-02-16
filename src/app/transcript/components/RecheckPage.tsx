@@ -1,13 +1,8 @@
 'use client';
 import { CurriSelectGroup } from '@/components';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { CurriGroup } from '@/Interfaces';
+import React, { useEffect, useState } from 'react';
 import { fetchListFaculty } from '@/api/facultyApi';
 import { SelectOption } from '@/types';
-import {
-  CategoryGroup,
-  SubjectTranscriptDto,
-} from '@/Interfaces/transcript.interface';
 import { calculateCredit, createTranscript } from '@/api/transcriptApi';
 import SubjectContainer from './SubjectContainer';
 import { Box, Button, CircularProgress } from '@mui/material';
@@ -21,11 +16,8 @@ interface RecheckPageProps {
 
 export default function RecheckPage({ file, onNext }: RecheckPageProps) {
   const {
-    categoryOptions,
     selectedCurriGroup,
     setSelectedCurriGroup,
-    selectedCategory,
-    setSelectCategory,
     unmatchSubjects,
     setUnmatchSubjects,
     matchSubjects,
@@ -111,17 +103,6 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
     fetchData();
   };
 
-  const isSubjectComplete = () => {
-    return unmatchSubjects?.every((subject) =>
-      Object.values({
-        category: subject.category,
-        group: subject.group,
-        subgroup: subject.subgroup,
-        childgroup: subject.childgroup,
-      }).every((value) => value !== null),
-    );
-  };
-
   const handleUploadTranscript = async () => {
     const data = formatDataForCreateTranscript(
       selectedCurriGroup,
@@ -129,7 +110,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
       unmatchSubjects || [],
     );
 
-    // await createTranscript(data);
+    await createTranscript(data);
     onNext();
   };
 

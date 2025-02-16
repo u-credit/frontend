@@ -415,28 +415,30 @@ function Course() {
         });
         const data = response?.data || [];
         const formatData = formatBookmarksDtoToItem(data);
-        const response2 = (
-          await fetchListSubjectByIds({
-            semester: Number(semester),
-            year: Number(year),
-            subjectIds: [...formatData.map((item) => item.subjectId)],
-          })
-        ).data;
+        if (formatData.length > 0) {
+          const response2 = (
+            await fetchListSubjectByIds({
+              semester: Number(semester),
+              year: Number(year),
+              subjectIds: [...formatData.map((item) => item.subjectId)],
+            })
+          ).data;
 
-        if (response.data.length > 0) {
-          const updatedBookmarksWithDetail: BookmarkStateItem[] =
-            formatData.map((item) => {
-              const subject = response2.find(
-                (subject) => subject.subject_id === item.subjectId,
-              );
-              return {
-                ...item,
-                detail: subject,
-              };
-            });
+          if (response.data.length > 0) {
+            const updatedBookmarksWithDetail: BookmarkStateItem[] =
+              formatData.map((item) => {
+                const subject = response2.find(
+                  (subject) => subject.subject_id === item.subjectId,
+                );
+                return {
+                  ...item,
+                  detail: subject,
+                };
+              });
 
-          saveBookmarks(semester, year, updatedBookmarksWithDetail);
-          dispatch(setBookmarks(updatedBookmarksWithDetail));
+            saveBookmarks(semester, year, updatedBookmarksWithDetail);
+            dispatch(setBookmarks(updatedBookmarksWithDetail));
+          }
         } else {
           saveBookmarks(semester, year, formatData);
           dispatch(setBookmarks(formatData));

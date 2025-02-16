@@ -46,7 +46,7 @@ export default function TinySubjectCardWithIsShowButton({
   );
   useEffect(() => {
     setIsBookmarked(hasBookmark);
-    setSelectedSection(bookmarkDetail?.section || '');
+    setSelectedSection(String(bookmarkDetail?.section) || '');
   }, [hasBookmark, bookmarkDetail]);
 
   const handleSelectSectionChange = async (value: string) => {
@@ -54,12 +54,14 @@ export default function TinySubjectCardWithIsShowButton({
 
     if (isBookmarked) {
       dispatch(
-        editBookmark({
-          subjectId: subjectDetail.subject_id,
-          section: value,
-          semester: Number(semester),
-          year: Number(year),
-        }),
+        editBookmark([
+          {
+            subjectId: subjectDetail.subject_id,
+            section: value,
+            semester: Number(semester),
+            year: Number(year),
+          },
+        ]),
       );
 
       if (isAuthenticated) {
@@ -80,13 +82,15 @@ export default function TinySubjectCardWithIsShowButton({
 
     if (isBookmarked) {
       dispatch(
-        editBookmark({
-          subjectId: subjectDetail.subject_id,
-          section: selectedSection,
-          semester: Number(semester),
-          year: Number(year),
-          isShow: isShowInSchedule,
-        }),
+        editBookmark([
+          {
+            subjectId: subjectDetail.subject_id,
+            section: selectedSection,
+            semester: Number(semester),
+            year: Number(year),
+            isShow: isShowInSchedule,
+          },
+        ]),
       );
 
       if (isAuthenticated) {

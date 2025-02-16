@@ -1,18 +1,10 @@
 'use client';
 import { CurriGroup } from '@/Interfaces';
 import { initSelectOption, SelectOption } from '@/types';
-import {
-  useState,
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-} from 'react';
-import { mockSelectedCurriGroup } from '../transcript/components/mock';
-import {
-  CategoryGroup,
-  SubjectTranscriptDto,
-} from '@/Interfaces/transcript.interface';
+import { useState, createContext, ReactNode, useContext } from 'react';
+import { CategoryGroup, SubjectTranscriptDto } from '@/Interfaces';
+import { RootState } from '@/features/store';
+import { useSelector } from 'react-redux';
 
 interface TranscriptContextType {
   categoryOptions: SelectOption[];
@@ -46,10 +38,7 @@ export function useTranscriptContext() {
 }
 
 function TranscriptProvider({ children }: { children: ReactNode }) {
-  // const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>(
-  //   mockSelectedCurriGroup,
-  // );
-
+  const facultyOptions = useSelector((state: RootState) => state.faculty.data);
   const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
     faculty: initSelectOption(),
     department: initSelectOption(),
@@ -68,12 +57,16 @@ function TranscriptProvider({ children }: { children: ReactNode }) {
     SubjectTranscriptDto[]
   >([]);
 
-  const [matchSubjects, setMatchSubjects] = useState<
-    SubjectTranscriptDto[]
-  >([]);
+  const [matchSubjects, setMatchSubjects] = useState<SubjectTranscriptDto[]>(
+    [],
+  );
 
   const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
   const [listCategory, setListCategory] = useState<SelectOption[]>([]);
+
+  const [transcriptSubject, setTranscriptSubject] = useState<
+    SubjectTranscriptDto[]
+  >([]);
 
   return (
     <TranscriptContext.Provider

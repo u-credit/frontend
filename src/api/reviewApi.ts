@@ -43,8 +43,8 @@ export const getReviews = async (
     return {
       ...data,
       data: {
-        reviews: data.data.reviews,
-        averageRating: Number(data.data.averageRating) || 0,
+        reviews: data.data?.reviews,
+        averageRating: Number(data.data?.averageRating) || 0,
       },
     };
   } catch (error) {

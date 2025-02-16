@@ -1,34 +1,30 @@
 'use client';
-import { Button, Chip } from '@mui/material';
+import { Button, Chip, Tooltip } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import CreateIcon from '@mui/icons-material/Create';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
-import EditCategoryModal from './EditCategoryModal';
+import { useEffect, useState } from 'react';
 import Backdrop from './Backdrop';
 import ModalAddCategory from './ModalAddCategory';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
-import { initSelectOption } from '@/types';
-import { CategoryGroup } from '@/Interfaces/transcript.interface';
+import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
+import { CategoryDto } from '@/Interfaces';
+import { chipCategory } from '@/utils';
+
+export interface SummarySubject extends SubjectTranscriptDto {
+  categories: any;
+}
 interface SummarySubjectCardProps {
-  subjectDetail: any;
+  subject: SummarySubject;
 }
 export default function SummarySubjectCard({
-  subjectDetail,
+  subject,
 }: SummarySubjectCardProps) {
-  const { categoryOptions, selectedCurriGroup, setSelectedCurriGroup } =
-    useTranscriptContext();
-
-  const [selectedCategory, setSelectedCategory] = useState<CategoryGroup>({
-    category: initSelectOption(),
-    group: initSelectOption(),
-    subgroup: initSelectOption(),
-    childgroup: initSelectOption(),
-  });
+  useTranscriptContext();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleReview = (): void => {
-    router.push(`/course/${subjectDetail.subject_id}`);
+    router.push(`/course/${subject.subject_id}`);
   };
   const handleEditCategory = (): void => {
     setIsModalOpen(true);
@@ -54,31 +50,43 @@ export default function SummarySubjectCard({
             className="flex flex-wrap flex-row gap-4 items-center "
           >
             <div className="font-rubik font-medium text-md md:text-lg">
-              {subjectDetail.subject_id}
+              {subject.subject_id}
             </div>
             <div className="font-rubik font-medium text-md md:text-lg">
-              {subjectDetail.subject_ename}
+              {subject.subject_ename}
             </div>
-            <Chip
-              // key={category.category_id}
-              // label={`${category.group_name} + ${category.subgroup_name}`}
-              label="หมวด"
-              size="small"
-              variant="outlined"
-              sx={{
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                '@media (max-width: 600px)': {
-                  maxWidth: '250px',
-                },
-              }}
-            />
+            {subject.categories &&
+              subject.categories.map((category: CategoryDto) => (
+                <Tooltip
+                  title={chipCategory(category)}
+                  key={
+                    category.category_id +
+                    category.group_name +
+                    category.subgroup_name
+                  }
+                >
+                  <Chip
+                    label={chipCategory(category)}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: {
+                        xs: '200px',
+                        sm: '500px',
+                      },
+                    }}
+                  />
+                </Tooltip>
+              ))}
             <div className="self-center">
-              ปี {subjectDetail.year} เทอม {subjectDetail.semester}
+              ปี {subject.year} เทอม {subject.semester}
             </div>
           </div>
           <div id="row2" className="flex flex-row gap-4 ">
-            <h4>{subjectDetail.credit} หน่วยกิต</h4>
+            <h4>{subject.credit} หน่วยกิต</h4>
           </div>
         </div>
         <div
@@ -115,7 +123,7 @@ export default function SummarySubjectCard({
       <ModalAddCategory
         open={isModalOpen}
         onClose={handleCloseModal}
-        subject={subjectDetail}
+        subject={subject}
       />
     </>
   );

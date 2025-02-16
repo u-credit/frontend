@@ -1,6 +1,9 @@
 import { API_PATHS } from '@/constants';
-import { Response } from '@/Interfaces';
-import { RequiredCreditDto } from '@/Interfaces/transcript.interface';
+import {
+  fetchTranscriptResponse,
+  RequiredCreditDto,
+  Response,
+} from '@/Interfaces';
 
 export const uploadTranscriptFindStudentInfo = async (file: File) => {
   const formData = new FormData();
@@ -109,7 +112,9 @@ export const createTranscript = async (data: any) => {
   return res.json();
 };
 
-export const fetchTranscript = async () => {
+export const fetchTranscript = async (): Promise<
+  Response<fetchTranscriptResponse>
+> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}`,
     {

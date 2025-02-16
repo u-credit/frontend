@@ -4,16 +4,27 @@ import {
   PayloadAction,
   createAsyncThunk,
   createSelector,
+  isFulfilled,
+  isPending,
+  isRejected,
 } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
-import { getCategoryCredit, getCurriGroupParam } from '@/utils';
+import {
+  formatBookmarksDtoToItem,
+  getCategoryCredit,
+  getCurriGroupParam,
+} from '@/utils';
+import { fetchBookmark } from '@/api/bookmarkApi';
 
 export interface BookmarkStateItem extends BookmarkItem {
   detail?: SubjectDto;
 }
 export interface BookmarkState {
   items: BookmarkStateItem[];
+  loading?: boolean;
+  error?: string | null;
+  isFirstFetch: boolean;
 }
 
 const getBookmarks = (semester: string, year: string) => {
@@ -45,11 +56,66 @@ export const loadBookmarks = createAsyncThunk(
   },
 );
 
+export const loadBookmarksApi = createAsyncThunk(
+  'bookmark/loadBookmarks',
+  async (_, { getState, dispatch }) => {
+    const { semester, year, facultyId, curriculumId, curriculumYear } = (
+      getState() as RootState
+    ).selectorValue;
+
+    try {
+      const response = await fetchBookmark({
+        semester: Number(semester),
+        year: Number(year),
+      });
+      const data = response?.data || [];
+      const formatData = formatBookmarksDtoToItem(data);
+      if (formatData.length > 0) {
+        const detailByIds = (
+          await fetchListSubjectByIds({
+            semester: Number(semester),
+            year: Number(year),
+            subjectIds: [...formatData.map((item) => item.subjectId)],
+            ...(facultyId &&
+              curriculumId &&
+              curriculumYear && {
+                categoryFacultyId: facultyId,
+                categoryCurriculumId: curriculumId,
+                categoryCurriculumYear: curriculumYear,
+              }),
+          })
+        ).data;
+
+        if (detailByIds.length > 0) {
+          const subjectMap = new Map(
+            detailByIds.map((subject) => [subject.subject_id, subject]),
+          );
+
+          const updatedBookmarksWithDetail: BookmarkStateItem[] =
+            formatData.map((item) => ({
+              ...item,
+              detail: subjectMap.get(item.subjectId),
+            }));
+
+          saveBookmarks(semester, year, updatedBookmarksWithDetail);
+          dispatch(setBookmarks(updatedBookmarksWithDetail));
+        }
+      } else {
+        saveBookmarks(semester, year, formatData);
+        dispatch(setBookmarks(formatData));
+        console.log('No subject details found for bookmarks');
+      }
+    } catch (error) {
+      console.error('Error loading bookmarks:', error);
+    }
+  },
+);
+
 export const addBookmark = createAsyncThunk(
   'bookmark/addBookmark',
   async (bookmark: BookmarkStateItem, { getState, dispatch }) => {
-    const { semester, year, curriGroup } = (getState() as RootState)
-      .selectorValue;
+    const { semester, year } = (getState() as RootState).selectorValue;
+    const user = (getState() as RootState).auth.user;
     const currentBookmarks = getBookmarks(semester, year);
 
     if (
@@ -62,9 +128,11 @@ export const addBookmark = createAsyncThunk(
         semester: Number(semester),
         year: Number(year),
         subjectIds: [bookmark.subjectId],
-        ...getCurriGroupParam(curriGroup),
+        categoryFacultyId: user?.faculty_id,
+        categoryCurriculumId: user?.curr2_id,
+        categoryCurriculumYear: user?.curriculum_year,
       });
-
+      console.log('cu');
       if (response.data.length > 0) {
         const detail = response.data[0];
 
@@ -89,27 +157,23 @@ export const addBookmark = createAsyncThunk(
 );
 
 export const editBookmark = createAsyncThunk(
-  'bookmark/editBookmark',
-  async (updatedBookmark: BookmarkStateItem, { getState, dispatch }) => {
+  'bookmark/editBookmarks',
+  async (updatedBookmarks: BookmarkStateItem[], { getState, dispatch }) => {
     const { semester, year } = (getState() as RootState).selectorValue;
     const currentBookmarks = getBookmarks(semester, year);
-    const updatedBookmarks = currentBookmarks.map((b: BookmarkStateItem) =>
-      b.subjectId === updatedBookmark.subjectId
-        ? {
-            subjectId: updatedBookmark.subjectId,
-            semester: updatedBookmark.semester,
-            year: updatedBookmark.year,
-            section: updatedBookmark.section ?? b.section ?? null,
-            isShow: updatedBookmark.isShow ?? b.isShow ?? false,
-            detail: updatedBookmark.detail ?? b.detail ?? null,
-            category: updatedBookmark.category ?? b.category ?? null,
-            group: updatedBookmark.group ?? b.group ?? null,
-            subgroup: updatedBookmark.subgroup ?? b.subgroup ?? null,
-          }
+
+    const updatedMap = new Map(
+      updatedBookmarks.map((bookmark) => [bookmark.subjectId, bookmark]),
+    );
+
+    const newBookmarks = currentBookmarks.map((b: BookmarkStateItem) =>
+      updatedMap.has(b.subjectId)
+        ? { ...b, ...updatedMap.get(b.subjectId) }
         : b,
     );
-    saveBookmarks(semester, year, updatedBookmarks);
-    dispatch(setBookmarks(updatedBookmarks));
+
+    saveBookmarks(semester, year, newBookmarks);
+    dispatch(setBookmarks(newBookmarks));
   },
 );
 
@@ -119,9 +183,14 @@ export const removeBookmark = createAsyncThunk(
     const { semester, year } = (getState() as RootState).selectorValue;
     const currentBookmarks = getBookmarks(semester, year);
 
-    const updatedBookmarks = currentBookmarks.filter(
-      (b: BookmarkStateItem) => b.subjectId !== subjectId,
+    const bookmarkMap = new Map(
+      currentBookmarks.map((b: BookmarkStateItem) => [b.subjectId, b]),
     );
+    bookmarkMap.delete(subjectId);
+    const updatedBookmarks: BookmarkStateItem[] = Array.from(
+      bookmarkMap.values(),
+    ) as BookmarkStateItem[];
+
     saveBookmarks(semester, year, updatedBookmarks);
     dispatch(setBookmarks(updatedBookmarks));
   },
@@ -140,7 +209,8 @@ export const updateBookmarksOnCurriChange = createAsyncThunk(
   async (_, { getState, dispatch }) => {
     const { semester, year, curriGroup } = (getState() as RootState)
       .selectorValue;
-    const bookmarks = (getState() as RootState).bookmark.items;
+    const bookmarks = (getState() as RootState).bookmark
+      .items as BookmarkStateItem[];
 
     if (bookmarks.length === 0) return;
 
@@ -166,7 +236,12 @@ export const updateBookmarksOnCurriChange = createAsyncThunk(
   },
 );
 
-const initialState: BookmarkState = { items: [] };
+const initialState: BookmarkState = {
+  items: [],
+  loading: false,
+  error: null,
+  isFirstFetch: false,
+};
 
 const bookmarkSlice = createSlice({
   name: 'bookmark',
@@ -177,7 +252,23 @@ const bookmarkSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(loadBookmarks.fulfilled, (_, action) => action.payload);
+    builder.addCase(loadBookmarksApi.fulfilled, (state) => {
+      if (!state.isFirstFetch) {
+        state.isFirstFetch = true;
+      }
+    });
+
+    builder.addMatcher(isPending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addMatcher(isFulfilled, (state) => {
+      state.loading = false;
+    });
+    builder.addMatcher(isRejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message || 'Error occurred';
+    });
   },
 });
 
