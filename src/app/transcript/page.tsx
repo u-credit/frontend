@@ -1,31 +1,45 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { CurriGroup } from '@/Interfaces';
 import UploadTranscriptPage from './components/UploadTranscriptPage';
 import RecheckPage from './components/RecheckPage';
 import { initSelectOption, SelectOption } from '@/types';
 import { CategoryGroup } from '@/Interfaces/transcript.interface';
 import { fetchListCategory } from '@/api/transcriptApi';
+import SummaryPage from './components/SummaryPage';
+import TranscriptProvider, {
+  useTranscriptContext,
+} from '@/app/contexts/TranscriptContext';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '@/features/auth/authSlice';
 
-export default function Home() {
+export default function TranscriptWrapper() {
+  return (
+    <TranscriptProvider>
+      <Transcript />
+    </TranscriptProvider>
+  );
+}
+
+function Transcript() {
+  const {
+    categoryOptions,
+    setCategoryOptions,
+    selectedCurriGroup,
+    setSelectedCurriGroup,
+    setListCategory,
+    selectedCategory,
+    setSelectCategory,
+  } = useTranscriptContext();
+
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
   const [currentSection, setCurrentSection] = useState<string>('upload');
-  const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
 
   const [file, setFile] = useState<File | null>(null);
 
-  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
-    faculty: initSelectOption(),
-    department: initSelectOption(),
-    curriculum: initSelectOption(),
-    curriculumYear: initSelectOption(),
-  });
-
-  const [selectedCategory, setSelectCategory] = useState<CategoryGroup>({
-    category: initSelectOption(),
-    group: initSelectOption(),
-    subgroup: initSelectOption(),
-    childgroup: initSelectOption(),
-  });
+  useEffect(() => {
+    console.log('isAuthenticated', isAuthenticated);
+  }, []);
 
   const handleNext = (section: string) => {
     setCurrentSection(section);
@@ -42,7 +56,6 @@ export default function Home() {
         };
         const resp = await fetchListCategory(params);
         const data = resp?.data || [];
-
         const categoryOptions: SelectOption[] = data.map((category: any) => ({
           label: category.c_cat_name,
           value: category.category,
@@ -60,6 +73,7 @@ export default function Home() {
           })),
         }));
         setCategoryOptions(categoryOptions);
+        setListCategory(resp.data);
       } catch (error) {
         console.log('error', error);
       }
@@ -74,29 +88,23 @@ export default function Home() {
     });
   }, [selectedCurriGroup]);
 
+  if (currentSection === 'summary') {
+    return <SummaryPage onNext={(state: string) => handleNext(state)} />;
+  }
+
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
-      <div className="w-full border-solid px-20 my-[10px]">
-        <div className="bg-white h-full rounded-3xl p-10">
+      <div className="w-full border-solid md:my-[10px]">
+        <div className="bg-white h-full md:rounded-3xl p-10">
           {currentSection === 'upload' && (
             <UploadTranscriptPage
-              selectedCurriGroup={selectedCurriGroup}
-              setSelectedCurriGroup={setSelectedCurriGroup}
               file={file}
               setFile={setFile}
               onNext={() => handleNext('recheck')}
             />
           )}
           {currentSection === 'recheck' && (
-            <RecheckPage
-              selectedCurriGroup={selectedCurriGroup}
-              setSelectedCurriGroup={setSelectedCurriGroup}
-              selectedCategory={selectedCategory}
-              setSelectCategory={setSelectCategory}
-              categoryOptions={categoryOptions}
-              file={file!}
-              onNext={() => handleNext('summary')}
-            />
+            <RecheckPage file={file!} onNext={() => handleNext('summary')} />
           )}
         </div>
       </div>

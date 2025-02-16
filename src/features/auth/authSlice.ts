@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import Cookies from 'js-cookie';
-import { fetchAccessToken, fetchLogout } from '@/api/authApi';
+import { fetchAccessToken } from '@/api/authApi';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -59,6 +59,7 @@ const authSlice = createSlice({
       if (state.user?.roles?.includes(action.payload)) {
         state.currentRole = action.payload;
       }
+      if (localStorage.getItem('bookmark')) localStorage.removeItem('bookmark');
     },
   },
   extraReducers: (builder) => {

@@ -64,3 +64,8 @@ export interface TeachingOptionsResponse {
     name: string;
   }>;
 }
+
+export interface AverageRatingDto {
+  subjectId: string;
+  averageRating: number;
+}

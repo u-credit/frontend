@@ -8,35 +8,34 @@ import {
   CategoryGroup,
   SubjectTranscriptDto,
 } from '@/Interfaces/transcript.interface';
-import { calculateCredit } from '@/api/transcriptApi';
+import { calculateCredit, createTranscript } from '@/api/transcriptApi';
 import SubjectContainer from './SubjectContainer';
 import { Box, Button, CircularProgress } from '@mui/material';
-import { setCurrigroup } from '@/features/selectorValueSlice';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
+import { formatDataForCreateTranscript } from '@/utils/transcriptRecheckHelper';
 
 interface RecheckPageProps {
-  selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
-  selectedCategory: CategoryGroup;
-  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
-  categoryOptions: SelectOption[];
   file: File;
   onNext: () => void;
 }
 
-export default function RecheckPage({
-  selectedCurriGroup,
-  setSelectedCurriGroup,
-  selectedCategory,
-  setSelectCategory,
-  categoryOptions,
-  file,
-  onNext,
-}: RecheckPageProps) {
+export default function RecheckPage({ file, onNext }: RecheckPageProps) {
+  const {
+    categoryOptions,
+    selectedCurriGroup,
+    setSelectedCurriGroup,
+    selectedCategory,
+    setSelectCategory,
+    unmatchSubjects,
+    setUnmatchSubjects,
+    matchSubjects,
+    setMatchSubjects,
+  } = useTranscriptContext();
+
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-  const [unknowDetail, setUnknowDetail] = useState<SubjectTranscriptDto[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const isDataComplete = () => {
+  const isCurriGroupComplete = () => {
     return Object.values(selectedCurriGroup).every(
       (field) => field.value !== '',
     );
@@ -65,7 +64,7 @@ export default function RecheckPage({
     } catch (error) {}
   };
 
-  const calculate = async () => {
+  const calculate = async (): Promise<void> => {
     try {
       const body = {
         faculty: selectedCurriGroup.faculty.value,
@@ -74,12 +73,11 @@ export default function RecheckPage({
         curriculumYear: selectedCurriGroup.curriculumYear.value,
       };
       const data = (await calculateCredit(file, body))?.data;
+      const unmatchSubjects = data?.unmatchSubjects || [];
+      setUnmatchSubjects(unmatchSubjects);
 
-      console.log('body', body);
-
-      console.log('file => ', file);
-      const unknowDetail = data?.unknowDetail || [];
-      setUnknowDetail(unknowDetail);
+      const matchSubjects = data?.matchSubjects || [];
+      setMatchSubjects(matchSubjects);
     } catch (error) {}
   };
 
@@ -95,8 +93,8 @@ export default function RecheckPage({
   }, []);
 
   useEffect(() => {
-    console.log('unknowDetail => ', unknowDetail);
-  }, [unknowDetail]);
+    console.log('subjectDetail => ', unmatchSubjects);
+  }, [unmatchSubjects]);
 
   const handleApplyCurriGroup = () => {
     const fetchData = async () => {
@@ -113,24 +111,46 @@ export default function RecheckPage({
     fetchData();
   };
 
+  const isSubjectComplete = () => {
+    return unmatchSubjects?.every((subject) =>
+      Object.values({
+        category: subject.category,
+        group: subject.group,
+        subgroup: subject.subgroup,
+        childgroup: subject.childgroup,
+      }).every((value) => value !== null),
+    );
+  };
+
+  const handleUploadTranscript = async () => {
+    const data = formatDataForCreateTranscript(
+      selectedCurriGroup,
+      matchSubjects || [],
+      unmatchSubjects || [],
+    );
+
+    // await createTranscript(data);
+    onNext();
+  };
+
   return (
     <div>
-      <div className="flex flex-col gap-10 justify-center ">
+      <div className="flex flex-col md:gap-10 gap-5 justify-center ">
         <div className="flex flex-col gap-5 ">
-          <div className="font-mitr font-medium text-[34px]/[44px] text-center ">
+          <div className="font-mitr font-medium text-center text-lg sm:text-xl md:text-2xl lg:text-3xl">
             ตรวจสอบหมวดหมู่รายวิชาของคุณ
           </div>
-          <div className="text-[18px]/[26px] text-center ">
+          <div className="text-md md:text-lg lg:text-xl text-center ">
             <div>
               ระบบได้ทำการดึงข้อมูลจากไฟล์ที่คุณทำการอัปโหลดลงมาในระบบเรียบร้อยแล้ว
             </div>
-            <div className="text-primary-400">
+            <div className="text-md md:text-lg lg:text-xl text-primary-400">
               เพื่อความถูกต้องแม่นยำ กรุณาตรวจสอบและแก้ไขอีกครั้ง
             </div>
           </div>
         </div>
         <div className="border-t border-gray-200"></div>
-        <div className="flex gap-x-10">
+        <div className="flex flex-col md:flex-row md:gap-x-4 gap-y-2">
           <CurriSelectGroup
             selectedCurriGroup={selectedCurriGroup}
             facultyOptions={facultyOptions}
@@ -138,7 +158,7 @@ export default function RecheckPage({
           />
           <Button
             onClick={handleApplyCurriGroup}
-            disabled={isDataComplete() ? false : true}
+            disabled={isCurriGroupComplete() ? false : true}
           >
             บันทึก
           </Button>
@@ -154,20 +174,28 @@ export default function RecheckPage({
             <CircularProgress />
           </Box>
         ) : (
-          <div className="flex flex-col gap-10">
-            <div className="font-mitr font-medium text-[18px]/[26px]">
-              รายวิชาที่ไม่ปรากฎในเล่มหลักสูตรของคุณ
+          <>
+            <div className="flex flex-col gap-10">
+              <div className="font-mitr font-medium text-md md:text-lg lg:text-xl">
+                รายวิชาที่ไม่ปรากฎในเล่มหลักสูตรของคุณ
+              </div>
+              {/* <div className="overflow-y-auto min-h-80 h-[30vh]"> */}
+              <div>
+                <SubjectContainer unmatchSubjects={unmatchSubjects} />
+              </div>
             </div>
-            {/* <div className="overflow-y-auto min-h-80 h-[30vh]"> */}
-            <div>
-              <SubjectContainer
-                subjectDetail={unknowDetail}
-                selectedCategory={selectedCategory}
-                setSelectCategory={setSelectCategory}
-                categoryOptions={categoryOptions}
-              />
+
+            <div className="flex justify-center">
+              <Button
+                size="medium"
+                variant="contained"
+                // disabled={isSubjectComplete() ? false : true}
+                onClick={handleUploadTranscript}
+              >
+                <div className="text-md md:text-lg font-semibold">ไปต่อ</div>
+              </Button>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

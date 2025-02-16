@@ -1,17 +1,18 @@
-import { Button, Chip, Rating } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import { SubjectDto } from '../../../Interfaces';
 import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import StarIcon from '@mui/icons-material/Star';
 import { CustomSectionChip, CustomSelect } from '@/components';
 import {
   addBookmark,
   editBookmark,
   removeBookmark,
+  selectBookmarkDetail,
+  selectIsBookmark,
 } from '@/features/bookmark/bookmarkSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/features/store';
+import { RootState, AppDispatch } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import {
   addBookmarkApi,
@@ -24,38 +25,36 @@ interface SubjectCardProps {
 }
 
 export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const bookmark = useSelector((state: RootState) => state.bookmark.items);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [isBookmarked, setIsBookmarked] = useState(true);
 
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
   const [sectionList, setSectionList] = useState<string[]>([]);
-
+  const hasBookmark = useSelector((state: RootState) =>
+    selectIsBookmark(state, subjectDetail.subject_id),
+  );
+  const bookmarkDetail = useSelector((state: RootState) =>
+    selectBookmarkDetail(state, subjectDetail.subject_id),
+  );
   useEffect(() => {
-    const isBookmarked = bookmark.find(
-      (item) => item.subjectId === subjectDetail.subject_id,
-    );
-    if (isBookmarked) {
-      setIsBookmarked(true);
-      setSelectedSection(isBookmarked.selectedSection || '');
-    }
-  }, [subjectDetail.subject_id, bookmark]);
+    setIsBookmarked(hasBookmark);
+    setSelectedSection(bookmarkDetail?.section || '');
+  }, [hasBookmark, bookmarkDetail]);
 
   const handleSelectSectionChange = async (value: string) => {
-    console.log(value)
-    setSelectedSection('');
+    setSelectedSection(value);
 
     if (isBookmarked) {
       dispatch(
         editBookmark({
           subjectId: subjectDetail.subject_id,
-          selectedSection: value,
+          section: value,
           semester: Number(semester),
           year: Number(year),
         }),
@@ -64,7 +63,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
       if (isAuthenticated) {
         await updateBookmarkApi({
           subjectId: subjectDetail.subject_id,
-          selectedSection: value,
+          section: value,
           semester: Number(semester),
           year: Number(year),
         });
@@ -78,7 +77,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
       dispatch(
         addBookmark({
           subjectId: subjectDetail.subject_id,
-          selectedSection: selectedSection,
+          section: selectedSection,
           semester: Number(semester),
           year: Number(year),
         }),
@@ -86,7 +85,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
       if (isAuthenticated) {
         await addBookmarkApi({
           subjectId: subjectDetail.subject_id,
-          selectedSection: '',
+          section: selectedSection,
           semester: Number(semester),
           year: Number(year),
         });
@@ -97,7 +96,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
       if (isAuthenticated) {
         await deleteBookmarkApi({
           subjectId: subjectDetail.subject_id,
-          selectedSection: '',
+          section: selectedSection,
           semester: Number(semester),
           year: Number(year),
         });
@@ -146,7 +145,11 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
               {subjectDetail.category &&
                 subjectDetail.category.map((category) => (
                   <Chip
-                    key={category.category_id}
+                    key={
+                      category.category_id +
+                      category.group_name +
+                      category.subgroup_name
+                    }
                     label={`${category.group_name} + ${category.subgroup_name}`}
                     size="small"
                     variant="outlined"
@@ -184,7 +187,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
               value: section,
             }))}
             selectedValue={selectedSection}
-            />
+          />
           <Button
             variant="contained"
             startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}

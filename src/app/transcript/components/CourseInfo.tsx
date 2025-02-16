@@ -1,22 +1,19 @@
 'use client';
 import { fetchListFaculty } from '@/api/facultyApi';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 import { CurriSelectGroup } from '@/components';
-import { CurriGroup } from '@/Interfaces';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
 import { SelectOption } from '@/types';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface StudentInfoProps {
   studentInfo: StudentInfo;
-  selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
 }
 
 export default function CourseInfo({
   studentInfo,
-  selectedCurriGroup,
-  setSelectedCurriGroup,
 }: StudentInfoProps) {
+  const { selectedCurriGroup, setSelectedCurriGroup } = useTranscriptContext();
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
@@ -47,7 +44,7 @@ export default function CourseInfo({
   }, []);
 
   useEffect(() => {
-    if (facultyOptions.length === 0) return; 
+    if (facultyOptions.length === 0) return;
 
     const faculty = facultyOptions.find(
       (f) => f.value === studentInfo.faculty_id,
@@ -89,9 +86,9 @@ export default function CourseInfo({
   }, [studentInfo]);
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="font-mitr font-medium text-xl">ข้อมูลหลักสูตรของคุณ</div>
-      <div className="flex gap-x-10">
+    <div className="flex flex-col md:gap-10 gap-5">
+      <div className="font-mitr font-medium text-lg md:text-xl">ข้อมูลหลักสูตรของคุณ</div>
+      <div className="flex flex-col md:flex-row md:gap-x-4 gap-y-2 md:gap-y-2">
         <CurriSelectGroup
           selectedCurriGroup={selectedCurriGroup}
           facultyOptions={facultyOptions}
