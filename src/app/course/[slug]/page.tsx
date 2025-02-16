@@ -84,6 +84,9 @@ export default function Page({
   const [selectedTeacherName, setSelectedTeacherName] = useState('');
   const [reviewText, setReviewText] = useState('');
 
+  const userReviews = reviews.filter((review) => review.isOwner);
+  const otherReviews = reviews.filter((review) => !review.isOwner);
+
   const [yearOptions, setYearOptions] = useState<string[]>([]);
   const [semesterOptions, setSemesterOptions] = useState<string[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
@@ -419,8 +422,32 @@ export default function Page({
             onClose={() => setOpenAuthModal(false)}
           />
         </div> */}
-        
+
         <hr className="mt-6 mb-12" />
+
+        {userReviews.length > 0 && (
+          <div id="user-reviews" className="mb-12">
+            <h2 className="text-lg font-mitr font-medium mb-6">รีวิวของคุณ</h2>
+            <div id="user-reviews-container">
+              {userReviews.map((review) => (
+                <ReviewCard
+                  key={review.review_id}
+                  subjectId={subjectDetail.subject_id}
+                  reviewId={review.review_id}
+                  rating={review.rating}
+                  year={Number(review.year)}
+                  semester={Number(review.semester)}
+                  teacherName={review.teacherName}
+                  reviewText={review.reviewText}
+                  createdAt={review.createdAt}
+                  likeCount={review.likeCount}
+                  isLikedByCurrentUser={review.isLikedByCurrentUser || false}
+                  isOwner={review.isOwner || false}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div id="reviews-list" className="flex-col mb-6 mt-2">
           <h2 className="text-lg font-mitr font-medium mb-4 sm:mb-0">
@@ -454,11 +481,11 @@ export default function Page({
               </div>
             </div>
           </div>
-          {reviews.length > 0 ? (
+          {otherReviews.length > 0 ? (
             <>
               <div id="reviews-container">
                 {(() => {
-                  const filteredReviews = reviews.filter(
+                  const filteredReviews = otherReviews.filter(
                     (review) =>
                       !selectedRating || review.rating === selectedRating,
                   );
@@ -484,7 +511,7 @@ export default function Page({
                     ))
                   ) : (
                     <div className="text-gray-400 text-center mt-8">
-                      <p className="text-lg">ยังไม่มีรีวิวในขณะนี้</p>
+                      <p className="text-lg">ยังไม่มีรีวิวจากคนอื่น ๆ ในขณะนี้</p>
                     </div>
                   );
                 })()}
@@ -492,7 +519,9 @@ export default function Page({
             </>
           ) : (
             <div className="text-gray-400 text-center mt-8">
-              <p className="text-lg">ยังไม่มีรีวิวสำหรับรายวิชานี้</p>
+              <p className="text-lg">
+                ยังไม่มีรีวิวจากคนอื่น ๆ สำหรับรายวิชานี้
+              </p>
             </div>
           )}
         </div>
