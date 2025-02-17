@@ -1,12 +1,7 @@
-export interface BookmarkItem {
+import { Order } from '@/enums';
+
+export interface BookmarkItem extends BookmarkParam {
   subjectId: string;
-  section?: string | null;
-  semester: number;
-  year: number;
-  isShow?: boolean;
-  category?: string | null;
-  group?: string | null;
-  subgroup?: string | null;
 }
 
 export interface BookmarkParam {
@@ -15,11 +10,11 @@ export interface BookmarkParam {
   semester?: number;
   year?: number;
   isShow?: boolean;
-  category?: string | null;
-  group?: string | null;
-  subgroup?: string | null;
+  category?: number | null;
+  group?: number | null;
+  subgroup?: number | null;
+  childgroup?: number | null;
 }
-
 export interface BookmarkDto {
   subject_id: string;
   subject_tname: string;
@@ -28,10 +23,17 @@ export interface BookmarkDto {
   category?: number | null;
   group?: number | null;
   subgroup?: number | null;
-  semester: string;
-  year: string;
+  semester: number;
+  year: number;
   section?: string | null;
   created_at?: string;
   updated_at?: string;
   is_show?: boolean;
+}
+
+export interface CalculateBookmarkQueryParams {
+  semester: number;
+  year: number;
+  orderBy?: Order;
+  isShow?: boolean;
 }

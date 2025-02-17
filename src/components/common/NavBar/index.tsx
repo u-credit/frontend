@@ -18,8 +18,17 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { AppDispatch, RootState } from '@/features/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout, selectCurrentRole, setRole, selectIsAdmin } from '@/features/auth/authSlice';
+import {
+  logout,
+  selectCurrentRole,
+  setRole,
+  selectIsAdmin,
+} from '@/features/auth/authSlice';
 import { handleLogout } from '@/features/auth/authAction';
+import {
+  selectHasTranscript,
+  setCurrentPage,
+} from '@/features/transcriptSlice';
 
 interface NavItem {
   path: string;
@@ -80,7 +89,7 @@ export default function NavBar() {
   );
   const user = useSelector((state: RootState) => state.auth.user);
   const currentRole = useSelector(selectCurrentRole);
-  const isAdmin = useSelector(selectIsAdmin); 
+  const isAdmin = useSelector(selectIsAdmin);
 
   useEffect(() => {
     if (pathname === '/admin' && currentRole !== 'admin') {
@@ -137,6 +146,19 @@ export default function NavBar() {
     }
   };
 
+  const hasTranscript = useSelector(selectHasTranscript);
+  const initialPage = useSelector(
+    (state: RootState) => state.transcript.initialPage,
+  );
+  const handleActivePageChange = (path: string) => {
+    if (path === '/transcript') {
+      if (hasTranscript) {
+        dispatch(setCurrentPage(initialPage));
+      }
+    }
+    setActivePage(path);
+  };
+
   const isMenuOpen = Boolean(anchorEl);
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -155,7 +177,7 @@ export default function NavBar() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      {isAdmin && ( 
+      {isAdmin && (
         <MenuItem>
           <FormControl fullWidth size="small">
             <InputLabel>Role</InputLabel>
@@ -205,7 +227,7 @@ export default function NavBar() {
               <Link
                 key={index}
                 href={item.path}
-                onClick={() => setActivePage(item.path)}
+                onClick={() => handleActivePageChange(item.path)}
                 className={`flex items-center space-x-2 h-full cursor-pointer border-y-[3px] border-transparent px-4 font-mitr
                 ${activePage === item.path ? 'border-b-primary-400 text-primary-400' : 'hover:border-b-primary-400 hover:text-primary-400'}`}
               >
@@ -214,17 +236,17 @@ export default function NavBar() {
             ))}
 
           {isAuthenticated ? (
-              <Avatar
-                {...stringAvatar('Kent Dodds')}
-                sx={{
-                  width: '32px',
-                  height: '32px',
-                  fontSize: '14px',
-                  marginLeft: '16px',
-                  '&:hover': { cursor: 'pointer' },
-                }}
-                onClick={handleProfileMenuOpen}
-              />
+            <Avatar
+              {...stringAvatar(user?.username || '')}
+              sx={{
+                width: '32px',
+                height: '32px',
+                fontSize: '14px',
+                marginLeft: '16px',
+                '&:hover': { cursor: 'pointer' },
+              }}
+              onClick={handleProfileMenuOpen}
+            />
           ) : (
             <Button
               variant="contained"
@@ -240,50 +262,50 @@ export default function NavBar() {
         <div
           className={`md:hidden flex flex-col absolute top-12 left-0 w-full bg-white shadow-md ${isMenuMobileOpen ? 'block' : 'hidden'}`}
         >
-            {isAuthenticated ? (
-              <>
-                {navItemsAuthenticated.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.path}
-                    onClick={() => {
-                      setActivePage(item.path);
-                      setIsMenuMobileOpen(false);
-                    }}
-                  className="p-4 border-b last:border-b-0"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-
-                <div
-                className="p-4 border-b last:border-b-0 hover:cursor-pointer"
+          {isAuthenticated ? (
+            <>
+              {navItemsAuthenticated.map((item, index) => (
+                <Link
+                  key={index}
+                  href={item.path}
                   onClick={() => {
-                    dispatch(handleLogout());
+                    handleActivePageChange(item.path);
                     setIsMenuMobileOpen(false);
                   }}
-                >
-                  ออกจากระบบ
-                </div>
-              </>
-            ) : (
-              <>
-                {navItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.path}
-                    onClick={() => {
-                      setActivePage(item.path);
-                      setIsMenuMobileOpen(false);
-                    }}
                   className="p-4 border-b last:border-b-0"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </>
-            )}
-          </div>
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              <div
+                className="p-4 border-b last:border-b-0 hover:cursor-pointer"
+                onClick={() => {
+                  dispatch(handleLogout());
+                  setIsMenuMobileOpen(false);
+                }}
+              >
+                ออกจากระบบ
+              </div>
+            </>
+          ) : (
+            <>
+              {navItems.map((item, index) => (
+                <Link
+                  key={index}
+                  href={item.path}
+                  onClick={() => {
+                    handleActivePageChange(item.path);
+                    setIsMenuMobileOpen(false);
+                  }}
+                  className="p-4 border-b last:border-b-0"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </>
+          )}
+        </div>
 
         {renderMenu}
       </div>

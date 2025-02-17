@@ -22,7 +22,7 @@ import {
 } from '@/features/review/reviewSlice';
 import { showAlert } from '@/features/alertSlice';
 import type { AppDispatch } from '@/features/store';
-import { getReviews, deleteReview } from '@/api/reviewApi';
+import { getReviews, deleteReview, editReview } from '@/api/reviewApi';
 import AuthModal from './AuthModal';
 import EditReviewDialog from './EditReviewDialog';
 
@@ -149,6 +149,34 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
     return `${semester}/${year}`;
   };
 
+  const handleEditReview = async (data: any) => {
+    try {
+      const response = await editReview(reviewId, data);
+
+      if (response.status) {
+        const updatedReviews = await getReviews(subjectId);
+        if (updatedReviews.status) {
+          dispatch(setInitialReviews(updatedReviews.data.reviews));
+          dispatch(setAverageRating(updatedReviews.data.averageRating));
+        }
+        dispatch(
+          showAlert({
+            message: 'คุณแก้ไขรีวิวรายวิชานี้สำเร็จแล้ว',
+            severity: 'success',
+          }),
+        );
+        setEditDialogOpen(false);
+      }
+    } catch (error) {
+      dispatch(
+        showAlert({
+          message: 'เกิดข้อผิดพลาดในการแก้ไขรีวิว',
+          severity: 'error',
+        }),
+      );
+    }
+  };
+
   return (
     <>
       <div className="mb-4 rounded-md overflow-hidden border border-gray-200">
@@ -245,43 +273,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
       <EditReviewDialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
-        onSubmit={async (data) => {
-          try {
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews/${reviewId}`,
-              {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(data),
-              },
-            );
-
-            if (response.ok) {
-              const updatedReviews = await getReviews(subjectId);
-              if (updatedReviews.status) {
-                dispatch(setInitialReviews(updatedReviews.data.reviews));
-                dispatch(setAverageRating(updatedReviews.data.averageRating));
-              }
-              dispatch(
-                showAlert({
-                  message: 'คุณแก้ไขรีวิวรายวิชานี้สำเร็จแล้ว',
-                  severity: 'success',
-                }),
-              );
-              setEditDialogOpen(false);
-            }
-          } catch (error) {
-            dispatch(
-              showAlert({
-                message: 'เกิดข้อผิดพลาดในการแก้ไขรีวิว',
-                severity: 'error',
-              }),
-            );
-          }
-        }}
+        onSubmit={handleEditReview}
         initialData={{
           rating,
           year,

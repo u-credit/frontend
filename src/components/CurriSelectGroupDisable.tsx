@@ -1,48 +1,33 @@
 'use client';
-import CustomSelectOutlined from './CustomSelectOutlined';
-import { SelectOption } from '@/types';
 import { CurriGroup } from '@/Interfaces';
+import CustomSelectOutlinedDisable from './CustomSelectOutlinedDisable';
+import { use, useEffect } from 'react';
 
-interface CurriSelectGroupProps {
+interface CurriSelectGroupDisableProps {
   selectedCurriGroup: CurriGroup;
-  facultyOptions: SelectOption[];
 }
 
-export default function CurriSelectGroup({
+export default function CurriSelectGroupDisable({
   selectedCurriGroup,
-  facultyOptions,
-}: CurriSelectGroupProps) {
+}: CurriSelectGroupDisableProps) {
   return (
     <>
-      <CustomSelectOutlined
-        onSelectedValueChange={() => {}}
-        selectOptions={facultyOptions}
+      <CustomSelectOutlinedDisable
         selectedValue={selectedCurriGroup.faculty}
         label="คณะ"
-        disabled={true}
       />
-      <CustomSelectOutlined
-        onSelectedValueChange={() => {}}
-        selectOptions={selectedCurriGroup.faculty.children || []}
+      <CustomSelectOutlinedDisable
         selectedValue={selectedCurriGroup.department}
         label="ภาควิชา"
-        disabled={true}
       />
-      <CustomSelectOutlined
-        onSelectedValueChange={() => {}}
-        selectOptions={selectedCurriGroup.department.children || []}
+      <CustomSelectOutlinedDisable
         selectedValue={selectedCurriGroup.curriculum}
         label="หลักสูตร"
-        disabled={true}
       />
-      <CustomSelectOutlined
-        onSelectedValueChange={() => {}}
-        selectOptions={selectedCurriGroup.curriculum.children || []}
+      <CustomSelectOutlinedDisable
         selectedValue={selectedCurriGroup.curriculumYear}
         label="เล่มหลักสูตร"
-        disabled={true}
       />
-      
     </>
   );
 }

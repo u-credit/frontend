@@ -44,7 +44,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
   );
   useEffect(() => {
     setIsBookmarked(hasBookmark);
-    setSelectedSection(bookmarkDetail?.section || '');
+    setSelectedSection(String(bookmarkDetail?.section) || '');
   }, [hasBookmark, bookmarkDetail]);
 
   const handleSelectSectionChange = async (value: string) => {
@@ -52,12 +52,14 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
 
     if (isBookmarked) {
       dispatch(
-        editBookmark({
-          subjectId: subjectDetail.subject_id,
-          section: value,
-          semester: Number(semester),
-          year: Number(year),
-        }),
+        editBookmark([
+          {
+            subjectId: subjectDetail.subject_id,
+            section: value,
+            semester: Number(semester),
+            year: Number(year),
+          },
+        ]),
       );
 
       if (isAuthenticated) {

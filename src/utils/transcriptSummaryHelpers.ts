@@ -1,5 +1,7 @@
-import { Row } from '@/app/transcript/components/SummaryTable';
-import { BookmarkDto } from '@/Interfaces';
+import { SummarySubject } from '@/app/transcript/components/summary/SummarySubjectCard';
+import { Row } from '@/app/transcript/components/summary/SummaryTable';
+import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
+import { TranscriptItem } from '@/features/transcriptSlice';
 import {
   RequiredCreditDto,
   SubjectTranscriptDto,
@@ -79,7 +81,7 @@ export const calculateRequiredCredit = (
   if (tableData && tableData.length > 0) {
     if (requiredCreditItem && requiredCreditItem.length > 0) {
       requiredCreditItem.forEach((item: RequiredCreditDto) => {
-        const cat = tableData.find((c: Row) => c.id === item.category);
+        const cat = tableData.find((c: Row) => c.id === Number(item.category));
         cat?.requiredCredit != undefined &&
           (cat.requiredCredit += item.credit1);
         cat?.creditToComplete != undefined &&
@@ -94,9 +96,18 @@ export const calculateRequiredCredit = (
         const subgroup = group?.children?.find(
           (s: Row) => s.id === item.subgroup,
         );
-        subgroup?.requiredCredit && (subgroup.requiredCredit += item.credit1);
-        subgroup?.creditToComplete &&
+        subgroup?.requiredCredit != undefined &&
+          (subgroup.requiredCredit += item.credit1);
+        subgroup?.creditToComplete != undefined &&
           (subgroup.creditToComplete += item.credit1);
+
+        const children = subgroup?.children?.find(
+          (c: Row) => c.id === item.subgroup,
+        );
+        children?.requiredCredit != undefined &&
+          (children.requiredCredit += item.credit1);
+        children?.creditToComplete != undefined &&
+          (children.creditToComplete += item.credit1);
       });
     }
   }
@@ -110,7 +121,7 @@ export const calculateCurrentCredit = (
   if (tableData && tableData.length > 0) {
     if (currentCreditItem && currentCreditItem.length > 0) {
       currentCreditItem.forEach((item: SubjectTranscriptDto) => {
-        const cat = tableData.find((c: Row) => c.id === item.category);
+        const cat = tableData.find((c: Row) => c.id === Number(item.category));
         cat?.currentCredit != undefined && (cat.currentCredit += item.credit);
         cat?.creditToComplete != undefined &&
           (cat.creditToComplete -= item.credit);
@@ -136,26 +147,112 @@ export const calculateCurrentCredit = (
 
 export const calculateScheduledCredit = (
   tableData: Row[],
-  scheduleItem: BookmarkDto[],
+  scheduleItem: BookmarkStateItem[],
 ): Row[] => {
   if (tableData && tableData.length > 0) {
     if (scheduleItem && scheduleItem.length > 0) {
-      scheduleItem.forEach((item: BookmarkDto) => {
-        const cat = tableData.find((c: Row) => c.id === item.category);
+      scheduleItem.forEach((item: BookmarkStateItem) => {
+        const cat = tableData.find((c: Row) => c.id === Number(item.category));
         cat?.scheduledCredit != undefined &&
-          (cat.scheduledCredit += item.credit);
+          (cat.scheduledCredit += item.detail?.credit ?? 0);
 
-        const group = cat?.children?.find((g: Row) => g.id === item.group);
+        const group = cat?.children?.find(
+          (g: Row) => g.id === Number(item.group),
+        );
         group?.scheduledCredit != undefined &&
-          (group.scheduledCredit += item.credit);
+          (group.scheduledCredit += item.detail?.credit ?? 0);
 
         const subgroup = group?.children?.find(
-          (s: Row) => s.id === item.subgroup,
+          (s: Row) => s.id === Number(item.subgroup),
         );
         subgroup?.scheduledCredit != undefined &&
-          (subgroup.scheduledCredit += item.credit);
+          (subgroup.scheduledCredit += item.detail?.credit ?? 0);
       });
     }
   }
   return tableData;
+};
+
+export const formatDisplayCalculation = (value: number): string => {
+  if (value < 0) return 'เกิน ' + Math.abs(value).toString() + ' หน่วย';
+  return value.toString();
+};
+
+export const findStartEnd = (transcriptSubject: SubjectTranscriptDto[]) => {
+  let startSemester: number = transcriptSubject[0].semester || 0,
+    startYear: number = transcriptSubject[0].year || 0,
+    endSemester: number = transcriptSubject[0].semester || 0,
+    endYear: number = transcriptSubject[0].year || 0;
+
+  transcriptSubject.forEach((subject) => {
+    if (subject.year && subject.semester) {
+      if (!startYear) {
+        startYear = subject.year;
+        startSemester = subject.semester;
+      }
+      if (!endYear) {
+        endYear = subject.year;
+        endSemester = subject.semester;
+      }
+
+      if (subject.year < startYear) {
+        startYear = subject.year;
+        startSemester = subject.semester;
+      } else if (
+        subject.year === startYear &&
+        subject.semester < startSemester
+      ) {
+        startSemester = subject.semester;
+      }
+
+      if (subject.year > endYear) {
+        endYear = subject.year;
+        endSemester = subject.semester;
+      } else if (subject.year === endYear && subject.semester > endSemester) {
+        endSemester = subject.semester;
+      }
+    }
+  });
+
+  return { startSemester, startYear, endSemester, endYear };
+};
+
+export const formatBookmarkStateItemToSummarySubject = (
+  bookmark: BookmarkStateItem[],
+): SummarySubject[] => {
+  return bookmark.map<SummarySubject>((item: BookmarkStateItem) => {
+    return {
+      subject_id: item.detail?.subject_id || '',
+      subject_tname: item.detail?.subject_thai_name || '',
+      subject_ename: item.detail?.subject_english_name || '',
+      category: item.category || undefined,
+      group: item.group || undefined,
+      subgroup: item.subgroup || undefined,
+      childgroup: item.childgroup || undefined,
+      credit: item.detail?.credit || 0,
+      semester: item.semester || null,
+      year: item.year || null,
+      categories: item.detail?.category || [],
+    };
+  });
+};
+
+export const formatTranscriptItemToSummarySubject = (
+  transcript: TranscriptItem[],
+): SummarySubject[] => {
+  return transcript.map<SummarySubject>((item: TranscriptItem) => {
+    return {
+      subject_id: item.subject_id || '',
+      subject_tname: item.subject_tname || '',
+      subject_ename: item.subject_ename || '',
+      category: item.category || undefined,
+      group: item.group || undefined,
+      subgroup: item.subgroup || undefined,
+      childgroup: item.childgroup || undefined,
+      credit: item.credit || 0,
+      semester: item.semester || null,
+      year: item.year || null,
+      categories: item.detail?.category || [],
+    };
+  });
 };

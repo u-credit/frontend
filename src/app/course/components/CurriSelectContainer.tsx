@@ -6,10 +6,13 @@ import {
   Button,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { initSelectOption, SelectOption } from '@/types';
-import { CurriSelectGroup } from '@/components';
+import { initSelectOption, isInitCurrigroup, SelectOption } from '@/types';
+import { CurriSelectGroup, CurriSelectGroupDisable } from '@/components';
 import { CurriGroup } from '@/Interfaces';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { selectHasTranscript } from '@/features/transcriptSlice';
+import { useSelector } from 'react-redux';
+import { selectUserFacultyOptions } from '@/features/facultySlice';
 
 interface CurriSelectContainerProps {
   facultyOptions: SelectOption[];
@@ -20,22 +23,33 @@ export default function CurriSelectContainer({
   facultyOptions,
   onClickApplyCurri,
 }: CurriSelectContainerProps) {
+  const hasTranscript = useSelector(selectHasTranscript);
+  const userFacultyOptions = useSelector(selectUserFacultyOptions);
+
+  useEffect(() => {
+    if (isInitCurrigroup(userFacultyOptions)) {
+      setSelectedCurriGroup(userFacultyOptions);
+    }
+  }, [userFacultyOptions]);
+
   const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
     faculty: initSelectOption(),
     department: initSelectOption(),
     curriculum: initSelectOption(),
     curriculumYear: initSelectOption(),
   });
+
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const handleAccordionChange = () => {
     setIsExpanded((prev) => !prev);
   };
-  const handleApplyCurri = () => {
+  const handleApplyCurri = async () => {
     onClickApplyCurri(selectedCurriGroup);
     setTimeout(() => {
       setIsExpanded(false);
     }, 500);
   };
+
   return (
     <div className="flex bg-white w-11/12 lg:max-w-5xl text-primary-400 rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
       <Accordion
@@ -73,8 +87,9 @@ export default function CurriSelectContainer({
           }}
         >
           <span className="text-primary-400 font-semibold">
-            *เพื่อการแสดงผลรายละเอียดหมวดหมู่รายวิชาที่ละเอียดมากยิ่งขึ้น
-            โปรดกรอกรายละเอียดหลักสูตรของคุณ
+            {hasTranscript
+              ? '*ระบบจะใช้หลักสูตรจากทรานสคริปต์เมื่อคุณมีข้อมูลทรานสคริปต์อัปโหลดไว้'
+              : '*เพื่อการแสดงผลรายละเอียดหมวดหมู่รายวิชาที่ละเอียดมากยิ่งขึ้นโปรดกรอกรายละเอียดหลักสูตรของคุณ'}
           </span>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: 0 }}>
@@ -82,19 +97,27 @@ export default function CurriSelectContainer({
             <span className="font-semibold whitespace-nowrap content-center">
               หลักสูตรของคุณ
             </span>
-            <CurriSelectGroup
-              selectedCurriGroup={selectedCurriGroup}
-              setSelectedCurriGroup={setSelectedCurriGroup}
-              facultyOptions={facultyOptions}
-            />
-            <Button
-              variant="contained"
-              sx={{ minWidth: '80px' }}
-              onClick={handleApplyCurri}
-              disabled={selectedCurriGroup.curriculumYear.value === ''}
-            >
-              ปรับใช้
-            </Button>
+            {hasTranscript ? (
+              <CurriSelectGroupDisable
+                selectedCurriGroup={userFacultyOptions}
+              />
+            ) : (
+              <>
+                <CurriSelectGroup
+                  selectedCurriGroup={selectedCurriGroup}
+                  setSelectedCurriGroup={setSelectedCurriGroup}
+                  facultyOptions={facultyOptions}
+                />
+                <Button
+                  variant="contained"
+                  sx={{ minWidth: '80px' }}
+                  onClick={handleApplyCurri}
+                  disabled={selectedCurriGroup.curriculumYear.value === ''}
+                >
+                  ปรับใช้
+                </Button>
+              </>
+            )}
           </div>
         </AccordionDetails>
       </Accordion>

@@ -4,6 +4,8 @@ import authReducer from './auth/authSlice';
 import bookmarkReducer from './bookmark/bookmarkSlice';
 import selectorValueReducer from './selectorValueSlice';
 import reviewReducer from './review/reviewSlice';
+import facultyReducer from './facultySlice';
+import transcriptReducer from './transcriptSlice';
 import semesterSettingsReducer from './admin/semesterSettingsSlice';
 
 export const makeStore = () => {
@@ -14,6 +16,8 @@ export const makeStore = () => {
       bookmark: bookmarkReducer,
       selectorValue: selectorValueReducer,
       review: reviewReducer,
+      faculty: facultyReducer,
+      transcript: transcriptReducer,
       semesterSettings: semesterSettingsReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',

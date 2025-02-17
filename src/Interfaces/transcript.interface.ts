@@ -16,8 +16,8 @@ export interface SubjectTranscriptDto {
   subgroup?: number;
   childgroup?: number;
   credit: number;
-  semester: string | null;
-  year: string | null;
+  semester: number | null;
+  year: number | null;
 }
 
 export interface RequiredCreditDto {
@@ -29,4 +29,44 @@ export interface RequiredCreditDto {
   c_cat_name: string;
   c_group_name: string;
   c_subgroup_name: string;
+}
+
+export interface CurriculumGroupParams {
+  faculty: string;
+  department: string;
+  curriculum: string;
+  curriculumYear: string;
+}
+
+export interface CalculatedDto {
+  result: SubjectProcessDto[];
+  unmatchSubjects: SubjectProcessDto[];
+}
+
+export interface SubjectProcessDto {
+  subject_id: string;
+  subject_tname: string;
+  subject_ename: string;
+  credit: number;
+  category: number;
+  group: number;
+  subgroup: number;
+  childgroup?: number;
+  semester: string;
+  year: string;
+}
+
+export interface fetchTranscriptResponse {
+  result: CalculatedDto[];
+  subjects: SubjectTranscriptDto[];
+}
+
+export interface CreateTranscriptResponse {
+  user: {
+    faculty_id: string;
+    department_id: string;
+    curr2_id: string;
+    curri_id: string;
+    curriculum_year: string;
+  };
 }

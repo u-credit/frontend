@@ -1,5 +1,5 @@
 'use client';
-import { use, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
@@ -19,14 +19,10 @@ import {
 import { useInView } from 'react-intersection-observer';
 import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
-import { CustomSearchBar, CustomSelect } from '@/components';
+import { CustomSearchBar, CustomSelect, Loading } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/features/store';
-import {
-  setCurrigroup,
-  setSemester,
-  setYear,
-} from '@/features/selectorValueSlice';
+import { setSemester, setYear } from '@/features/selectorValueSlice';
 import TuneIcon from '@mui/icons-material/Tune';
 import { fetchActiveSetting } from '@/features/admin/semesterSettingsSlice';
 import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
@@ -47,7 +43,9 @@ import {
 import AddBookmarkModal from './components/AddBookmarkModal';
 import Backdrop from '@/components/Backdrop';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-        
+import { setUserCurriGroupByCurriGroup } from '@/features/facultySlice';
+import { updateUser } from '@/api/userApi';
+
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
@@ -64,7 +62,9 @@ const yearOptions: SelectOption[] = [
 export default function CourseWrapper() {
   return (
     <CourseProvider>
-      <Course />
+      <Suspense fallback={<Loading />}>
+        <Course />
+      </Suspense>
     </CourseProvider>
   );
 }
@@ -74,6 +74,9 @@ function Course() {
   const { listSubjects, setListSubjects } = useCourseContext();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
+  );
+  const selectedCurriGroup = useSelector(
+    (state: RootState) => state.faculty.userCurriGroup,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [selectedSemester, setSelectedSemester] = useState<string>(semester);
@@ -92,12 +95,12 @@ function Course() {
   const [customEndTimeFilter, setCustomEndTimeFilter] = useState<string>('');
   const [searchValue, setSearchValue] = useState<string>('');
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
-    faculty: initSelectOption(),
-    department: initSelectOption(),
-    curriculum: initSelectOption(),
-    curriculumYear: initSelectOption(),
-  });
+  // const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
+  //   faculty: initSelectOption(),
+  //   department: initSelectOption(),
+  //   curriculum: initSelectOption(),
+  //   curriculumYear: initSelectOption(),
+  // });
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
@@ -264,14 +267,28 @@ function Course() {
     document.documentElement.style.overflowY = 'auto';
   }, []);
 
+  // useEffect(() => {
+  //   if (userCurriGroup) {
+  //     setSelectedCurriGroup(userCurriGroup);
+  //   }
+  // }, [userCurriGroup]);
+
+  useEffect(() => {
+    loadSubjects({ isLoadMore: false });
+  }, [
+    selectedSemester,
+    selectedYear,
+    selectedCurriGroup.faculty.value,
+    selectedCurriGroup.department.value,
+    selectedCurriGroup.curriculum.value,
+    selectedCurriGroup.curriculumYear.value,
+  ]);
+
   useEffect(() => {
     if (changeFromDelete) return;
     if (isFirstLoad) return;
     loadSubjects({ isLoadMore: false });
   }, [
-    selectedSemester,
-    selectedYear,
-    selectedCurriGroup,
     filterValues.courseCategory,
     filterValues.classDay,
     filterValues.classTime,
@@ -395,23 +412,30 @@ function Course() {
     setSendCustomTime(false);
     setChangeFromDelete(true);
   };
-  const handleApplyCurriGroup = (curriGroup: CurriGroup) => {
-    setSelectedCurriGroup(
-      curriGroup
-        ? {
-            faculty: curriGroup.faculty,
-            department: curriGroup.department,
-            curriculum: curriGroup.curriculum,
-            curriculumYear: curriGroup.curriculumYear,
-          }
-        : {
-            faculty: initSelectOption(),
-            department: initSelectOption(),
-            curriculum: initSelectOption(),
-            curriculumYear: initSelectOption(),
-          },
-    );
-    dispatch(setCurrigroup(curriGroup));
+  const handleApplyCurriGroup = async (curriGroup: CurriGroup) => {
+    // setSelectedCurriGroup(
+    //   curriGroup
+    //     ? {
+    //         faculty: curriGroup.faculty,
+    //         department: curriGroup.department,
+    //         curriculum: curriGroup.curriculum,
+    //         curriculumYear: curriGroup.curriculumYear,
+    //       }
+    //     : {
+    //         faculty: initSelectOption(),
+    //         department: initSelectOption(),
+    //         curriculum: initSelectOption(),
+    //         curriculumYear: initSelectOption(),
+    //       },
+    // );
+
+    await updateUser({
+      facultyId: curriGroup.faculty.value,
+      departmentId: curriGroup.department.value,
+      curriculumId: curriGroup.curriculum.value,
+      curriculumYear: curriGroup.curriculumYear.value,
+    });
+    dispatch(setUserCurriGroupByCurriGroup(curriGroup));
     dispatch(updateBookmarksOnCurriChange());
   };
 
@@ -429,28 +453,30 @@ function Course() {
         });
         const data = response?.data || [];
         const formatData = formatBookmarksDtoToItem(data);
-        const response2 = (
-          await fetchListSubjectByIds({
-            semester: Number(semester),
-            year: Number(year),
-            subjectIds: [...formatData.map((item) => item.subjectId)],
-          })
-        ).data;
+        if (formatData.length > 0) {
+          const response2 = (
+            await fetchListSubjectByIds({
+              semester: Number(semester),
+              year: Number(year),
+              subjectIds: [...formatData.map((item) => item.subjectId)],
+            })
+          ).data;
 
-        if (response.data.length > 0) {
-          const updatedBookmarksWithDetail: BookmarkStateItem[] =
-            formatData.map((item) => {
-              const subject = response2.find(
-                (subject) => subject.subject_id === item.subjectId,
-              );
-              return {
-                ...item,
-                detail: subject,
-              };
-            });
+          if (response.data.length > 0) {
+            const updatedBookmarksWithDetail: BookmarkStateItem[] =
+              formatData.map((item) => {
+                const subject = response2.find(
+                  (subject) => subject.subject_id === item.subjectId,
+                );
+                return {
+                  ...item,
+                  detail: subject,
+                };
+              });
 
-          saveBookmarks(semester, year, updatedBookmarksWithDetail);
-          dispatch(setBookmarks(updatedBookmarksWithDetail));
+            saveBookmarks(semester, year, updatedBookmarksWithDetail);
+            dispatch(setBookmarks(updatedBookmarksWithDetail));
+          }
         } else {
           saveBookmarks(semester, year, formatData);
           dispatch(setBookmarks(formatData));

@@ -19,7 +19,7 @@ export const fetchActiveSetting = createAsyncThunk(
   'semesterSettings/fetchActive',
   async () => {
     const response = await fetchActiveSemesterSetting();
-    return response;
+    return response.data;
   }
 );
 
@@ -34,7 +34,7 @@ const semesterSettingsSlice = createSlice({
       })
       .addCase(fetchActiveSetting.fulfilled, (state, action) => {
         state.loading = false;
-        state.activeSetting = action.payload;
+        state.activeSetting = action.payload as SemesterSetting;
         state.error = null;
       })
       .addCase(fetchActiveSetting.rejected, (state, action) => {

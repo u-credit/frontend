@@ -76,6 +76,7 @@ const EditReviewDialog: React.FC<EditReviewDialogProps> = ({
 
     try {
       await onSubmit({
+        subjectId,
         rating,
         year: Number(selectedYear),
         semester: Number(selectedSemester),
@@ -117,7 +118,7 @@ const EditReviewDialog: React.FC<EditReviewDialogProps> = ({
           maxHeight: 'calc(100% - 32px)',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
         },
       }}
     >
