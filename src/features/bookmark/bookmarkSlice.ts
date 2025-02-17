@@ -134,7 +134,6 @@ export const addBookmark = createAsyncThunk(
           categoryCurriculumYear: user?.curriculum_year,
         }),
       });
-      console.log('cu');
       if (response.data.length > 0) {
         const detail = response.data[0];
 

@@ -287,7 +287,6 @@ function Course() {
   useEffect(() => {
     if (changeFromDelete) return;
     if (isFirstLoad) return;
-    console.log('selectedCurriGroup', selectedCurriGroup);
     loadSubjects({ isLoadMore: false });
   }, [
     filterValues.courseCategory,
