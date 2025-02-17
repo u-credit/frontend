@@ -10,7 +10,9 @@ export const API_PATHS = {
   logout: '/auth/logout',
   transcript: '/transcript',
   reviews: '/api/reviews',
-  reviewOptions: '/api/reviews/options'
+  reviewOptions: '/api/reviews/options',
+  semesterSettings: '/api/semester-settings',
+  roles: '/roles',
 };
 
 export const ROUTES = {

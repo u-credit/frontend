@@ -1,5 +1,7 @@
 import { CurriGroup } from '@/Interfaces';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from './store';
+import { fetchActiveSetting } from './admin/semesterSettingsSlice';
 
 interface SelectorValueState {
   semester: string;
@@ -12,8 +14,8 @@ interface SelectorValueState {
 }
 
 const initialState: SelectorValueState = {
-  semester: '1',
-  year: '2566',
+  semester: '',
+  year: '',
   facultyId: '',
   departmentId: '',
   curriculumId: '',
@@ -46,6 +48,14 @@ const selectorValueSlice = createSlice({
       state.curriculumYear = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(fetchActiveSetting.fulfilled, (state, action) => {
+      if (action.payload?.data) {
+        state.semester = String(action.payload.data.semester);
+        state.year = String(action.payload.data.year);
+      }
+    });
+  },
 });
 
 export const {
@@ -57,4 +67,8 @@ export const {
   setCurriculumId,
   setCurriculumYear,
 } = selectorValueSlice.actions;
+
+export const selectSemester = (state: RootState) =>
+  state.selectorValue.semester;
+export const selectYear = (state: RootState) => state.selectorValue.year;
 export default selectorValueSlice.reducer;

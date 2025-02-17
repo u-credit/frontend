@@ -1,3 +1,4 @@
+//frontend/src/features/review/reviewSlice.ts
 import {
   createSlice,
   createAsyncThunk,
@@ -45,9 +46,31 @@ const reviewSlice = createSlice({
     setInitialReviews(state, action: PayloadAction<Review[]>) {
       state.reviews = {};
       if (Array.isArray(action.payload)) {
+        const ownReviews: Review[] = [];
+        const otherReviews: Review[] = [];
+
         action.payload.forEach((review) => {
+          if (review.isOwner) {
+            ownReviews.push(review);
+          } else {
+            otherReviews.push(review);
+          }
+        });
+
+        const sortByDate = (a: Review, b: Review) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+
+        const sortedReviews = [
+          ...ownReviews.sort(sortByDate),
+          ...otherReviews.sort(sortByDate),
+        ];
+
+        sortedReviews.forEach((review) => {
           if (review?.review_id) {
-            state.reviews[review.review_id] = review;
+            state.reviews[review.review_id] = {
+              ...review,
+              isOwner: Boolean(review.isOwner),
+            };
           }
         });
       }

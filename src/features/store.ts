@@ -6,6 +6,7 @@ import selectorValueReducer from './selectorValueSlice';
 import reviewReducer from './review/reviewSlice';
 import facultyReducer from './facultySlice';
 import transcriptReducer from './transcriptSlice';
+import semesterSettingsReducer from './admin/semesterSettingsSlice';
 
 export const makeStore = () => {
   return configureStore({
@@ -17,6 +18,7 @@ export const makeStore = () => {
       review: reviewReducer,
       faculty: facultyReducer,
       transcript: transcriptReducer,
+      semesterSettings: semesterSettingsReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',
     middleware: (getDefaultMiddleware) =>

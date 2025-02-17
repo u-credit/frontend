@@ -1,3 +1,4 @@
+//frontend/src/app/course/[slug]/page.tsx
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
@@ -27,6 +28,7 @@ import { BookmarkModal } from '../components';
 import {
   setInitialReviews,
   selectAllReviews,
+  setAverageRating,
 } from '@/features/review/reviewSlice';
 
 import CustomTable from '@/app/course/components/CustomTable';
@@ -38,6 +40,7 @@ import CustomAlert from '@/components/CustomAlert';
 import { profanityFilter } from '@/utils/profanityFilter';
 import AuthModal from '@/app/review/components/AuthModal';
 import Backdrop from '@/components/Backdrop';
+import CreateReviewDialog from '@/app/review/components/CreateReviewDialog';
 
 export default function Page({
   params,
@@ -53,6 +56,8 @@ export default function Page({
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const userId = user?.id;
   const bookmark = useSelector((state: RootState) => state.bookmark.items);
   const reviews = useSelector((state: RootState) => selectAllReviews(state));
 
@@ -64,7 +69,11 @@ export default function Page({
   const [isModalMounted, setIsModalMounted] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const [averageRating, setAverageRating] = useState(0);
+  const [openReviewDialog, setOpenReviewDialog] = useState(false);
+  //const [averageRating, setAverageRating] = useState(0);
+  const averageRating = useSelector(
+    (state: RootState) => state.review.averageRating,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -74,6 +83,9 @@ export default function Page({
   const [selectedSemester, setSelectedSemester] = useState('');
   const [selectedTeacherName, setSelectedTeacherName] = useState('');
   const [reviewText, setReviewText] = useState('');
+
+  const userReviews = reviews.filter((review) => review.isOwner);
+  const otherReviews = reviews.filter((review) => !review.isOwner);
 
   const [yearOptions, setYearOptions] = useState<string[]>([]);
   const [semesterOptions, setSemesterOptions] = useState<string[]>([]);
@@ -119,23 +131,32 @@ export default function Page({
   };
 
   const fetchReviews = async () => {
-    const response = await getReviews(slug);
-    if (!response?.data?.reviews) return;
+    try {
+      const response = await getReviews(slug);
+      if (!response?.data?.reviews) return;
 
-    const reviews = response.data.reviews;
-    if (!Array.isArray(reviews)) return;
+      const reviews = response.data.reviews;
+      if (!Array.isArray(reviews)) return;
 
-    setAverageRating(response.data.averageRating || 0);
+      dispatch(setInitialReviews(reviews));
+      dispatch(setAverageRating(response.data.averageRating || 0));
 
-    dispatch({
-      type: 'review/setInitialReviews',
-      payload: reviews,
-    });
+      const reviewsWithOwnership = reviews.map((review) => ({
+        ...review,
+        isOwner: review.isOwner,
+      }));
+
+      dispatch(setInitialReviews(reviewsWithOwnership));
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
   };
 
   useEffect(() => {
-    fetchReviews();
-  }, [slug, dispatch]);
+    if (slug) {
+      fetchReviews();
+    }
+  }, [slug, user?.id]);
 
   const handleToggleBookmark = async () => {
     setIsBookmarked(!isBookmarked);
@@ -164,54 +185,58 @@ export default function Page({
     }
   };
 
-  const handleSubmitReview = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const handleSubmitReview = async (data: {
+    rating: number;
+    year: number;
+    semester: number;
+    teacherName: string;
+    reviewText: string;
+  }) => {
     if (!isAuthenticated) {
       setOpenAuthModal(true);
+      setOpenReviewDialog(false);
       return;
     }
 
-    if (
-      !selectedYear ||
-      !selectedSemester ||
-      !selectedTeacherName ||
-      rating === 0
-    ) {
+    const { rating, year, semester, teacherName, reviewText } = data;
+
+    if (!year || !semester || !teacherName || rating === 0) {
       setSnackbarMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
       setOpenSnackbar(true);
       return;
     }
 
-    const { isValid, detectedWords } = profanityFilter(reviewText);
+    const { isValid } = profanityFilter(reviewText);
     if (!isValid) {
-      setSnackbarMessage(
-        `ไม่สามารถส่งความคิดเห็นได้ เนื่องจากมีคำไม่เหมาะสม ${detectedWords.join(', ')}`,
-      );
+      setSnackbarMessage('ไม่สามารถส่งความคิดเห็นได้ เนื่องจากมีคำไม่เหมาะสม');
       setOpenSnackbar(true);
       return;
     }
 
     setSubmitting(true);
-    const reviewData = {
-      subjectId: slug,
-      rating,
-      year: Number(selectedYear),
-      semester: Number(selectedSemester),
-      teacherName: selectedTeacherName,
-      reviewText,
-    };
+    try {
+      const reviewData = {
+        subjectId: slug,
+        rating,
+        year,
+        semester,
+        teacherName,
+        reviewText,
+      };
 
-    const response = await createReview(reviewData);
-    if (response.data) {
-      await fetchReviews();
-      setRating(0);
-      setSelectedYear('');
-      setSelectedSemester('');
-      setSelectedTeacherName('');
-      setReviewText('');
+      const response = await createReview(reviewData);
+      if (response.data) {
+        await fetchReviews();
+        setOpenReviewDialog(false);
+        setSnackbarMessage('เพิ่มรีวิวสำเร็จ');
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      setSnackbarMessage('เกิดข้อผิดพลาดในการเพิ่มรีวิว');
+      setOpenSnackbar(true);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const handleOpen = () => {
@@ -238,7 +263,6 @@ export default function Page({
       </div>
     );
   }
-
   return (
     <div id="course-page" className="bg-white font-bai-jamjuree">
       <div className="max-w-8xl mx-auto p-6">
@@ -335,13 +359,39 @@ export default function Page({
           )}
         </div>
 
-        <div id="review-section">
+        {/* <div id="review-section">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-0 mb-5">
             <h2 className="text-xl font-medium font-mitr">เขียนรีวิว</h2>
             <span className="text-base font-normal font-bai-jamjuree text-primary-400 md:ml-5 mb-4 md:mb-0">
               *การรีวิวนี้จะเป็นแบบไม่ระบุตัวตน
             </span>
           </div>
+          <Button
+              variant="contained"
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setOpenAuthModal(true);
+                  return;
+                }
+                setOpenReviewDialog(true);
+              }}
+              startIcon={<AddIcon />}
+              sx={{
+                borderRadius: '8px',
+                textTransform: 'none',
+                minWidth: '120px'
+              }}
+            >
+              เขียนรีวิว
+            </Button>
+            
+            <CreateReviewDialog
+            open={openReviewDialog}
+            onClose={() => setOpenReviewDialog(false)}
+            onSubmit={handleSubmitReview}
+            subjectId={slug}
+          />
+
           <ReviewForm
             rating={rating}
             selectedYear={selectedYear}
@@ -371,13 +421,40 @@ export default function Page({
             open={openAuthModal}
             onClose={() => setOpenAuthModal(false)}
           />
-        </div>
+        </div> */}
+
         <hr className="mt-6 mb-12" />
+
+        {userReviews.length > 0 && (
+          <div id="user-reviews" className="mb-12">
+            <h2 className="text-lg font-mitr font-medium mb-6">รีวิวของคุณ</h2>
+            <div id="user-reviews-container">
+              {userReviews.map((review) => (
+                <ReviewCard
+                  key={review.review_id}
+                  subjectId={subjectDetail?.subject_id || ''}
+                  reviewId={review.review_id}
+                  rating={review.rating}
+                  year={Number(review.year)}
+                  semester={Number(review.semester)}
+                  teacherName={review.teacherName}
+                  reviewText={review.reviewText}
+                  createdAt={review.createdAt}
+                  likeCount={review.likeCount}
+                  isLikedByCurrentUser={review.isLikedByCurrentUser || false}
+                  isOwner={review.isOwner || false}
+                  userId={review.userId}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div id="reviews-list" className="flex-col mb-6 mt-2">
           <h2 className="text-lg font-mitr font-medium mb-4 sm:mb-0">
             รีวิวจากคนอื่น ๆ
           </h2>
+
           <div
             id="rating-summary"
             className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between relative lg:-mt-10 -mt-7 mb-4"
@@ -405,31 +482,52 @@ export default function Page({
               </div>
             </div>
           </div>
+          {otherReviews.length > 0 ? (
+            <>
+              <div id="reviews-container">
+                {(() => {
+                  const filteredReviews = otherReviews.filter(
+                    (review) =>
+                      !selectedRating || review.rating === selectedRating,
+                  );
 
-          <div id="reviews-container">
-            {subjectDetail &&
-              reviews
-                .filter(
-                  (review) =>
-                    !selectedRating || review.rating === selectedRating,
-                )
-                .map((review) => (
-                  <ReviewCard
-                    key={review.review_id}
-                    subjectId={subjectDetail.subject_id}
-                    reviewId={review.review_id}
-                    rating={review.rating}
-                    year={Number(review.year)}
-                    semester={Number(review.semester)}
-                    teacherName={review.teacherName}
-                    reviewText={review.reviewText}
-                    createdAt={review.createdAt}
-                    likeCount={review.likeCount}
-                    isLikedByCurrentUser={review.isLikedByCurrentUser || false}
-                    likedBy={review.likedBy || []}
-                  />
-                ))}
-          </div>
+                  return filteredReviews.length > 0 ? (
+                    filteredReviews.map((review) => (
+                      <ReviewCard
+                        key={review.review_id}
+                        subjectId={subjectDetail?.subject_id || ''}
+                        reviewId={review.review_id}
+                        rating={review.rating}
+                        year={Number(review.year)}
+                        semester={Number(review.semester)}
+                        teacherName={review.teacherName}
+                        reviewText={review.reviewText}
+                        createdAt={review.createdAt}
+                        likeCount={review.likeCount}
+                        isLikedByCurrentUser={
+                          review.isLikedByCurrentUser || false
+                        }
+                        isOwner={review.isOwner || false}
+                        userId={review.userId}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-gray-400 text-center mt-8">
+                      <p className="text-lg">
+                        ยังไม่มีรีวิวจากคนอื่น ๆ ในขณะนี้
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </>
+          ) : (
+            <div className="text-gray-400 text-center mt-8">
+              <p className="text-lg">
+                ยังไม่มีรีวิวจากคนอื่น ๆ สำหรับรายวิชานี้
+              </p>
+            </div>
+          )}
         </div>
       </div>
       {isModalMounted && (

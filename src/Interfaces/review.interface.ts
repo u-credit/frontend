@@ -1,6 +1,9 @@
+//frontend/src/Interfaces/review.interface.ts
 export interface Review {
   review_id: string;
   subjectId: string;
+  userId: string;
+  isOwner: boolean;
   rating: number;
   year: number;
   semester: number;
@@ -30,6 +33,14 @@ export interface CreateReviewDto {
   semester: number;
   teacherName: string;
   reviewText: string;
+}
+
+export interface UpdateReviewDto {
+  rating?: number;
+  year?: number;
+  semester?: number;
+  teacherName?: string;
+  reviewText?: string;
 }
 
 export interface ReviewResponse {
