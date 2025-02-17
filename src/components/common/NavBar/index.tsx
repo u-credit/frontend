@@ -3,12 +3,22 @@ import { useEffect, useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import Logo from '@/assets/logo.svg';
 import Link from 'next/link';
-import { Avatar, Button, Menu, MenuItem, useMediaQuery } from '@mui/material';
+import {
+  Avatar,
+  Button,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  Select,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
+} from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { AppDispatch, RootState } from '@/features/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '@/features/auth/authSlice';
+import { logout, selectCurrentRole, setRole, selectIsAdmin } from '@/features/auth/authSlice';
 import { handleLogout } from '@/features/auth/authAction';
 
 interface NavItem {
@@ -68,6 +78,27 @@ export default function NavBar() {
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated,
   );
+  const user = useSelector((state: RootState) => state.auth.user);
+  const currentRole = useSelector(selectCurrentRole);
+  const isAdmin = useSelector(selectIsAdmin); 
+
+  useEffect(() => {
+    if (pathname === '/admin' && currentRole !== 'admin') {
+      dispatch(setRole('admin'));
+    } else if (pathname !== '/admin' && currentRole === 'admin') {
+      const userPages = ['/course', '/schedule', '/transcript'];
+      if (userPages.includes(pathname)) {
+        dispatch(setRole('user'));
+      }
+    }
+  }, [pathname, currentRole, dispatch]);
+
+  // useEffect(() => {
+  //   console.log('User:', user);
+  //   console.log('Current Role:', currentRole);
+  //   console.log('Is Admin:', isAdmin);
+  // }, [user, currentRole, isAdmin]);
+
   useEffect(() => {
     setActivePage(pathname);
   }, [pathname]);
@@ -96,13 +127,23 @@ export default function NavBar() {
     setAnchorEl(event.currentTarget);
   };
 
+  const handleRoleChange = (event: SelectChangeEvent<string>) => {
+    const newRole = event.target.value as 'user' | 'admin';
+    dispatch(setRole(newRole));
+    if (newRole === 'admin') {
+      router.push('/admin');
+    } else {
+      router.push('/course');
+    }
+  };
+
   const isMenuOpen = Boolean(anchorEl);
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
       anchorOrigin={{
-        vertical: 'top',
+        vertical: 'bottom',
         horizontal: 'right',
       }}
       id={menuId}
@@ -114,6 +155,21 @@ export default function NavBar() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
+      {isAdmin && ( 
+        <MenuItem>
+          <FormControl fullWidth size="small">
+            <InputLabel>Role</InputLabel>
+            <Select
+              value={pathname === '/admin' ? 'admin' : 'user'}
+              label="Role"
+              onChange={handleRoleChange}
+            >
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+            </Select>
+          </FormControl>
+        </MenuItem>
+      )}
       <MenuItem
         onClick={() => {
           dispatch(handleLogout());
@@ -151,24 +207,24 @@ export default function NavBar() {
                 href={item.path}
                 onClick={() => setActivePage(item.path)}
                 className={`flex items-center space-x-2 h-full cursor-pointer border-y-[3px] border-transparent px-4 font-mitr
-              ${activePage === item.path ? 'border-b-primary-400 text-primary-400' : 'hover:border-b-primary-400 hover:text-primary-400'}`}
+                ${activePage === item.path ? 'border-b-primary-400 text-primary-400' : 'hover:border-b-primary-400 hover:text-primary-400'}`}
               >
                 {item.label}
               </Link>
             ))}
 
           {isAuthenticated ? (
-            <Avatar
-              {...stringAvatar('Kent Dodds')}
-              sx={{
-                width: '32px',
-                height: '32px',
-                fontSize: '14px',
-                marginLeft: '16px',
-                '&:hover': { cursor: 'pointer' },
-              }}
-              onClick={handleProfileMenuOpen}
-            />
+              <Avatar
+                {...stringAvatar('Kent Dodds')}
+                sx={{
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '14px',
+                  marginLeft: '16px',
+                  '&:hover': { cursor: 'pointer' },
+                }}
+                onClick={handleProfileMenuOpen}
+              />
           ) : (
             <Button
               variant="contained"
@@ -184,50 +240,50 @@ export default function NavBar() {
         <div
           className={`md:hidden flex flex-col absolute top-12 left-0 w-full bg-white shadow-md ${isMenuMobileOpen ? 'block' : 'hidden'}`}
         >
-          {isAuthenticated ? (
-            <>
-              {navItemsAuthenticated.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.path}
-                  onClick={() => {
-                    setActivePage(item.path);
-                    setIsMenuMobileOpen(false);
-                  }}
+            {isAuthenticated ? (
+              <>
+                {navItemsAuthenticated.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.path}
+                    onClick={() => {
+                      setActivePage(item.path);
+                      setIsMenuMobileOpen(false);
+                    }}
                   className="p-4 border-b last:border-b-0"
-                >
-                  {item.label}
-                </Link>
-              ))}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
 
-              <div
+                <div
                 className="p-4 border-b last:border-b-0 hover:cursor-pointer"
-                onClick={() => {
-                  dispatch(handleLogout());
-                  setIsMenuMobileOpen(false);
-                }}
-              >
-                ออกจากระบบ
-              </div>
-            </>
-          ) : (
-            <>
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.path}
                   onClick={() => {
-                    setActivePage(item.path);
+                    dispatch(handleLogout());
                     setIsMenuMobileOpen(false);
                   }}
-                  className="p-4 border-b last:border-b-0"
                 >
-                  {item.label}
-                </Link>
-              ))}
-            </>
-          )}
-        </div>
+                  ออกจากระบบ
+                </div>
+              </>
+            ) : (
+              <>
+                {navItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.path}
+                    onClick={() => {
+                      setActivePage(item.path);
+                      setIsMenuMobileOpen(false);
+                    }}
+                  className="p-4 border-b last:border-b-0"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </>
+            )}
+          </div>
 
         {renderMenu}
       </div>

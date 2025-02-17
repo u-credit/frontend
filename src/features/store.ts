@@ -4,6 +4,7 @@ import authReducer from './auth/authSlice';
 import bookmarkReducer from './bookmark/bookmarkSlice';
 import selectorValueReducer from './selectorValueSlice';
 import reviewReducer from './review/reviewSlice';
+import semesterSettingsReducer from './admin/semesterSettingsSlice';
 
 export const makeStore = () => {
   return configureStore({
@@ -13,6 +14,7 @@ export const makeStore = () => {
       bookmark: bookmarkReducer,
       selectorValue: selectorValueReducer,
       review: reviewReducer,
+      semesterSettings: semesterSettingsReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',
     middleware: (getDefaultMiddleware) =>
