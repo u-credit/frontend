@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/features/store';
 import { updateUser } from '@/features/auth/authSlice';
 import { setUserCurriGroupById } from '@/features/facultySlice';
+import { loadBookmarksApi } from '@/features/bookmark/bookmarkSlice';
 
 interface RecheckPageProps {
   file: File;
@@ -124,6 +125,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
         curriculumYear: updatedData.curriculum_year,
       }),
     );
+    dispatch(loadBookmarksApi());
     onNext();
   };
 
