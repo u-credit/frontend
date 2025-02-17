@@ -1,4 +1,3 @@
-import { CurriGroup } from '@/Interfaces';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from './store';
 import { fetchActiveSetting } from './admin/semesterSettingsSlice';
@@ -6,7 +5,6 @@ import { fetchActiveSetting } from './admin/semesterSettingsSlice';
 interface SelectorValueState {
   semester: string;
   year: string;
-  curriGroup?: CurriGroup;
   facultyId: string;
   departmentId: string;
   curriculumId: string;
@@ -14,8 +12,8 @@ interface SelectorValueState {
 }
 
 const initialState: SelectorValueState = {
-  semester: '',
-  year: '',
+  semester: '1',
+  year: '2566',
   facultyId: '',
   departmentId: '',
   curriculumId: '',
@@ -31,9 +29,6 @@ const selectorValueSlice = createSlice({
     },
     setYear: (state, action: PayloadAction<string>) => {
       state.year = action.payload;
-    },
-    setCurrigroup: (state, action: PayloadAction<CurriGroup>) => {
-      state.curriGroup = action.payload;
     },
     setFacultyId: (state, action: PayloadAction<string>) => {
       state.facultyId = action.payload;
@@ -61,7 +56,6 @@ const selectorValueSlice = createSlice({
 export const {
   setSemester,
   setYear,
-  setCurrigroup,
   setFacultyId,
   setDepartmentId,
   setCurriculumId,

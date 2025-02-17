@@ -1,5 +1,6 @@
 import { API_PATHS } from '@/constants';
 import {
+  CreateTranscriptResponse,
   fetchTranscriptResponse,
   RequiredCreditDto,
   Response,
@@ -96,7 +97,9 @@ export const fetchRequiredCredit = async (
   return res.json();
 };
 
-export const createTranscript = async (data: any) => {
+export const createTranscript = async (
+  data: any,
+): Promise<Response<CreateTranscriptResponse>> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/create/transcript`,
     {
@@ -127,4 +130,18 @@ export const fetchTranscript = async (): Promise<
   );
 
   return res.json();
+};
+
+export const deleteTranscript = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}`,
+    {
+      method: 'delete',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    },
+  );
+  return res;
 };

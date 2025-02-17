@@ -60,3 +60,13 @@ export interface fetchTranscriptResponse {
   result: CalculatedDto[];
   subjects: SubjectTranscriptDto[];
 }
+
+export interface CreateTranscriptResponse {
+  user: {
+    faculty_id: string;
+    department_id: string;
+    curr2_id: string;
+    curri_id: string;
+    curriculum_year: string;
+  };
+}

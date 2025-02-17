@@ -7,3 +7,4 @@ export * from './review.interface';
 export * from './studentInfo.interface';
 export * from './subject.interface';
 export * from './transcript.interface';
+export * from './user.interface';

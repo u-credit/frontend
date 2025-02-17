@@ -1,4 +1,4 @@
-import { fetchFaculty, setUserFaculty } from '@/features/facultySlice';
+import { fetchFaculty, setUserCurriGroupById } from '@/features/facultySlice';
 import { AppDispatch, RootState } from '@/features/store';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,7 +28,7 @@ const useFaculty = () => {
       user
     ) {
       dispatch(
-        setUserFaculty({
+        setUserCurriGroupById({
           facultyId: user.faculty_id,
           departmentId: user.department_id,
           curriculumId: user.curr2_id,

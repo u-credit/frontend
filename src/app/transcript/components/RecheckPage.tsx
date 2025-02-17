@@ -8,6 +8,10 @@ import SubjectContainer from './SubjectContainer';
 import { Box, Button, CircularProgress } from '@mui/material';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 import { formatDataForCreateTranscript } from '@/utils/transcriptRecheckHelper';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/features/store';
+import { updateUser } from '@/features/auth/authSlice';
+import { setUserCurriGroupById } from '@/features/facultySlice';
 
 interface RecheckPageProps {
   file: File;
@@ -23,7 +27,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
     matchSubjects,
     setMatchSubjects,
   } = useTranscriptContext();
-
+  const dispatch = useDispatch<AppDispatch>();
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -110,7 +114,16 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
       unmatchSubjects || [],
     );
 
-    await createTranscript(data);
+    const updatedData = (await createTranscript(data)).data.user;
+    dispatch(updateUser(updatedData));
+    dispatch(
+      setUserCurriGroupById({
+        facultyId: updatedData.faculty_id,
+        departmentId: updatedData.department_id,
+        curriculumId: updatedData.curr2_id,
+        curriculumYear: updatedData.curriculum_year,
+      }),
+    );
     onNext();
   };
 

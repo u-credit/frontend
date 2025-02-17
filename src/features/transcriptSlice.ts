@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from './store';
-import { fetchTranscript } from '@/api/transcriptApi';
+import { deleteTranscript, fetchTranscript } from '@/api/transcriptApi';
 import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
 import { SubjectDto } from '@/Interfaces';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
@@ -25,7 +25,7 @@ const initialState: TranscriptState = {
 
 export const fetchTranscriptSubject = createAsyncThunk(
   'transcript/fetch',
-  async (_, { getState }) => {
+  async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     const { semester, year, facultyId, curriculumId, curriculumYear } =
       state.selectorValue || {};
@@ -33,7 +33,13 @@ export const fetchTranscriptSubject = createAsyncThunk(
     const response = await fetchTranscript();
     const data = response.data?.subjects || [];
 
-    if (data.length === 0) return [];
+    if (data.length === 0) {
+      dispatch(setInitialPage('upload'));
+      dispatch(setCurrentPage('upload'));
+      return [];
+    }
+    dispatch(setInitialPage('summary'));
+    dispatch(setCurrentPage('summary'));
 
     const subjectIds = data.map((item) => item.subject_id);
     const detailResponse = await fetchListSubjectByIds({
@@ -62,6 +68,18 @@ export const fetchTranscriptSubject = createAsyncThunk(
   },
 );
 
+export const deleteTranscriptApi = createAsyncThunk(
+  'transcript/delete',
+  async (_, { dispatch }) => {
+    const res = await deleteTranscript();
+    if (res.ok) {
+      dispatch(setInitialPage('upload'));
+      dispatch(setCurrentPage('upload'));
+      dispatch(setTranscriptData([]));
+    }
+  },
+);
+
 const transcriptSlice = createSlice({
   name: 'transcript',
   initialState: initialState,
@@ -85,14 +103,10 @@ const transcriptSlice = createSlice({
       .addCase(fetchTranscriptSubject.fulfilled, (state, action) => {
         state.transcripts = action.payload;
         state.loading = false;
-        state.initialPage = 'summary';
-        state.currentPage = 'summary';
       })
       .addCase(fetchTranscriptSubject.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to load faculties';
-        state.initialPage = 'upload';
-        state.currentPage = 'upload';
       });
   },
 });

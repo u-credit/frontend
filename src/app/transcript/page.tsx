@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import UploadTranscriptPage from './components/UploadTranscriptPage';
 import RecheckPage from './components/RecheckPage';
 import { initSelectOption, SelectOption } from '@/types';
-import { fetchListCategory } from '@/api/transcriptApi';
+import { fetchListCategory, fetchTranscript } from '@/api/transcriptApi';
 import SummaryPage from './components/SummaryPage';
 import TranscriptProvider, {
   useTranscriptContext,
@@ -11,7 +11,10 @@ import TranscriptProvider, {
 import { useDispatch, useSelector } from 'react-redux';
 import { selectIsAuthenticated, selectUser } from '@/features/auth/authSlice';
 import { AppDispatch, RootState } from '@/features/store';
-import { setCurrentPage } from '@/features/transcriptSlice';
+import {
+  fetchTranscriptSubject,
+  setCurrentPage,
+} from '@/features/transcriptSlice';
 import { Loading } from '@/components';
 
 export default function TranscriptWrapper() {
@@ -38,6 +41,9 @@ function Transcript() {
   const [file, setFile] = useState<File | null>(null);
 
   const handleNext = (section: string) => {
+    if (section === 'summary') {
+      dispatch(fetchTranscriptSubject());
+    }
     dispatch(setCurrentPage(section));
   };
 

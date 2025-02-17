@@ -7,14 +7,14 @@ import { RootState } from './store';
 
 interface FacultyState {
   data: SelectOption[];
-  userOptions: CurriGroup;
+  userCurriGroup: CurriGroup;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: FacultyState = {
   data: [],
-  userOptions: initCurriGroup(),
+  userCurriGroup: initCurriGroup(),
   loading: false,
   error: null,
 };
@@ -29,7 +29,7 @@ const facultySlice = createSlice({
   name: 'faculty',
   initialState: initialState,
   reducers: {
-    setUserFaculty(
+    setUserCurriGroupById(
       state,
       action: PayloadAction<{
         facultyId: string;
@@ -50,12 +50,18 @@ const facultySlice = createSlice({
       const year = curriculum?.children?.find(
         (y) => y.value === curriculumYear,
       );
-      state.userOptions = {
+      state.userCurriGroup = {
         faculty: faculty || initSelectOption(),
         department: department || initSelectOption(),
         curriculum: curriculum || initSelectOption(),
         curriculumYear: year || initSelectOption(),
       };
+    },
+    setUserCurriGroupByCurriGroup(state, action: PayloadAction<CurriGroup>) {
+      state.userCurriGroup = action.payload;
+    },
+    clearUserCurriGroup(state) {
+      state.userCurriGroup = initCurriGroup();
     },
   },
   extraReducers: (builder) => {
@@ -79,7 +85,11 @@ export const selectFacultyData = (state: RootState) => state.faculty.data;
 export const selectFacultyLoading = (state: RootState) => state.faculty.loading;
 export const selectFacultyError = (state: RootState) => state.faculty.error;
 export const selectUserFacultyOptions = (state: RootState) =>
-  state.faculty.userOptions;
+  state.faculty.userCurriGroup;
 
-export const { setUserFaculty } = facultySlice.actions;
+export const {
+  setUserCurriGroupById,
+  setUserCurriGroupByCurriGroup,
+  clearUserCurriGroup,
+} = facultySlice.actions;
 export default facultySlice.reducer;

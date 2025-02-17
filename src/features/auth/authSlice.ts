@@ -2,10 +2,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import Cookies from 'js-cookie';
 import { fetchAccessToken } from '@/api/authApi';
-import { UserEntity } from '@/Interfaces';
+import { UpdateUser, User } from '@/Interfaces';
 interface AuthState {
   isAuthenticated: boolean;
-  user: UserEntity | null;
+  user: User | null;
   tokenExpiration: string | null;
   error: string | null;
   currentRole: 'user' | 'admin';
@@ -29,7 +29,7 @@ const getInitialState = (): AuthState => {
     user: null,
     tokenExpiration: Cookies.get('session_duration') || null,
     error: null,
-    currentRole: 'user'
+    currentRole: 'user',
   };
 };
 
@@ -61,6 +61,11 @@ const authSlice = createSlice({
       }
       if (localStorage.getItem('bookmark')) localStorage.removeItem('bookmark');
     },
+    updateUser(state, action: { payload: UpdateUser }) {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -79,11 +84,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { login, logout, setRole } = authSlice.actions;
+export const { login, logout, setRole, updateUser } = authSlice.actions;
 
-export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
+export const selectIsAuthenticated = (state: RootState) =>
+  state.auth.isAuthenticated;
 export const selectCurrentRole = (state: RootState) => state.auth.currentRole;
-export const selectIsAdmin = (state: RootState) => 
+export const selectIsAdmin = (state: RootState) =>
   state.auth.user?.roles?.includes('admin') || false;
 
 export const selectUser = (state: RootState) => state.auth.user;

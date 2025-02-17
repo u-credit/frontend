@@ -19,3 +19,7 @@ export const initCurriGroup = (): CurriGroup => ({
   curriculum: initSelectOption(),
   curriculumYear: initSelectOption(),
 });
+
+export const isInitCurrigroup = (curriGroup: CurriGroup): boolean => {
+  return JSON.stringify(curriGroup) !== JSON.stringify(initCurriGroup());
+};

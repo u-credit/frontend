@@ -6,7 +6,7 @@ import Checkbox from '@mui/material/Checkbox/Checkbox';
 import { Button, FormControlLabel } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SummaryTable, { Row } from './SummaryTable';
-
+import DeleteIcon from '@mui/icons-material/Delete';
 import TabsContainer from './TabsContainer';
 import { fetchRequiredCredit } from '@/api/transcriptApi';
 import {
@@ -28,7 +28,10 @@ import { calculateBookmark } from '@/api/bookmarkApi';
 import { AppDispatch, RootState } from '@/features/store';
 import { selectUser } from '@/features/auth/authSlice';
 import { selectUserFacultyOptions } from '@/features/facultySlice';
-import { selectTranscripts } from '@/features/transcriptSlice';
+import {
+  deleteTranscriptApi,
+  selectTranscripts,
+} from '@/features/transcriptSlice';
 
 interface SummaryPageProps {
   onNext: (section: string) => void;
@@ -131,6 +134,10 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
     onNext('upload');
   };
 
+  const handleDeleteTranscript = () => {
+    dispatch(deleteTranscriptApi());
+  };
+
   return (
     <main className="p-10 bg-white">
       <div className="flex flex-col gap-5">
@@ -158,6 +165,14 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
               onClick={handleUploadTranscript}
             >
               อัปโหลดทรานสคริปต์ใหม่
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<DeleteIcon />}
+              sx={{ minWidth: '115px' }}
+              onClick={handleDeleteTranscript}
+            >
+              ลบทรานสคริปต์
             </Button>
           </div>
         </div>

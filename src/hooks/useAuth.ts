@@ -13,6 +13,7 @@ import {
   setDepartmentId,
   setFacultyId,
 } from '@/features/selectorValueSlice';
+import { clearUserCurriGroup } from '@/features/facultySlice';
 
 export const useAuth = () => {
   const dispatch: AppDispatch = useDispatch<AppDispatch>();
@@ -41,6 +42,7 @@ export const useAuth = () => {
         dispatch(login(data));
       } else {
         dispatch(handleLogout());
+        dispatch(clearUserCurriGroup());
       }
     };
     fetchToken();

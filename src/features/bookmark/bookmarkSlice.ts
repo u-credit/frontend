@@ -128,9 +128,11 @@ export const addBookmark = createAsyncThunk(
         semester: Number(semester),
         year: Number(year),
         subjectIds: [bookmark.subjectId],
-        categoryFacultyId: user?.faculty_id,
-        categoryCurriculumId: user?.curr2_id,
-        categoryCurriculumYear: user?.curriculum_year,
+        ...(user?.faculty_id && { categoryFacultyId: user?.faculty_id }),
+        ...(user?.curr2_id && { categoryCurriculumId: user?.curr2_id }),
+        ...(user?.curriculum_year && {
+          categoryCurriculumYear: user?.curriculum_year,
+        }),
       });
       console.log('cu');
       if (response.data.length > 0) {
@@ -207,8 +209,8 @@ export const clearBookmark = createAsyncThunk(
 export const updateBookmarksOnCurriChange = createAsyncThunk(
   'bookmark/updateBookmarksOnCurriChange',
   async (_, { getState, dispatch }) => {
-    const { semester, year, curriGroup } = (getState() as RootState)
-      .selectorValue;
+    const { semester, year } = (getState() as RootState).selectorValue;
+    const userCurriGroup = (getState() as RootState).faculty.userCurriGroup;
     const bookmarks = (getState() as RootState).bookmark
       .items as BookmarkStateItem[];
 
@@ -219,7 +221,7 @@ export const updateBookmarksOnCurriChange = createAsyncThunk(
       semester: Number(semester),
       year: Number(year),
       subjectIds,
-      ...getCurriGroupParam(curriGroup),
+      ...getCurriGroupParam(userCurriGroup),
     });
 
     if (response.data.length > 0) {
