@@ -15,6 +15,7 @@ interface RatingButtonsProps {
     teacherName: string;
     reviewText: string;
     createdAt: string;
+    isOwner?: boolean;
   }>;
 }
 
@@ -26,11 +27,13 @@ const RatingButtons: React.FC<RatingButtonsProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  const otherReviews = reviews.filter(review => !review.isOwner);
+
   const getRatingCount = (rating: number | null) => {
     if (rating === null) {
-      return reviews.length;
+      return otherReviews.length;
     }
-    return reviews.filter((review) => review.rating === rating).length;
+    return otherReviews.filter((review) => review.rating === rating).length;
   };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
