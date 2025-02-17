@@ -4,12 +4,12 @@ import UploadTranscriptPage from './components/UploadTranscriptPage';
 import RecheckPage from './components/RecheckPage';
 import { initSelectOption, SelectOption } from '@/types';
 import { fetchListCategory, fetchTranscript } from '@/api/transcriptApi';
-import SummaryPage from './components/SummaryPage';
+import SummaryPage from './components/summary/SummaryPage';
 import TranscriptProvider, {
   useTranscriptContext,
 } from '@/app/contexts/TranscriptContext';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectIsAuthenticated, selectUser } from '@/features/auth/authSlice';
+import { selectUser } from '@/features/auth/authSlice';
 import { AppDispatch, RootState } from '@/features/store';
 import {
   fetchTranscriptSubject,

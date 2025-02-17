@@ -13,3 +13,11 @@ export function chipCategory(category: CategoryDto): string {
   if (category.subgroup_name) text += ' + ' + category.subgroup_name;
   return text;
 }
+
+export const getChipColor = (category: number): string => {
+  if (category === 1) return '';
+  else if (category === 2) return 'primary';
+  else if (category === 3) return 'success';
+  else if (category === 1) return '';
+  return 'default';
+};

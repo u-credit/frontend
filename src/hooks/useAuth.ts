@@ -35,10 +35,18 @@ export const useAuth = () => {
     const fetchToken = async () => {
       const data = await fetchAccessToken();
       if (data.access_token) {
-        dispatch(setFacultyId(data.user.faculty_id));
-        dispatch(setDepartmentId(data.user.department_id));
-        dispatch(setCurriculumId(data.user.curr2_id));
-        dispatch(setCurriculumYear(data.user.curriculum_year));
+        if (data.user.faculty_id) {
+          dispatch(setFacultyId(data.user.faculty_id));
+        }
+        if (data.user.department_id) {
+          dispatch(setDepartmentId(data.user.department_id));
+        }
+        if (data.user.curr2_id) {
+          dispatch(setCurriculumId(data.user.curr2_id));
+        }
+        if (data.user.curriculum_year) {
+          dispatch(setCurriculumYear(data.user.curriculum_year));
+        }
         dispatch(login(data));
       } else {
         dispatch(handleLogout());

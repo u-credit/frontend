@@ -1,4 +1,4 @@
-import { UserEntity } from '.';
+import { User } from '.';
 
 export interface AuthDto {
   user: { [key: string]: any };
@@ -9,5 +9,5 @@ export interface AuthDto {
 
 export interface FetchAccessTokenResponse {
   access_token: string;
-  user: UserEntity;
+  user: User;
 }

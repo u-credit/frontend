@@ -130,3 +130,44 @@ export const deleteReview = async (
   );
   return res.json();
 };
+
+export const editReview = async (
+  reviewId: string,
+  data: UpdateReviewDto,
+): Promise<Response<Review>> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews/${reviewId}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    },
+  );
+  return response.json();
+};
+
+export const getMyReviewsFromTranscriptSubject = async (): Promise<
+  Response<any>
+> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.reviews}/my-ts-subject`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    );
+    return res.json();
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return {
+      data: [],
+    };
+  }
+};

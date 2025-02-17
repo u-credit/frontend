@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
@@ -19,7 +19,7 @@ import {
 import { useInView } from 'react-intersection-observer';
 import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
-import { CustomSearchBar, CustomSelect } from '@/components';
+import { CustomSearchBar, CustomSelect, Loading } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/features/store';
 import { setSemester, setYear } from '@/features/selectorValueSlice';
@@ -62,7 +62,9 @@ const yearOptions: SelectOption[] = [
 export default function CourseWrapper() {
   return (
     <CourseProvider>
-      <Course />
+      <Suspense fallback={<Loading />}>
+        <Course />
+      </Suspense>
     </CourseProvider>
   );
 }

@@ -16,8 +16,8 @@ export interface SubjectTranscriptDto {
   subgroup?: number;
   childgroup?: number;
   credit: number;
-  semester: string | null;
-  year: string | null;
+  semester: number | null;
+  year: number | null;
 }
 
 export interface RequiredCreditDto {

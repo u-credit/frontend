@@ -45,9 +45,9 @@ const selectorValueSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchActiveSetting.fulfilled, (state, action) => {
-      if (action.payload?.data) {
-        state.semester = String(action.payload.data.semester);
-        state.year = String(action.payload.data.year);
+      if (action.payload) {
+        state.semester = String(action.payload.semester);
+        state.year = String(action.payload.year);
       }
     });
   },

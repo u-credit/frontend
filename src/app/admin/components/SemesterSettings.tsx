@@ -26,13 +26,17 @@ export default function SemesterSettings() {
     minYear: 0,
     maxYear: 0,
     minSemester: 0,
-    maxSemester: 0
+    maxSemester: 0,
   });
   const [addModal, setAddModal] = useState(false);
-  const [alert, setAlert] = useState({
+  const [alert, setAlert] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
     open: false,
     message: '',
-    severity: 'success' as const,
+    severity: 'success',
   });
   const dispatch = useDispatch();
 
@@ -42,7 +46,7 @@ export default function SemesterSettings() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/semester-settings/year-range`,
       );
       if (!response.ok) throw new Error('Failed to fetch year range');
-      
+
       const { data } = await response.json();
       setYearRange({
         minYear: data.min,
@@ -138,7 +142,7 @@ export default function SemesterSettings() {
 
   return (
     <Container maxWidth="md" sx={{ pt: 4 }}>
-      <SemesterSettingCard 
+      <SemesterSettingCard
         setting={setting}
         onChangeSemester={() => setAddModal(true)}
       />
@@ -150,12 +154,7 @@ export default function SemesterSettings() {
         yearRange={yearRange}
       />
 
-      <CustomAlert
-        open={alert.open}
-        message={alert.message}
-        severity={alert.severity}
-        onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
-      />
+      <CustomAlert />
     </Container>
   );
 }

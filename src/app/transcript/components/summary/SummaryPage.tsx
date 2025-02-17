@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Checkbox from '@mui/material/Checkbox/Checkbox';
 import { Button, FormControlLabel } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import SummaryTable, { Row } from './SummaryTable';
+import SummaryTable from './SummaryTable';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TabsContainer from './TabsContainer';
 import { fetchRequiredCredit } from '@/api/transcriptApi';
@@ -32,14 +32,31 @@ import {
   deleteTranscriptApi,
   selectTranscripts,
 } from '@/features/transcriptSlice';
+import SummaryProvider, {
+  useSummaryContext,
+} from '@/app/contexts/SummaryContext';
+import { getMyReviewsFromTranscriptSubject } from '@/api/reviewApi';
 
 interface SummaryPageProps {
   onNext: (section: string) => void;
 }
-export default function SummaryPage({ onNext }: SummaryPageProps) {
+
+export default function WrapperSummaryPage(props: SummaryPageProps) {
+  const handleNext = (state: string) => {
+    props.onNext(state);
+  };
+  return (
+    <SummaryProvider>
+      <SummaryPage onNext={(state: string) => handleNext(state)} />
+    </SummaryProvider>
+  );
+}
+
+function SummaryPage({ onNext }: SummaryPageProps) {
   const schedule = useSelector(selectScheduledItems);
   const transcriptSubject = useSelector(selectTranscripts);
   const { listCategory, selectedCurriGroup } = useTranscriptContext();
+  const { setMyTsReview } = useSummaryContext();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
@@ -51,7 +68,8 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
 
   const dispatch: AppDispatch = useDispatch();
 
-  const [tableData, setTableData] = useState<Row[]>([]);
+  const { tableData, setTableData } = useSummaryContext();
+  // const [tableData, setTableData] = useState<Row[]>([]);
   const [includeSchedule, setIncludeSchedule] = useState<boolean>(false);
   const [requiredCredit, setRequiredCredit] = useState<RequiredCreditDto[]>([]);
   const [startYear, setStartYear] = useState<string>('');
@@ -118,10 +136,10 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
     const { startSemester, startYear, endSemester, endYear } =
       findStartEnd(transcriptSubject);
 
-    setStartYear(startYear + 543);
-    setStartSemester(startSemester);
-    setEndYear(endYear + 543);
-    setEndSemester(endSemester);
+    setStartYear((startYear + 543).toString());
+    setStartSemester(startSemester.toString());
+    setEndYear((endYear + 543).toString());
+    setEndSemester(endSemester.toString());
   };
 
   useEffect(() => {
@@ -137,6 +155,14 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
   const handleDeleteTranscript = () => {
     dispatch(deleteTranscriptApi());
   };
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const res = await getMyReviewsFromTranscriptSubject();
+      setMyTsReview(res.data);
+    };
+    fetchReviews();
+  }, []);
 
   return (
     <main className="p-10 bg-white">
@@ -171,6 +197,7 @@ export default function SummaryPage({ onNext }: SummaryPageProps) {
               startIcon={<DeleteIcon />}
               sx={{ minWidth: '115px' }}
               onClick={handleDeleteTranscript}
+              color="error"
             >
               ลบทรานสคริปต์
             </Button>

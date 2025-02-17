@@ -25,8 +25,8 @@ interface BookmarkModalProps {
 }
 
 export default function BookmarkModal({ onClose }: BookmarkModalProps) {
-  const { curriGroup } = useSelector(
-    (state: RootState) => state.selectorValue,
+  const curriGroup = useSelector(
+    (state: RootState) => state.faculty.userCurriGroup,
   );
   const bookmarks = useSelector((state: RootState) => state.bookmark.items);
   const summaryCredit = useSelector((state: RootState) =>

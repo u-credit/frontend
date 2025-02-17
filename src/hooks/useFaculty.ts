@@ -29,10 +29,10 @@ const useFaculty = () => {
     ) {
       dispatch(
         setUserCurriGroupById({
-          facultyId: user.faculty_id,
-          departmentId: user.department_id,
-          curriculumId: user.curr2_id,
-          curriculumYear: user.curriculum_year,
+          facultyId: user.faculty_id ?? '',
+          departmentId: user.department_id ?? '',
+          curriculumId: user.curr2_id ?? '',
+          curriculumYear: user.curriculum_year ?? '',
         }),
       );
     }

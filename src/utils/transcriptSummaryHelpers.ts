@@ -1,8 +1,7 @@
-import { SummarySubject } from '@/app/transcript/components/SummarySubjectCard';
-import { Row } from '@/app/transcript/components/SummaryTable';
+import { SummarySubject } from '@/app/transcript/components/summary/SummarySubjectCard';
+import { Row } from '@/app/transcript/components/summary/SummaryTable';
 import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
 import { TranscriptItem } from '@/features/transcriptSlice';
-import { BookmarkDto } from '@/Interfaces';
 import {
   RequiredCreditDto,
   SubjectTranscriptDto,
@@ -180,35 +179,37 @@ export const formatDisplayCalculation = (value: number): string => {
 };
 
 export const findStartEnd = (transcriptSubject: SubjectTranscriptDto[]) => {
-  let startSemester = '',
-    startYear = '',
-    endSemester = '',
-    endYear = '';
+  let startSemester: number = transcriptSubject[0].semester || 0,
+    startYear: number = transcriptSubject[0].year || 0,
+    endSemester: number = transcriptSubject[0].semester || 0,
+    endYear: number = transcriptSubject[0].year || 0;
 
   transcriptSubject.forEach((subject) => {
     if (subject.year && subject.semester) {
+      if (!startYear) {
+        startYear = subject.year;
+        startSemester = subject.semester;
+      }
+      if (!endYear) {
+        endYear = subject.year;
+        endSemester = subject.semester;
+      }
+
       if (subject.year < startYear) {
         startYear = subject.year;
-        startSemester = subject.semester || '';
+        startSemester = subject.semester;
       } else if (
         subject.year === startYear &&
         subject.semester < startSemester
       ) {
-        startSemester = subject.semester || '';
+        startSemester = subject.semester;
       }
+
       if (subject.year > endYear) {
         endYear = subject.year;
-        endSemester = subject.semester || '';
+        endSemester = subject.semester;
       } else if (subject.year === endYear && subject.semester > endSemester) {
-        endSemester = subject.semester || '';
-      }
-      if (!startYear) {
-        startYear = subject.year;
-        startSemester = subject.semester || '';
-      }
-      if (!endYear) {
-        endYear = subject.year;
-        endSemester = subject.semester || '';
+        endSemester = subject.semester;
       }
     }
   });
@@ -229,8 +230,8 @@ export const formatBookmarkStateItemToSummarySubject = (
       subgroup: item.subgroup || undefined,
       childgroup: item.childgroup || undefined,
       credit: item.detail?.credit || 0,
-      semester: String(item.semester) || null,
-      year: String(item.year) || null,
+      semester: item.semester || null,
+      year: item.year || null,
       categories: item.detail?.category || [],
     };
   });

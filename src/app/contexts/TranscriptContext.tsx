@@ -1,28 +1,31 @@
 'use client';
 import { CurriGroup } from '@/Interfaces';
 import { initSelectOption, SelectOption } from '@/types';
-import { useState, createContext, ReactNode, useContext } from 'react';
+import {
+  useState,
+  createContext,
+  ReactNode,
+  useContext,
+  Dispatch,
+  SetStateAction,
+} from 'react';
 import { CategoryGroup, SubjectTranscriptDto } from '@/Interfaces';
 import { RootState } from '@/features/store';
 import { useSelector } from 'react-redux';
 
 interface TranscriptContextType {
   categoryOptions: SelectOption[];
-  setCategoryOptions: React.Dispatch<React.SetStateAction<SelectOption[]>>;
+  setCategoryOptions: Dispatch<SetStateAction<SelectOption[]>>;
   selectedCurriGroup: CurriGroup;
-  setSelectedCurriGroup: React.Dispatch<React.SetStateAction<CurriGroup>>;
+  setSelectedCurriGroup: Dispatch<SetStateAction<CurriGroup>>;
   listCategory: any;
-  setListCategory: React.Dispatch<React.SetStateAction<any>>;
+  setListCategory: Dispatch<SetStateAction<any>>;
   selectedCategory: CategoryGroup;
-  setSelectCategory: React.Dispatch<React.SetStateAction<CategoryGroup>>;
+  setSelectCategory: Dispatch<SetStateAction<CategoryGroup>>;
   unmatchSubjects?: SubjectTranscriptDto[];
-  setUnmatchSubjects: React.Dispatch<
-    React.SetStateAction<SubjectTranscriptDto[]>
-  >;
+  setUnmatchSubjects: Dispatch<SetStateAction<SubjectTranscriptDto[]>>;
   matchSubjects?: SubjectTranscriptDto[];
-  setMatchSubjects: React.Dispatch<
-    React.SetStateAction<SubjectTranscriptDto[]>
-  >;
+  setMatchSubjects: Dispatch<SetStateAction<SubjectTranscriptDto[]>>;
 }
 
 const TranscriptContext = createContext<TranscriptContextType | null>(null);

@@ -1,5 +1,5 @@
 import { API_PATHS } from '@/constants';
-
+import { Response } from '@/Interfaces';
 export interface SemesterSetting {
   id: number;
   semester: number;
@@ -9,7 +9,9 @@ export interface SemesterSetting {
   updated_at: string;
 }
 
-export const fetchSemesterSettings = async (): Promise<SemesterSetting[]> => {
+export const fetchSemesterSettings = async (): Promise<
+  Response<SemesterSetting[]>
+> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.semesterSettings}`,
     {
@@ -22,31 +24,37 @@ export const fetchSemesterSettings = async (): Promise<SemesterSetting[]> => {
   return res.json();
 };
 
-export const fetchActiveSemesterSetting =
-  async (): Promise<SemesterSetting> => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.semesterSettings}/active`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+export const fetchActiveSemesterSetting = async (): Promise<
+  Response<SemesterSetting> | { data: { semester: number; year: number } }
+> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.semesterSettings}/active`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
-      const data = await res.json();
-      return data;
-    } catch (error) {
-      console.error('API Error:', error);
-      return { semester: 1, year: 2566 };
-    }
-  };
+        credentials: 'include',
+      },
+    );
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    return {
+      data: {
+        semester: 2,
+        year: 2567,
+      },
+    };
+  }
+};
 
 export const createSemesterSetting = async (data: {
   semester: number;
   year: number;
-}): Promise<SemesterSetting> => {
+}): Promise<Response<SemesterSetting>> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.semesterSettings}`,
     {

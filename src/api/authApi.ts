@@ -21,10 +21,11 @@ export const fetchAccessToken = async (): Promise<FetchAccessTokenResponse> => {
       id: '',
       username: '',
       email: '',
-      role: '',
+      roles: '',
       faculty_id: '',
       department_id: '',
       curr2_id: '',
+      curri_id: '',
       curriculum_year: '',
     },
   };
