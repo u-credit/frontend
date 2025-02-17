@@ -432,7 +432,7 @@ export default function Page({
               {userReviews.map((review) => (
                 <ReviewCard
                   key={review.review_id}
-                  subjectId={subjectDetail.subject_id}
+                  subjectId={subjectDetail?.subject_id || ''}
                   reviewId={review.review_id}
                   rating={review.rating}
                   year={Number(review.year)}
@@ -443,6 +443,7 @@ export default function Page({
                   likeCount={review.likeCount}
                   isLikedByCurrentUser={review.isLikedByCurrentUser || false}
                   isOwner={review.isOwner || false}
+                  userId={review.userId}
                 />
               ))}
             </div>
@@ -494,7 +495,7 @@ export default function Page({
                     filteredReviews.map((review) => (
                       <ReviewCard
                         key={review.review_id}
-                        subjectId={subjectDetail.subject_id}
+                        subjectId={subjectDetail?.subject_id || ''}
                         reviewId={review.review_id}
                         rating={review.rating}
                         year={Number(review.year)}
@@ -507,11 +508,14 @@ export default function Page({
                           review.isLikedByCurrentUser || false
                         }
                         isOwner={review.isOwner || false}
+                        userId={review.userId}
                       />
                     ))
                   ) : (
                     <div className="text-gray-400 text-center mt-8">
-                      <p className="text-lg">ยังไม่มีรีวิวจากคนอื่น ๆ ในขณะนี้</p>
+                      <p className="text-lg">
+                        ยังไม่มีรีวิวจากคนอื่น ๆ ในขณะนี้
+                      </p>
                     </div>
                   );
                 })()}
