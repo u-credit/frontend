@@ -2,7 +2,7 @@
 export interface Review {
   review_id: string;
   subjectId: string;
-  ownerId: string;
+  userId: string;
   isOwner: boolean;
   rating: number;
   year: number;
