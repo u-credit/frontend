@@ -4,8 +4,8 @@ export enum ListSubjectOrderBy {
   UPDATED_AT = 'updatedAt',
 }
 
-export enum SubjectCategory {
+export enum SubjectCategoryEnum {
   GENERAL = 'GENERAL',
   MAJOR = 'MAJOR',
-  ALL = 'ALL'
+  ALL = 'ALL',
 }

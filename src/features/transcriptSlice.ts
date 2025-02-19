@@ -1,16 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from './store';
 import { deleteTranscript, fetchTranscript } from '@/api/transcriptApi';
-import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
-import { SubjectDto } from '@/Interfaces';
-import { fetchListSubjectByIds } from '@/api/subjectApi';
+import {
+  CategoryProcessDto,
+  SubjectTranscriptDto,
+} from '@/Interfaces/transcript.interface';
 
 export interface TranscriptItem extends SubjectTranscriptDto {
-  detail?: SubjectDto;
+  // categories: SubjectCategory;
 }
 
 interface TranscriptState {
   transcripts: TranscriptItem[];
+  groups: CategoryProcessDto[];
+  matched: SubjectTranscriptDto[];
+  unmatched: SubjectTranscriptDto[];
   initialPage: string;
   currentPage: string;
   loading?: boolean;
@@ -19,6 +23,9 @@ interface TranscriptState {
 
 const initialState: TranscriptState = {
   transcripts: [],
+  groups: [],
+  matched: [],
+  unmatched: [],
   initialPage: '',
   currentPage: '',
 };
@@ -26,14 +33,10 @@ const initialState: TranscriptState = {
 export const fetchTranscriptSubject = createAsyncThunk(
   'transcript/fetch',
   async (_, { getState, dispatch }) => {
-    const state = getState() as RootState;
-    const { semester, year, facultyId, curriculumId, curriculumYear } =
-      state.selectorValue || {};
-
     const response = await fetchTranscript();
-    const data = response.data?.subjects || [];
+    const data = response.data;
 
-    if (data.length === 0) {
+    if (!response.status || data.subjects.length === 0) {
       dispatch(setInitialPage('upload'));
       dispatch(setCurrentPage('upload'));
       return [];
@@ -41,30 +44,12 @@ export const fetchTranscriptSubject = createAsyncThunk(
     dispatch(setInitialPage('summary'));
     dispatch(setCurrentPage('summary'));
 
-    const subjectIds = data.map((item) => item.subject_id);
-    const detailResponse = await fetchListSubjectByIds({
-      semester: Number(semester),
-      year: Number(year),
-      subjectIds,
-      ...(facultyId &&
-        curriculumId &&
-        curriculumYear && {
-          categoryFacultyId: facultyId,
-          categoryCurriculumId: curriculumId,
-          categoryCurriculumYear: curriculumYear,
-        }),
-    });
-
-    const detailMap = new Map(
-      detailResponse.data.map((subject) => [subject.subject_id, subject]),
-    );
-
-    const updatedWithDetail = data.map((item) => ({
-      ...item,
-      detail: detailMap.get(item.subject_id),
-    }));
-
-    return updatedWithDetail;
+    const matched = data.groups.map((group) => group.subjects).flat();
+    dispatch(setmatched(matched));
+    dispatch(setTranscriptData(data.subjects));
+    dispatch(setGroups(data.groups));
+    dispatch(setUnmatched(data.unmatched));
+    return data;
   },
 );
 
@@ -87,6 +72,15 @@ const transcriptSlice = createSlice({
     setTranscriptData(state, action) {
       state.transcripts = action.payload;
     },
+    setmatched(state, action) {
+      state.matched = action.payload;
+    },
+    setUnmatched(state, action) {
+      state.unmatched = action.payload;
+    },
+    setGroups(state, action) {
+      state.groups = action.payload;
+    },
     setInitialPage(state, action) {
       state.initialPage = action.payload;
     },
@@ -101,7 +95,6 @@ const transcriptSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchTranscriptSubject.fulfilled, (state, action) => {
-        state.transcripts = action.payload;
         state.loading = false;
       })
       .addCase(fetchTranscriptSubject.rejected, (state, action) => {
@@ -116,6 +109,12 @@ export const selectHasTranscript = (state: RootState) =>
 export const selectTranscripts = (state: RootState) =>
   state.transcript.transcripts;
 
-export const { setTranscriptData, setCurrentPage, setInitialPage } =
-  transcriptSlice.actions;
+export const {
+  setTranscriptData,
+  setCurrentPage,
+  setInitialPage,
+  setmatched,
+  setUnmatched,
+  setGroups,
+} = transcriptSlice.actions;
 export default transcriptSlice.reducer;

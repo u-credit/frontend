@@ -8,11 +8,12 @@ import SubjectContainer from './SubjectContainer';
 import { Box, Button, CircularProgress } from '@mui/material';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 import { formatDataForCreateTranscript } from '@/utils/transcriptRecheckHelper';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/features/store';
-import { updateUser } from '@/features/auth/authSlice';
+import { selectUser, updateUser } from '@/features/auth/authSlice';
 import { setUserCurriGroupById } from '@/features/facultySlice';
 import { loadBookmarksApi } from '@/features/bookmark/bookmarkSlice';
+import { fetchCalculateSchedule } from '@/features/scheduleSlice';
 
 interface RecheckPageProps {
   file: File;
@@ -108,6 +109,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
     fetchData();
   };
 
+  const user = useSelector(selectUser);
   const handleUploadTranscript = async () => {
     const data = formatDataForCreateTranscript(
       selectedCurriGroup,
@@ -116,16 +118,24 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
     );
 
     const updatedData = (await createTranscript(data)).data.user;
-    dispatch(updateUser(updatedData));
-    dispatch(
-      setUserCurriGroupById({
-        facultyId: updatedData.faculty_id,
-        departmentId: updatedData.department_id,
-        curriculumId: updatedData.curr2_id,
-        curriculumYear: updatedData.curriculum_year,
-      }),
-    );
-    dispatch(loadBookmarksApi());
+    if (
+      updatedData.faculty_id != user?.faculty_id ||
+      updatedData.department_id != user.department_id ||
+      updatedData.curr2_id != user.curr2_id ||
+      updatedData.curriculum_year != user.curriculum_year
+    ) {
+      dispatch(fetchCalculateSchedule(true));
+
+      dispatch(updateUser(updatedData));
+      dispatch(
+        setUserCurriGroupById({
+          facultyId: updatedData.faculty_id,
+          departmentId: updatedData.department_id,
+          curriculumId: updatedData.curr2_id,
+          curriculumYear: updatedData.curriculum_year,
+        }),
+      );
+    }
     onNext();
   };
 

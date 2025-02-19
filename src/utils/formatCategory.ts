@@ -1,9 +1,9 @@
-import { SubjectCategory } from '@/enums';
-import { CategoryDto } from '@/Interfaces';
+import { SubjectCategoryEnum } from '@/enums';
+import { CategoryDto, CategoryItem } from '@/Interfaces';
 
 export function formatCategory(category: string): string {
-  if (category == SubjectCategory.MAJOR) return 'วิชาเฉพาะ';
-  else if (category == SubjectCategory.GENERAL) return 'วิชาศึกษาทั่วไป';
+  if (category == SubjectCategoryEnum.MAJOR) return 'วิชาเฉพาะ';
+  else if (category == SubjectCategoryEnum.GENERAL) return 'วิชาศึกษาทั่วไป';
   return '';
 }
 
@@ -21,3 +21,10 @@ export const getChipColor = (category: number): string => {
   else if (category === 1) return '';
   return 'default';
 };
+
+export function chipCategoryItem(category: CategoryItem): string {
+  let text = '';
+  if (category.groupName) text += category.groupName;
+  if (category.subgroupName) text += ' + ' + category.subgroupName;
+  return text;
+}

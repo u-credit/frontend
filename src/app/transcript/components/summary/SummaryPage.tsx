@@ -19,12 +19,6 @@ import {
 import { RequiredCreditDto } from '@/Interfaces';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  BookmarkStateItem,
-  editBookmark,
-  selectScheduledItems,
-} from '@/features/bookmark/bookmarkSlice';
-import { calculateBookmark } from '@/api/bookmarkApi';
 import { AppDispatch, RootState } from '@/features/store';
 import { selectUser } from '@/features/auth/authSlice';
 import { selectUserFacultyOptions } from '@/features/facultySlice';
@@ -36,6 +30,10 @@ import SummaryProvider, {
   useSummaryContext,
 } from '@/app/contexts/SummaryContext';
 import { getMyReviewsFromTranscriptSubject } from '@/api/reviewApi';
+import {
+  fetchCalculateSchedule,
+  ScheduleStateItem,
+} from '@/features/scheduleSlice';
 
 interface SummaryPageProps {
   onNext: (section: string) => void;
@@ -53,13 +51,10 @@ export default function WrapperSummaryPage(props: SummaryPageProps) {
 }
 
 function SummaryPage({ onNext }: SummaryPageProps) {
-  const schedule = useSelector(selectScheduledItems);
   const transcriptSubject = useSelector(selectTranscripts);
   const { listCategory, selectedCurriGroup } = useTranscriptContext();
   const { setMyTsReview } = useSummaryContext();
-  const { semester, year } = useSelector(
-    (state: RootState) => state.selectorValue,
-  );
+  useSelector((state: RootState) => state.selectorValue);
   const isFirstFetchSchedule = useSelector(
     (state: RootState) => state.bookmark.isFirstFetch,
   );
@@ -94,33 +89,10 @@ function SummaryPage({ onNext }: SummaryPageProps) {
   };
 
   const fetchCalculateScheduledCredit = async (): Promise<
-    BookmarkStateItem[]
+    ScheduleStateItem[]
   > => {
-    const data = (
-      await calculateBookmark({
-        semester: Number(semester),
-        year: Number(year),
-        isShow: true,
-      })
-    ).data;
-
-    const updatedSchedule = schedule.map((s) => {
-      const matchItem = data.result.find(
-        (item) => item.subject_id === s.subjectId,
-      );
-      if (matchItem) {
-        return {
-          ...s,
-          category: matchItem.category,
-          group: matchItem.group,
-          subgroup: matchItem.subgroup,
-        };
-      }
-      return s;
-    });
-
-    dispatch(editBookmark(updatedSchedule));
-    return updatedSchedule;
+    const data = await dispatch(fetchCalculateSchedule(true)).unwrap();
+    return data.matched;
   };
 
   const fetchData = async (listCategory: any) => {
@@ -143,7 +115,7 @@ function SummaryPage({ onNext }: SummaryPageProps) {
   };
 
   useEffect(() => {
-    if (listCategory.length > 0 && isFirstFetchSchedule && transcriptSubject) {
+    if (listCategory?.length > 0 && isFirstFetchSchedule && transcriptSubject) {
       fetchData(listCategory);
     }
   }, [listCategory, isFirstFetchSchedule, transcriptSubject]);

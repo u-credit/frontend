@@ -1,4 +1,5 @@
 import { SelectOption } from '@/types';
+import { CategoryItem } from './subject.interface';
 
 export interface CategoryGroup {
   category: SelectOption;
@@ -18,6 +19,7 @@ export interface SubjectTranscriptDto {
   credit: number;
   semester: number | null;
   year: number | null;
+  categories: CategoryItem[];
 }
 
 export interface RequiredCreditDto {
@@ -38,11 +40,6 @@ export interface CurriculumGroupParams {
   curriculumYear: string;
 }
 
-export interface CalculatedDto {
-  result: SubjectProcessDto[];
-  unmatchSubjects: SubjectProcessDto[];
-}
-
 export interface SubjectProcessDto {
   subject_id: string;
   subject_tname: string;
@@ -54,11 +51,7 @@ export interface SubjectProcessDto {
   childgroup?: number;
   semester: string;
   year: string;
-}
-
-export interface fetchTranscriptResponse {
-  result: CalculatedDto[];
-  subjects: SubjectTranscriptDto[];
+  categories: CategoryItem[];
 }
 
 export interface CreateTranscriptResponse {
@@ -69,4 +62,31 @@ export interface CreateTranscriptResponse {
     curri_id: string;
     curriculum_year: string;
   };
+}
+
+export interface CategoryProcessDto {
+  category: number;
+  group: number;
+  subgroup: number;
+  credit1: number;
+  credit2: number;
+  c_cat_name: string;
+  c_group_name: string;
+  c_subgroup_name: string;
+  earn_credit: number;
+  subjects: SubjectProcessDto[];
+}
+
+export interface GetTranscriptResponse extends CalculatedGroupedSubjectDto {
+  subjects: SubjectProcessDto[];
+}
+
+export interface CalculatedGroupedSubjectDto {
+  groups: CategoryProcessDto[];
+  unmatched: SubjectProcessDto[];
+}
+
+export interface CalculatedSubjectDto {
+  matched: SubjectProcessDto[];
+  unmatched: SubjectProcessDto[];
 }

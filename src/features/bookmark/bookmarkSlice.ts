@@ -11,7 +11,7 @@ import {
 import { RootState } from '../store';
 import { fetchListSubjectByIds } from '@/api/subjectApi';
 import {
-  formatBookmarksDtoToItem,
+  formatBookmarkToItem,
   getCategoryCredit,
   getCurriGroupParam,
 } from '@/utils';
@@ -67,44 +67,19 @@ export const loadBookmarksApi = createAsyncThunk(
       const response = await fetchBookmark({
         semester: Number(semester),
         year: Number(year),
+        withDetail: true,
+        ...(facultyId &&
+          curriculumId &&
+          curriculumYear && {
+            facultyId: facultyId,
+            curriculumId: curriculumId,
+            curriculumYear: curriculumYear,
+          }),
       });
       const data = response?.data || [];
-      const formatData = formatBookmarksDtoToItem(data);
-      if (formatData.length > 0) {
-        const detailByIds = (
-          await fetchListSubjectByIds({
-            semester: Number(semester),
-            year: Number(year),
-            subjectIds: [...formatData.map((item) => item.subjectId)],
-            ...(facultyId &&
-              curriculumId &&
-              curriculumYear && {
-                categoryFacultyId: facultyId,
-                categoryCurriculumId: curriculumId,
-                categoryCurriculumYear: curriculumYear,
-              }),
-          })
-        ).data;
-
-        if (detailByIds.length > 0) {
-          const subjectMap = new Map(
-            detailByIds.map((subject) => [subject.subject_id, subject]),
-          );
-
-          const updatedBookmarksWithDetail: BookmarkStateItem[] =
-            formatData.map((item) => ({
-              ...item,
-              detail: subjectMap.get(item.subjectId),
-            }));
-
-          saveBookmarks(semester, year, updatedBookmarksWithDetail);
-          dispatch(setBookmarks(updatedBookmarksWithDetail));
-        }
-      } else {
-        saveBookmarks(semester, year, formatData);
-        dispatch(setBookmarks(formatData));
-        console.log('No subject details found for bookmarks');
-      }
+      const formatData = formatBookmarkToItem(data);
+      saveBookmarks(semester, year, formatData);
+      dispatch(setBookmarks(formatData));
     } catch (error) {
       console.error('Error loading bookmarks:', error);
     }

@@ -8,7 +8,7 @@ import {
   CursorMetaDto,
   ListSubjectQueryParams,
 } from '@/Interfaces';
-import { fetchListSubject, fetchListSubjectByIds } from '@/api/subjectApi';
+import { fetchListSubject } from '@/api/subjectApi';
 import { initSelectOption, SelectOption } from '@/types';
 import {
   BookmarkModal,
@@ -17,7 +17,7 @@ import {
   FilterRow,
 } from './components';
 import { useInView } from 'react-intersection-observer';
-import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
+import { ListSubjectOrderBy, Order, SubjectCategoryEnum } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
 import { CustomSearchBar, CustomSelect, Loading } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,19 +27,13 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { fetchActiveSetting } from '@/features/admin/semesterSettingsSlice';
 import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
 import {
-  BookmarkStateItem,
   loadBookmarks,
-  saveBookmarks,
-  setBookmarks,
+  loadBookmarksApi,
   updateBookmarksOnCurriChange,
 } from '@/features/bookmark/bookmarkSlice';
-import { addMultipleBookmarkApi, fetchBookmark } from '@/api/bookmarkApi';
+import { addMultipleBookmarkApi } from '@/api/bookmarkApi';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
-import {
-  formatBookmarksDtoToItem,
-  formatFacultyOption,
-  getAllBookmarks,
-} from '@/utils';
+import { formatFacultyOption, getAllBookmarks } from '@/utils';
 import AddBookmarkModal from './components/AddBookmarkModal';
 import Backdrop from '@/components/Backdrop';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -143,11 +137,11 @@ function Course() {
       }
 
       controllerRef.current = new AbortController();
-      const getCategory = (category: string[]): SubjectCategory => {
-        if (category.length === 2) return SubjectCategory.ALL;
-        else if (category.includes(SubjectCategory.GENERAL))
-          return SubjectCategory.GENERAL;
-        return SubjectCategory.MAJOR;
+      const getCategory = (category: string[]): SubjectCategoryEnum => {
+        if (category.length === 2) return SubjectCategoryEnum.ALL;
+        else if (category.includes(SubjectCategoryEnum.GENERAL))
+          return SubjectCategoryEnum.GENERAL;
+        return SubjectCategoryEnum.MAJOR;
       };
 
       const getSubjectParams = (
@@ -441,54 +435,18 @@ function Course() {
 
   useEffect(() => {
     if (openAddBookmarkModal === true) return;
-    const loadBookmark = async () => {
+    const addBookmark = async () => {
       try {
         if (addMultipleBookmark) {
           await addMultipleBookmarkApi(getAllBookmarks());
           setAddMultipleBookmark(false);
         }
-        const response = await fetchBookmark({
-          semester: Number(semester),
-          year: Number(year),
-        });
-        const data = response?.data || [];
-        const formatData = formatBookmarksDtoToItem(data);
-        if (formatData.length > 0) {
-          const response2 = (
-            await fetchListSubjectByIds({
-              semester: Number(semester),
-              year: Number(year),
-              subjectIds: [...formatData.map((item) => item.subjectId)],
-            })
-          ).data;
-
-          if (response.data.length > 0) {
-            const updatedBookmarksWithDetail: BookmarkStateItem[] =
-              formatData.map((item) => {
-                const subject = response2.find(
-                  (subject) => subject.subject_id === item.subjectId,
-                );
-                return {
-                  ...item,
-                  detail: subject,
-                };
-              });
-
-            saveBookmarks(semester, year, updatedBookmarksWithDetail);
-            dispatch(setBookmarks(updatedBookmarksWithDetail));
-          }
-        } else {
-          saveBookmarks(semester, year, formatData);
-          dispatch(setBookmarks(formatData));
-          console.log('No subject details found for bookmarks');
-        }
-      } catch (error) {
-        console.error('Error loading bookmarks:', error);
-      }
+      } catch (error) {}
     };
 
     if (isAuthenticated) {
-      loadBookmark();
+      addBookmark();
+      dispatch(loadBookmarksApi());
     } else {
       dispatch(loadBookmarks());
     }

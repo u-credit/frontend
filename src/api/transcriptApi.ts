@@ -1,7 +1,7 @@
 import { API_PATHS } from '@/constants';
 import {
   CreateTranscriptResponse,
-  fetchTranscriptResponse,
+  GetTranscriptResponse,
   RequiredCreditDto,
   Response,
 } from '@/Interfaces';
@@ -116,7 +116,7 @@ export const createTranscript = async (
 };
 
 export const fetchTranscript = async (): Promise<
-  Response<fetchTranscriptResponse>
+  Response<GetTranscriptResponse>
 > => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}`,

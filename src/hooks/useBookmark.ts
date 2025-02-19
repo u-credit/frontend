@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loadBookmarksApi } from '@/features/bookmark/bookmarkSlice';
+import {
+  loadBookmarks,
+  loadBookmarksApi,
+} from '@/features/bookmark/bookmarkSlice';
 import { RootState, AppDispatch } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 
@@ -11,7 +14,8 @@ export const useBookmark = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
-    if (semester && year && isAuthenticated) dispatch(loadBookmarksApi());
+    if (isAuthenticated) dispatch(loadBookmarksApi());
+    else dispatch(loadBookmarks());
   }, [
     dispatch,
     semester,
