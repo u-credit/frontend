@@ -1,16 +1,18 @@
 import { API_PATHS } from '@/constants';
 import {
+  Bookmark,
   BookmarkDto,
   BookmarkItem,
   BookmarkParam,
-  CalculateBookmarkQueryParams,
+  CalculateBookmarkBySubjectIdRequest,
+  CalculateBookmarkRequest,
+  CalculatedSubjectDto,
   Response,
 } from '@/Interfaces';
-import { CalculatedDto } from '@/Interfaces/transcript.interface';
 
 export const fetchBookmark = async (
   params: BookmarkParam,
-): Promise<Response<BookmarkDto[]>> => {
+): Promise<Response<Bookmark[]>> => {
   const queryParams = new URLSearchParams();
   Object.keys(params).forEach((key) => {
     const value = params[key as keyof BookmarkItem];
@@ -138,10 +140,28 @@ export const addMultipleBookmarkApi = async (
 };
 
 export const calculateBookmark = async (
-  params: CalculateBookmarkQueryParams,
-): Promise<Response<CalculatedDto>> => {
+  params: CalculateBookmarkRequest,
+): Promise<Response<CalculatedSubjectDto>> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(params),
+    },
+  );
+
+  return res.json();
+};
+
+export const calculateBookmarkBySubject = async (
+  params: CalculateBookmarkBySubjectIdRequest,
+): Promise<Response<CalculatedSubjectDto>> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/subject`,
     {
       method: 'POST',
       headers: {

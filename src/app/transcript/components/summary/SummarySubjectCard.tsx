@@ -7,8 +7,13 @@ import { useEffect, useState } from 'react';
 import Backdrop from '@/components/Backdrop';
 import ModalAddCategory from '../ModalAddCategory';
 import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
-import { CategoryDto, CreateReviewDto, Review } from '@/Interfaces';
-import { chipCategory, getChipColor } from '@/utils';
+import {
+  CategoryDto,
+  CategoryItem,
+  CreateReviewDto,
+  Review,
+} from '@/Interfaces';
+import { chipCategory, chipCategoryItem, getChipColor } from '@/utils';
 import EditReviewDialog from '@/app/review/components/EditReviewDialog';
 import {
   createReview,
@@ -18,9 +23,9 @@ import {
 import { showAlert } from '@/features/alertSlice';
 import { useDispatch } from 'react-redux';
 import { useSummaryContext } from '@/app/contexts/SummaryContext';
-
+import DeleteIcon from '@mui/icons-material/Delete';
 export interface SummarySubject extends SubjectTranscriptDto {
-  categories: any;
+  categories: CategoryItem[];
 }
 interface SummarySubjectCardProps {
   subject: SummarySubject;
@@ -115,7 +120,7 @@ export default function SummarySubjectCard({
         <div className="flex flex-col gap-y-2 p-4">
           <div
             id="row1"
-            className="flex flex-wrap flex-row gap-4 items-center "
+            className="flex flex-wrap flex-row gap-x-4 gap-y-2 items-center "
           >
             <div className="font-rubik font-medium text-md md:text-lg">
               {subject.subject_id}
@@ -128,18 +133,14 @@ export default function SummarySubjectCard({
                 ปี {subject.year} เทอม {subject.semester}
               </div>
             )}
-            {subject.categories &&
-              subject.categories.map((category: CategoryDto) => (
+            {subject.categories.length > 0 &&
+              subject.categories.map((category: CategoryItem) => (
                 <Tooltip
-                  title={chipCategory(category)}
-                  key={
-                    category.category_id +
-                    category.group_name +
-                    category.subgroup_name
-                  }
+                  title={chipCategoryItem(category)}
+                  key={category.category + category.group + category.subgroup}
                 >
                   <Chip
-                    label={chipCategory(category)}
+                    label={chipCategoryItem(category)}
                     size="small"
                     variant="outlined"
                     sx={{
@@ -152,7 +153,7 @@ export default function SummarySubjectCard({
                       },
                     }}
                     color={
-                      getChipColor(category.category_id) as
+                      getChipColor(category.category) as
                         | 'default'
                         | 'primary'
                         | 'secondary'
@@ -197,6 +198,17 @@ export default function SummarySubjectCard({
               onClick={() => setEditDialogOpen(true)}
             >
               {review ? 'แก้ไขรีวิว' : 'เพิ่มรีวิว'}
+            </Button>
+          )}
+
+          {subjectFlag === 'schedule' && (
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<DeleteIcon />}
+              onClick={() => {}}
+            >
+              ลบ
             </Button>
           )}
         </div>

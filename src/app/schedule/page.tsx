@@ -4,29 +4,17 @@ import Timetable from './components/timetable/components/Timetable';
 import Tabs from './components/tabs/tabs';
 import DownloadButton from './components/downloadButton/Button';
 import * as React from 'react';
-import { AppDispatch, RootState } from '@/features/store';
+import { RootState } from '@/features/store';
 import { BookmarkItem } from '@/Interfaces';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchBookmark } from '@/api/bookmarkApi';
+import { useSelector } from 'react-redux';
 import {
-  BookmarkStateItem,
-  loadBookmarks,
-  saveBookmarks,
   selectScheduledItems,
-  setBookmarks,
   summaryCategoryShedule,
 } from '@/features/bookmark/bookmarkSlice';
-import { selectIsAuthenticated } from '@/features/auth/authSlice';
-import { fetchListSubjectByIds } from '@/api/subjectApi';
-import { formatBookmarksDtoToItem } from '@/utils';
 
 export default function Home() {
-  const dispatch: AppDispatch = useDispatch();
-  const { semester, year } = useSelector(
-    (state: RootState) => state.selectorValue,
-  );
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+  useSelector((state: RootState) => state.selectorValue);
 
   const summaryCredit = useSelector((state: RootState) =>
     summaryCategoryShedule(state),
@@ -39,54 +27,6 @@ export default function Home() {
   const scheduledItems = useSelector((state: RootState) =>
     selectScheduledItems(state),
   );
-
-  useEffect(() => {
-    const loadBookmark = async () => {
-      try {
-        const response = await fetchBookmark({
-          semester: Number(semester),
-          year: Number(year),
-        });
-        const data = response?.data || [];
-        const formatData = formatBookmarksDtoToItem(data);
-        const response2 = (
-          await fetchListSubjectByIds({
-            semester: Number(semester),
-            year: Number(year),
-            subjectIds: [...formatData.map((item) => item.subjectId)],
-          })
-        ).data;
-
-        if (response.data.length > 0) {
-          const updatedBookmarksWithDetail: BookmarkStateItem[] =
-            formatData.map((item) => {
-              const subject = response2.find(
-                (subject) => subject.subject_id === item.subjectId,
-              );
-              return {
-                ...item,
-                detail: subject,
-              };
-            });
-
-          saveBookmarks(semester, year, updatedBookmarksWithDetail);
-          dispatch(setBookmarks(updatedBookmarksWithDetail));
-        } else {
-          saveBookmarks(semester, year, formatData);
-          dispatch(setBookmarks(formatData));
-          console.log('No subject details found for bookmarks');
-        }
-      } catch (error) {
-        console.error('Error loading bookmarks:', error);
-      }
-    };
-
-    if (isAuthenticated) {
-      loadBookmark();
-    } else {
-      dispatch(loadBookmarks());
-    }
-  }, [dispatch, isAuthenticated, semester, year]);
 
   useEffect(() => {
     setCategoryCredit(summaryCredit.categoryCredit);

@@ -7,7 +7,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { CurriSelectGroup, CustomSelectOutlined } from '@/components';
-import { SubjectCategory } from '@/enums';
+import { SubjectCategoryEnum } from '@/enums';
 import { CurriGroup } from '@/Interfaces';
 import { initSelectOption, SelectOption } from '@/types';
 import { ClearButon } from './ClearButton';
@@ -44,8 +44,8 @@ export default function Sidebar({
   onClickFilterSearch,
 }: FilterProps) {
   const catagory = [
-    { key: '1', label: 'วิชาศึกษาทั่วไป', value: SubjectCategory.GENERAL },
-    { key: '2', label: 'วิชาเฉพาะ', value: SubjectCategory.MAJOR },
+    { key: '1', label: 'วิชาศึกษาทั่วไป', value: SubjectCategoryEnum.GENERAL },
+    { key: '2', label: 'วิชาเฉพาะ', value: SubjectCategoryEnum.MAJOR },
   ];
 
   const years = [
