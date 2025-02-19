@@ -125,7 +125,7 @@ export default function ModalAddCategory({
     <div>
       <Modal open={open} onClose={onClose}>
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <Box className="bg-white rounded-lg border-[1px] p-4 border-gray-300 flex flex-col gap-2 md:gap-5 w-[100vh-16px] max-w-5xl">
+          <Box className="bg-white rounded-lg border-[1px] p-4 border-gray-300 flex flex-col gap-2 md:gap-5 w-[calc(90vw)] max-w-5xl">
             <div className="flex justify-between items-center">
               <div className="font-mitr font-medium text-lg md:text-2xl">
                 เพิ่มหมวดหมู่
