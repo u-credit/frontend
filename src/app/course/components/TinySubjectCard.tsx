@@ -44,7 +44,7 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
   );
   useEffect(() => {
     setIsBookmarked(hasBookmark);
-    setSelectedSection(String(bookmarkDetail?.section) || '');
+    setSelectedSection(bookmarkDetail?.section || '');
   }, [hasBookmark, bookmarkDetail]);
 
   const handleSelectSectionChange = async (value: string) => {

@@ -55,12 +55,12 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
 
   useEffect(() => {
     setIsBookmarked(hasBookmark);
-    setSelectedSection(String(bookmarkDetail?.section) || '');
+    setSelectedSection(bookmarkDetail?.section || '');
   }, []);
 
   useEffect(() => {
     setIsBookmarked(hasBookmark);
-    setSelectedSection(String(bookmarkDetail?.section) || '');
+    setSelectedSection(bookmarkDetail?.section || '');
   }, [hasBookmark, bookmarkDetail]);
 
   const handleToggleBookmark = async () => {

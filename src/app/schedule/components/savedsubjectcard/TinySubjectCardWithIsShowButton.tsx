@@ -79,7 +79,7 @@ export default function TinySubjectCardWithIsShowButton({
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const isShowInSchedule = event.target.checked;
-    
+
     if (isBookmarked) {
       dispatch(
         editBookmark([
@@ -166,6 +166,15 @@ export default function TinySubjectCardWithIsShowButton({
       setSectionList(newSectionList);
     }
   }, [subjectDetail]);
+
+  useEffect(() => {
+    console.log(
+      'selectedSection',
+      subjectDetail.subject_id,
+      selectedSection,
+      typeof selectedSection,
+    );
+  }, [selectedSection, subjectDetail.subject_id]);
 
   return (
     <div className="relative">
