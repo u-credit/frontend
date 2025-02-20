@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { showAlert } from '@/features/alertSlice';
 import ReviewForm from './ReviewForm';
 import { getTeachingOptions } from '@/api/reviewApi';
+import { profanityFilter } from '@/utils/profanityFilter';
 
 interface CreateReviewDialogProps {
   open: boolean;
@@ -66,12 +67,30 @@ const CreateReviewDialog: React.FC<CreateReviewDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // Validation
-    if (!rating || !selectedYear || !selectedSemester || !selectedTeacherName || !reviewText.trim()) {
+    if (
+      !rating ||
+      !selectedYear ||
+      !selectedSemester ||
+      !selectedTeacherName ||
+      !reviewText.trim()
+    ) {
       dispatch(
         showAlert({
           message: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+          severity: 'error',
+        }),
+      );
+      return;
+    }
+
+    const { isValid } = profanityFilter(reviewText);
+    if (!isValid) {
+      console.log('หยาบคาย');
+      dispatch(
+        showAlert({
+          message: 'ไม่สามารถส่งความคิดเห็นได้ เนื่องจากมีคำไม่เหมาะสม',
           severity: 'error',
         }),
       );
@@ -123,7 +142,7 @@ const CreateReviewDialog: React.FC<CreateReviewDialogProps> = ({
           maxHeight: 'calc(100% - 32px)',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
         },
       }}
     >

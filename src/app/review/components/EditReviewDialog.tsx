@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { showAlert } from '@/features/alertSlice';
 import ReviewForm from './ReviewForm';
 import { getTeachingOptions } from '@/api/reviewApi';
+import { profanityFilter } from '@/utils/profanityFilter';
 
 interface EditReviewDialogProps {
   open: boolean;
@@ -73,6 +74,18 @@ const EditReviewDialog: React.FC<EditReviewDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
+
+    const { isValid } = profanityFilter(reviewText);
+    if (!isValid) {
+      console.log('หยาบคาย');
+      dispatch(
+        showAlert({
+          message: 'ไม่สามารถส่งความคิดเห็นได้ เนื่องจากมีคำไม่เหมาะสม',
+          severity: 'error',
+        }),
+      );
+      return;
+    }
 
     try {
       await onSubmit({
