@@ -23,17 +23,19 @@ import {
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
+  section: string;
 }
 
 export default function TinySubjectCardWithIsShowButton({
   subjectDetail,
+  section,
 }: SubjectCardProps) {
   const dispatch: AppDispatch = useDispatch();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedSection, setSelectedSection] = useState<string>(section || '');
   const [isBookmarked, setIsBookmarked] = useState(true);
   const [isShow, setIsShow] = useState(false);
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
@@ -168,13 +170,8 @@ export default function TinySubjectCardWithIsShowButton({
   }, [subjectDetail]);
 
   useEffect(() => {
-    console.log(
-      'selectedSection',
-      subjectDetail.subject_id,
-      selectedSection,
-      typeof selectedSection,
-    );
-  }, [selectedSection, subjectDetail.subject_id]);
+    setSelectedSection(section);
+  }, [section]);
 
   return (
     <div className="relative">
