@@ -10,3 +10,10 @@
 body {
   padding: 0 !important;
 } */
+
+/* ต้องเพิ่มไอนี่ไม่งั้นตอน html2canvas เอ๋อออ */
+@layer base {
+  img {
+    @apply inline-block;
+  }
+}
