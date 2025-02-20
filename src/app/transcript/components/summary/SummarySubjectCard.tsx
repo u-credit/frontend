@@ -97,7 +97,7 @@ export default function SummarySubjectCard({
                 ปี {subject.year} เทอม {subject.semester}
               </div>
             )}
-            {subject.categories.length > 0 &&
+            {subject.categories?.length > 0 &&
               subject.categories.map((category: CategoryItem) => (
                 <Tooltip
                   title={chipCategoryItem(category)}
