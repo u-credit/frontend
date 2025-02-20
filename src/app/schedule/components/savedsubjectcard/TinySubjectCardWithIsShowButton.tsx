@@ -216,7 +216,11 @@ export default function TinySubjectCardWithIsShowButton({
                   {subjectDetail.category &&
                     subjectDetail.category.map((category) => (
                       <Chip
-                        key={category.category_id}
+                        key={
+                          category.category_id +
+                          category.group_name +
+                          category.subgroup_name
+                        }
                         label={`${category.group_name} + ${category.subgroup_name}`}
                         size="small"
                         variant="outlined"
