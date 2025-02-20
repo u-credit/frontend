@@ -21,9 +21,13 @@ import {
   getMyReviewsFromTranscriptSubject,
 } from '@/api/reviewApi';
 import { showAlert } from '@/features/alertSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useSummaryContext } from '@/app/contexts/SummaryContext';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { profanityFilter } from '@/utils/profanityFilter';
+import { RootState } from '@/features/store';
+import CreateReviewDialog from '@/app/review/components/CreateReviewDialog';
+import { create } from 'domain';
 export interface SummarySubject extends SubjectTranscriptDto {
   categories: CategoryItem[];
 }
@@ -36,14 +40,11 @@ export default function SummarySubjectCard({
   subjectFlag,
 }: SummarySubjectCardProps) {
   const dispatch = useDispatch();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const { myTsReview, setMyTsReview } = useSummaryContext();
 
-  const handleReview = (): void => {
-    router.push(`/course/${subject.subject_id}`);
-  };
   const handleEditCategory = (): void => {
     setIsModalOpen(true);
   };
@@ -59,60 +60,23 @@ export default function SummarySubjectCard({
     }
   }, [isModalOpen]);
 
-  const handleEditReview = async (data: any) => {
-    try {
-      const response = await editReview(review?.review_id || '', data);
+  const handleEditReview = async (data: any) => {};
 
-      if (response.status) {
-        const res = await getMyReviewsFromTranscriptSubject();
-        setMyTsReview(res.data);
-        dispatch(
-          showAlert({
-            message: 'คุณแก้ไขรีวิวรายวิชานี้สำเร็จแล้ว',
-            severity: 'success',
-          }),
-        );
-        setEditDialogOpen(false);
-      }
-    } catch (error) {
-      dispatch(
-        showAlert({
-          message: 'เกิดข้อผิดพลาดในการแก้ไขรีวิว',
-          severity: 'error',
-        }),
-      );
-    }
-  };
+  const handleCreateReview = async (data: CreateReviewDto) => {};
 
-  const handleCreateReview = async (data: CreateReviewDto) => {
-    try {
-      const response = await createReview(data);
-
-      if (response.status) {
-        const res = await getMyReviewsFromTranscriptSubject();
-        setMyTsReview(res.data);
-        dispatch(
-          showAlert({
-            message: 'คุณเพิ่มรีวิวรายวิชานี้สำเร็จแล้ว',
-            severity: 'success',
-          }),
-        );
-        setEditDialogOpen(false);
-      }
-    } catch (error) {
-      dispatch(
-        showAlert({
-          message: 'เกิดข้อผิดพลาดในการเพิ่มรีวิว',
-          severity: 'error',
-        }),
-      );
-    }
-  };
   const [review, setReview] = useState<Review | null>(null);
   useEffect(() => {
     const data = myTsReview.find((r) => r.subjectId === subject.subject_id);
     setReview(data || null);
   }, [myTsReview, subject.subject_id]);
+
+  const handleOnClickReview = () => {
+    if (review) {
+      setEditDialogOpen(true);
+    } else {
+      setCreateDialogOpen(true);
+    }
+  };
 
   return (
     <>
@@ -195,7 +159,7 @@ export default function SummarySubjectCard({
               size="small"
               variant="contained"
               startIcon={<StarIcon />}
-              onClick={() => setEditDialogOpen(true)}
+              onClick={handleOnClickReview}
             >
               {review ? 'แก้ไขรีวิว' : 'เพิ่มรีวิว'}
             </Button>
@@ -219,19 +183,29 @@ export default function SummarySubjectCard({
         onClose={handleCloseModal}
         subject={subject}
       />
-      <EditReviewDialog
-        open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
-        onSubmit={review ? handleEditReview : handleCreateReview}
-        initialData={{
-          rating: review?.rating || 0,
-          year: review?.year || 0,
-          semester: review?.semester || 0,
-          teacherName: review?.teacherName || '',
-          reviewText: review?.reviewText || '',
-        }}
-        subjectId={subject.subject_id}
-      />
+      {editDialogOpen && (
+        <EditReviewDialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          onSubmit={handleEditReview}
+          initialData={{
+            rating: review?.rating || 0,
+            year: review?.year || 0,
+            semester: review?.semester || 0,
+            teacherName: review?.teacherName || '',
+            reviewText: review?.reviewText || '',
+          }}
+          subjectId={subject.subject_id}
+        />
+      )}
+      {createDialogOpen && (
+        <CreateReviewDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateReview}
+          subjectId={subject.subject_id}
+        />
+      )}
     </>
   );
 }
