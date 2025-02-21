@@ -68,11 +68,15 @@ function stringToColor(string: string) {
 }
 
 function stringAvatar(name: string) {
+  const splitName = name.split(' ');
+  const firstNameInitial = splitName[0][0];
+  const secondNameInitial = splitName.length > 1 ? splitName[1][0] : '';
+
   return {
     sx: {
       bgcolor: stringToColor(name),
     },
-    children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}` ,
+    children: `${firstNameInitial}${secondNameInitial}`,
   };
 }
 
