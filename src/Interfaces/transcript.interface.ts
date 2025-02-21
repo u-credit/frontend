@@ -87,6 +87,18 @@ export interface CalculatedGroupedSubjectDto {
 }
 
 export interface CalculatedSubjectDto {
+  groups: CategoryProcessDto[];
   matched: SubjectProcessDto[];
   unmatched: SubjectProcessDto[];
+  custom: SubjectProcessDto[];
+}
+
+export interface UpdateRecalculateDto {
+  subjectId: string;
+  semester?: number;
+  year?: number;
+  category: number | null;
+  group: number | null;
+  subgroup: number | null;
+  childgroup: number | null;
 }

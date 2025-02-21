@@ -1,6 +1,7 @@
-import exp from 'constants';
 import { SubjectDto } from './subject.interface';
-import { SubjectProcessDto } from './transcript.interface';
+import {
+  UpdateRecalculateDto,
+} from './transcript.interface';
 
 export interface BookmarkItem extends BookmarkParam {
   subjectId: string;
@@ -65,4 +66,9 @@ export interface Bookmark {
   created_at: Date;
   updated_at: Date;
   subject: SubjectDto;
+}
+
+export interface UpdateRecalculateBookmarkDto extends UpdateRecalculateDto {
+  semester: number;
+  year: number;
 }

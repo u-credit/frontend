@@ -2,32 +2,24 @@
 import { Button, Chip, Tooltip } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import CreateIcon from '@mui/icons-material/Create';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Backdrop from '@/components/Backdrop';
 import ModalAddCategory from '../ModalAddCategory';
 import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
-import {
-  CategoryDto,
-  CategoryItem,
-  CreateReviewDto,
-  Review,
-} from '@/Interfaces';
-import { chipCategory, chipCategoryItem, getChipColor } from '@/utils';
+import { CategoryItem, Review } from '@/Interfaces';
+import { chipCategoryItem, getChipColor } from '@/utils';
 import EditReviewDialog from '@/app/review/components/EditReviewDialog';
-import {
-  createReview,
-  editReview,
-  getMyReviewsFromTranscriptSubject,
-} from '@/api/reviewApi';
-import { showAlert } from '@/features/alertSlice';
-import { useDispatch, useSelector } from 'react-redux';
 import { useSummaryContext } from '@/app/contexts/SummaryContext';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { profanityFilter } from '@/utils/profanityFilter';
-import { RootState } from '@/features/store';
 import CreateReviewDialog from '@/app/review/components/CreateReviewDialog';
-import { create } from 'domain';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteBookmarkApi } from '@/api/bookmarkApi';
+import {
+  loadBookmarksApi,
+  removeBookmark,
+} from '@/features/bookmark/bookmarkSlice';
+import { AppDispatch, RootState } from '@/features/store';
+import { fetchCalculateSchedule } from '@/features/scheduleSlice';
 export interface SummarySubject extends SubjectTranscriptDto {
   categories: CategoryItem[];
 }
@@ -39,11 +31,10 @@ export default function SummarySubjectCard({
   subject,
   subjectFlag,
 }: SummarySubjectCardProps) {
-  const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const { myTsReview, setMyTsReview } = useSummaryContext();
+  const { myTsReview } = useSummaryContext();
 
   const handleEditCategory = (): void => {
     setIsModalOpen(true);
@@ -60,13 +51,13 @@ export default function SummarySubjectCard({
     }
   }, [isModalOpen]);
 
-  const handleEditReview = async (data: any) => {};
+  const handleEditReview = async () => {};
 
-  const handleCreateReview = async (data: CreateReviewDto) => {};
+  const handleCreateReview = async () => {};
 
   const [review, setReview] = useState<Review | null>(null);
   useEffect(() => {
-    const data = myTsReview.find((r) => r.subjectId === subject.subject_id);
+    const data = myTsReview?.find((r) => r.subjectId === subject.subject_id);
     setReview(data || null);
   }, [myTsReview, subject.subject_id]);
 
@@ -75,6 +66,32 @@ export default function SummarySubjectCard({
       setEditDialogOpen(true);
     } else {
       setCreateDialogOpen(true);
+    }
+  };
+
+  const dispatch = useDispatch<AppDispatch>();
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth.isAuthenticated,
+  );
+  const { semester, year } = useSelector(
+    (state: RootState) => state.selectorValue,
+  );
+  const handleDeleteSchedule = async () => {
+    if (Number(semester) == subject.semester && Number(year) == subject.year) {
+      dispatch(removeBookmark(subject.subject_id));
+    }
+    if (isAuthenticated) {
+      const data = (
+        await deleteBookmarkApi({
+          subjectId: subject.subject_id,
+          semester: Number(subject.semester),
+          year: Number(subject.year),
+        })
+      ).data;
+      if (data.success) {
+        dispatch(fetchCalculateSchedule(false));
+        dispatch(loadBookmarksApi());
+      }
     }
   };
 
@@ -170,7 +187,7 @@ export default function SummarySubjectCard({
               size="small"
               variant="contained"
               startIcon={<DeleteIcon />}
-              onClick={() => {}}
+              onClick={handleDeleteSchedule}
             >
               ลบ
             </Button>
@@ -182,6 +199,9 @@ export default function SummarySubjectCard({
         open={isModalOpen}
         onClose={handleCloseModal}
         subject={subject}
+        isSubjectAddCategory={subject.category !== null}
+        isUpdateOnSubmit={true}
+        subjectFlag={subjectFlag}
       />
       {editDialogOpen && (
         <EditReviewDialog
