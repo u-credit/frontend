@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import {
-  formatScheduleStateItemToSummarySubject,
-  formatTranscriptItemToSummarySubject,
-} from '@/utils';
+import { formatScheduleStateItemToSummarySubject } from '@/utils';
 import SummarySubjectCard, { SummarySubject } from './SummarySubjectCard';
-import { selectTranscripts } from '@/features/transcriptSlice';
 import { useSummaryContext } from '@/app/contexts/SummaryContext';
 import { RootState } from '@/features/store';
+import { Tabs, Tab } from '@mui/material';
 
 interface SubjectContainerProps {
   subjectFlag: string;
@@ -27,7 +24,10 @@ const SubjectContainer = ({
   const [subjects, setSubjects] = useState<SummarySubject[]>([]);
   const [unmatchSubjects, setUnmatchSubjects] = useState<SummarySubject[]>([]);
   const transcript = useSelector((state: RootState) => state.transcript);
-
+  const [activeTab, setActiveTab] = useState(0);
+  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
   useEffect(() => {
     if (subjectFlag === 'transcript') {
       // const formated = formatTranscriptItemToSummarySubject(transcript.matched);
@@ -37,9 +37,7 @@ const SubjectContainer = ({
       setSubjects(transcript.matched);
       setUnmatchSubjects(transcript.unmatched);
     } else if (subjectFlag === 'schedule') {
-      const formated = formatScheduleStateItemToSummarySubject(
-        schedule.matched,
-      );
+      const formated = formatScheduleStateItemToSummarySubject(schedule.items);
       const formatedUnmatch = formatScheduleStateItemToSummarySubject(
         schedule.unmatched,
       );
@@ -104,21 +102,51 @@ const SubjectContainer = ({
   useEffect(() => {
     prepareSubject();
   }, [semester, year, searchValue, prepareSubject]);
+
+  const isUnmatchedTabActive = activeTab === tableData.length;
+
   return (
     <div className="flex flex-col gap-y-4">
-      {tableData.map((cat, index) => (
-        <div key={index} className="flex flex-col gap-y-4">
+      <Tabs
+        value={activeTab}
+        onChange={handleChange}
+        aria-label="basic tabs example"
+        sx={{
+          fontWeight: '600',
+        }}
+      >
+        {tableData.map((cat, index) => (
+          <Tab key={cat.id} label={cat.name} id={cat.name} />
+        ))}
+        <Tab label="ไม่ตรงหลักสูตร" id="unmatched-tab" />
+      </Tabs>
+
+      {isUnmatchedTabActive ? (
+        <>
+          <span className="font-bai-jamjuree font-semibold mr-4">
+            รายวิชาที่ไม่ตรงหลักสูตร
+          </span>
+          {filteredUnmatchSubject.map((subject: SummarySubject, index) => (
+            <SummarySubjectCard
+              key={index}
+              subject={subject}
+              subjectFlag={subjectFlag}
+            />
+          ))}
+        </>
+      ) : (
+        <div className="flex flex-col gap-y-4">
           <div className="font-bai-jamjuree font-semibold">
-            <span className="mr-4">{cat.name}</span>
+            <span className="mr-4">{tableData[activeTab]?.name}</span>
             <span className="text-red-500">
               {subjectFlag == 'transcript'
-                ? cat.currentCredit
-                : cat.scheduledCredit}
+                ? tableData[activeTab]?.currentCredit
+                : tableData[activeTab]?.scheduledCredit}
             </span>
-            <span>/{cat.requiredCredit}</span>
+            <span>/{tableData[activeTab]?.requiredCredit}</span>
           </div>
           {filteredSubject
-            ?.filter((s) => s.category === cat.id)
+            ?.filter((s) => s.category === activeTab + 1)
             .map((subject: SummarySubject, index) => (
               <SummarySubjectCard
                 key={index}
@@ -127,17 +155,7 @@ const SubjectContainer = ({
               />
             ))}
         </div>
-      ))}
-      <span className="font-bai-jamjuree font-semibold mr-4">
-        รายวิชาที่ไม่ตรงหลักสูตร
-      </span>
-      {filteredUnmatchSubject.map((subject: SummarySubject, index) => (
-        <SummarySubjectCard
-          key={index}
-          subject={subject}
-          subjectFlag={subjectFlag}
-        />
-      ))}
+      )}
     </div>
   );
 };

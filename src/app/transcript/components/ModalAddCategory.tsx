@@ -2,16 +2,22 @@ import { Box, Button, IconButton, Modal } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import CategorySelectGroup from './CategorySelectGroup';
 import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
-import { initSelectOption, SelectOption } from '@/types';
+import { initSelectOption } from '@/types';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
+import { AppDispatch } from '@/features/store';
+import { updateCalculateTranscriptApi } from '@/features/transcriptSlice';
+import { useDispatch } from 'react-redux';
+import { updateAndRecalculateBookmarkApi } from '@/features/scheduleSlice';
 
 interface ModalAddCategoryProps {
   open: boolean;
   onClose: () => void;
   subject: SubjectTranscriptDto;
   isSubjectAddCategory?: boolean;
+  isUpdateOnSubmit?: boolean;
+  subjectFlag?: string;
 }
 
 export default function ModalAddCategory({
@@ -19,7 +25,10 @@ export default function ModalAddCategory({
   onClose,
   subject,
   isSubjectAddCategory,
+  isUpdateOnSubmit,
+  subjectFlag,
 }: ModalAddCategoryProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const {
     categoryOptions,
     selectedCategory,
@@ -91,7 +100,7 @@ export default function ModalAddCategory({
 
       setSelectCategory(selectCategory);
     }
-  }, [open, isSubjectAddCategory]);
+  }, [open, isSubjectAddCategory, subject, categoryOptions]);
 
   const handleClose = () => {
     setSelectCategory({
@@ -103,20 +112,48 @@ export default function ModalAddCategory({
     onClose();
   };
 
-  const handleSave = () => {
-    setUnmatchSubjects((prev) =>
-      prev.map((prev_subject) =>
-        prev_subject.subject_id === subject.subject_id
-          ? {
-              ...prev_subject,
-              category: Number(selectedCategory.category.value),
-              group: Number(selectedCategory.group.value),
-              subgroup: Number(selectedCategory.subgroup.value),
-              childgroup: Number(selectedCategory.childgroup.value),
-            }
-          : prev_subject,
-      ),
-    );
+  const handleSave = async () => {
+    if (isUpdateOnSubmit) {
+      if (subjectFlag === 'transcript') {
+        dispatch(
+          updateCalculateTranscriptApi({
+            subjectId: subject.subject_id,
+            ...(subject.semester && { semester: subject.semester }),
+            ...(subject.year && { year: subject.year }),
+            category: Number(selectedCategory.category.value) || null,
+            group: Number(selectedCategory.group.value) || null,
+            subgroup: Number(selectedCategory.subgroup.value) || null,
+            childgroup: Number(selectedCategory.childgroup.value) || null,
+          }),
+        );
+      } else if (subjectFlag === 'schedule') {
+        dispatch(
+          updateAndRecalculateBookmarkApi({
+            subjectId: subject.subject_id,
+            semester: subject.semester || 0,
+            year: subject.year || 0,
+            category: Number(selectedCategory.category.value) || null,
+            group: Number(selectedCategory.group.value) || null,
+            subgroup: Number(selectedCategory.subgroup.value) || null,
+            childgroup: Number(selectedCategory.childgroup.value) || null,
+          }),
+        );
+      }
+    } else {
+      setUnmatchSubjects((prev) =>
+        prev.map((prev_subject) =>
+          prev_subject.subject_id === subject.subject_id
+            ? {
+                ...prev_subject,
+                category: Number(selectedCategory.category.value),
+                group: Number(selectedCategory.group.value),
+                subgroup: Number(selectedCategory.subgroup.value),
+                childgroup: Number(selectedCategory.childgroup.value),
+              }
+            : prev_subject,
+        ),
+      );
+    }
 
     handleClose();
   };
