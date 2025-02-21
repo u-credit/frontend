@@ -3,14 +3,19 @@ import { useEffect, useState } from 'react';
 import UploadTranscriptPage from './components/UploadTranscriptPage';
 import RecheckPage from './components/RecheckPage';
 import { initSelectOption, SelectOption } from '@/types';
-import { CategoryGroup } from '@/Interfaces/transcript.interface';
-import { fetchListCategory } from '@/api/transcriptApi';
-import SummaryPage from './components/SummaryPage';
+import { fetchListCategory, fetchTranscript } from '@/api/transcriptApi';
+import SummaryPage from './components/summary/SummaryPage';
 import TranscriptProvider, {
   useTranscriptContext,
 } from '@/app/contexts/TranscriptContext';
-import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectUser } from '@/features/auth/authSlice';
+import { AppDispatch, RootState } from '@/features/store';
+import {
+  fetchTranscriptSubject,
+  setCurrentPage,
+} from '@/features/transcriptSlice';
+import { Loading } from '@/components';
 
 export default function TranscriptWrapper() {
   return (
@@ -21,38 +26,40 @@ export default function TranscriptWrapper() {
 }
 
 function Transcript() {
+  const dispatch = useDispatch<AppDispatch>();
   const {
-    categoryOptions,
     setCategoryOptions,
     selectedCurriGroup,
-    setSelectedCurriGroup,
     setListCategory,
-    selectedCategory,
     setSelectCategory,
   } = useTranscriptContext();
-
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-
-  const [currentSection, setCurrentSection] = useState<string>('upload');
+  const user = useSelector(selectUser);
+  const currentState = useSelector(
+    (state: RootState) => state.transcript.currentPage,
+  );
 
   const [file, setFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    console.log('isAuthenticated', isAuthenticated);
-  }, []);
-
   const handleNext = (section: string) => {
-    setCurrentSection(section);
+    if (section === 'summary') {
+      dispatch(fetchTranscriptSubject());
+    }
+    dispatch(setCurrentPage(section));
   };
 
   useEffect(() => {
     const loadCategory = async () => {
       try {
         const params = {
-          faculty: selectedCurriGroup.faculty.value,
-          department: selectedCurriGroup.department.value,
-          curriculum: selectedCurriGroup.curriculum.value,
-          curriculumYear: selectedCurriGroup.curriculumYear.value,
+          faculty: selectedCurriGroup.faculty.value || user?.faculty_id || '',
+          department:
+            selectedCurriGroup.department.value || user?.department_id || '',
+          curriculum:
+            selectedCurriGroup.curriculum.value || user?.curr2_id || '',
+          curriculumYear:
+            selectedCurriGroup.curriculumYear.value ||
+            user?.curriculum_year ||
+            '',
         };
         const resp = await fetchListCategory(params);
         const data = resp?.data || [];
@@ -86,9 +93,17 @@ function Transcript() {
       subgroup: initSelectOption(),
       childgroup: initSelectOption(),
     });
-  }, [selectedCurriGroup]);
+  }, [selectedCurriGroup, user]);
 
-  if (currentSection === 'summary') {
+  if (currentState === '') {
+    return (
+      <main className="p-10 bg-white">
+        <Loading />
+      </main>
+    );
+  }
+
+  if (currentState === 'summary') {
     return <SummaryPage onNext={(state: string) => handleNext(state)} />;
   }
 
@@ -96,15 +111,20 @@ function Transcript() {
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
       <div className="w-full border-solid md:my-[10px]">
         <div className="bg-white h-full md:rounded-3xl p-10">
-          {currentSection === 'upload' && (
+          {currentState === 'upload' && (
             <UploadTranscriptPage
               file={file}
               setFile={setFile}
               onNext={() => handleNext('recheck')}
             />
           )}
-          {currentSection === 'recheck' && (
+          {currentState === 'recheck' && (
             <RecheckPage file={file!} onNext={() => handleNext('summary')} />
+          )}
+          {currentState === 'pleaseLogin' && (
+            <div className="flex flex-col items-center justify-center h-full">
+              <span className="text-2xl font-bold">กรุณาเข้าสู่ระบบ</span>
+            </div>
           )}
         </div>
       </div>

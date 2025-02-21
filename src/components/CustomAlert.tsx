@@ -1,51 +1,67 @@
 import React from 'react';
-import { Alert, AlertTitle, Snackbar } from '@mui/material';
+import { Alert, Snackbar, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/features/store';
+import { hideAlert } from '@/features/alertSlice';
 
-interface CustomAlertProps {
-  open: boolean;
-  message: string;
-  severity?: 'error' | 'warning' | 'info' | 'success';
-  onClose: () => void;
-  duration?: number;
-}
+const CustomAlert: React.FC = () => {
+  const dispatch = useDispatch();
+  const { message, severity, open } = useSelector(
+    (state: RootState) => state.alert
+  );
 
-const CustomAlert: React.FC<CustomAlertProps> = ({
-  open,
-  message,
-  severity = 'error',
-  onClose,
-  duration = 3000,
-}) => {
   return (
     <Snackbar
       open={open}
-      autoHideDuration={duration}
-      onClose={onClose}
+      autoHideDuration={3000}
+      onClose={(_, reason) => reason !== 'clickaway' && dispatch(hideAlert())}
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
     >
       <Alert
-        onClose={onClose}
-        severity={severity}
+        severity={severity || 'info'}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={() => dispatch(hideAlert())}
+            sx={{ 
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              padding: '4px'
+            }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
         sx={{
           width: '100%',
+          minWidth: '320px',
           boxShadow: 2,
           borderRadius: 2,
-          fontSize: '16px',
+          position: 'relative',
+          padding: '16px 24px',
+          paddingRight: '40px',
           '& .MuiAlert-icon': {
             fontSize: '24px',
+            alignItems: 'center',
+            marginTop: '2px'
           },
+          '& .MuiAlert-message': {
+            padding: '4px 0'
+          }
         }}
       >
-        <AlertTitle
-          sx={{
-            fontSize: '18px',
-            fontFamily: 'Rubik, sans-serif',
-            fontWeight: '600',
-          }}
-        >
-          {severity === 'error' ? 'Error' : 'Success'}
-        </AlertTitle>
-        {message}
+        <div className="flex flex-col">
+          <span className="font-semibold text-sm capitalize mb-1">
+            {severity}
+          </span>
+          <span className="text-sm">
+            {message}
+          </span>
+        </div>
       </Alert>
     </Snackbar>
   );

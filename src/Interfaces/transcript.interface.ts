@@ -1,4 +1,5 @@
 import { SelectOption } from '@/types';
+import { CategoryItem } from './subject.interface';
 
 export interface CategoryGroup {
   category: SelectOption;
@@ -16,8 +17,9 @@ export interface SubjectTranscriptDto {
   subgroup?: number;
   childgroup?: number;
   credit: number;
-  semester: string | null;
-  year: string | null;
+  semester: number | null;
+  year: number | null;
+  categories: CategoryItem[];
 }
 
 export interface RequiredCreditDto {
@@ -29,4 +31,62 @@ export interface RequiredCreditDto {
   c_cat_name: string;
   c_group_name: string;
   c_subgroup_name: string;
+}
+
+export interface CurriculumGroupParams {
+  faculty: string;
+  department: string;
+  curriculum: string;
+  curriculumYear: string;
+}
+
+export interface SubjectProcessDto {
+  subject_id: string;
+  subject_tname: string;
+  subject_ename: string;
+  credit: number;
+  category: number;
+  group: number;
+  subgroup: number;
+  childgroup?: number;
+  semester: string;
+  year: string;
+  categories: CategoryItem[];
+}
+
+export interface CreateTranscriptResponse {
+  user: {
+    faculty_id: string;
+    department_id: string;
+    curr2_id: string;
+    curri_id: string;
+    curriculum_year: string;
+  };
+}
+
+export interface CategoryProcessDto {
+  category: number;
+  group: number;
+  subgroup: number;
+  credit1: number;
+  credit2: number;
+  c_cat_name: string;
+  c_group_name: string;
+  c_subgroup_name: string;
+  earn_credit: number;
+  subjects: SubjectProcessDto[];
+}
+
+export interface GetTranscriptResponse extends CalculatedGroupedSubjectDto {
+  subjects: SubjectProcessDto[];
+}
+
+export interface CalculatedGroupedSubjectDto {
+  groups: CategoryProcessDto[];
+  unmatched: SubjectProcessDto[];
+}
+
+export interface CalculatedSubjectDto {
+  matched: SubjectProcessDto[];
+  unmatched: SubjectProcessDto[];
 }

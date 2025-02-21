@@ -1,5 +1,5 @@
 import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
-import { BookmarkDto, BookmarkItem } from '@/Interfaces';
+import { Bookmark, BookmarkDto, BookmarkItem } from '@/Interfaces';
 
 export const getAllBookmarks = (): BookmarkItem[] => {
   const data = localStorage.getItem('bookmark');
@@ -14,15 +14,14 @@ export const getAllBookmarks = (): BookmarkItem[] => {
   }
 };
 
-export const formatBookmarksDtoToItem = (
-  data: BookmarkDto[],
-): BookmarkItem[] => {
-  return data.map((item: any) => ({
+export const formatBookmarkToItem = (data: Bookmark[]): BookmarkItem[] => {
+  return data.map((item: Bookmark) => ({
     subjectId: item.subject_id,
     semester: Number(item.semester),
     year: Number(item.year),
     section: item.section,
     isShow: item.is_show,
+    detail: item.subject,
   }));
 };
 

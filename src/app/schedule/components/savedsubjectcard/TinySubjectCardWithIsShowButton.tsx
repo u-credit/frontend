@@ -23,17 +23,19 @@ import {
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
+  section: string;
 }
 
 export default function TinySubjectCardWithIsShowButton({
   subjectDetail,
+  section,
 }: SubjectCardProps) {
   const dispatch: AppDispatch = useDispatch();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedSection, setSelectedSection] = useState<string>(section || '');
   const [isBookmarked, setIsBookmarked] = useState(true);
   const [isShow, setIsShow] = useState(false);
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
@@ -54,12 +56,14 @@ export default function TinySubjectCardWithIsShowButton({
 
     if (isBookmarked) {
       dispatch(
-        editBookmark({
-          subjectId: subjectDetail.subject_id,
-          section: value,
-          semester: Number(semester),
-          year: Number(year),
-        }),
+        editBookmark([
+          {
+            subjectId: subjectDetail.subject_id,
+            section: value,
+            semester: Number(semester),
+            year: Number(year),
+          },
+        ]),
       );
 
       if (isAuthenticated) {
@@ -80,13 +84,15 @@ export default function TinySubjectCardWithIsShowButton({
 
     if (isBookmarked) {
       dispatch(
-        editBookmark({
-          subjectId: subjectDetail.subject_id,
-          section: selectedSection,
-          semester: Number(semester),
-          year: Number(year),
-          isShow: isShowInSchedule,
-        }),
+        editBookmark([
+          {
+            subjectId: subjectDetail.subject_id,
+            section: selectedSection,
+            semester: Number(semester),
+            year: Number(year),
+            isShow: isShowInSchedule,
+          },
+        ]),
       );
 
       if (isAuthenticated) {
@@ -163,6 +169,10 @@ export default function TinySubjectCardWithIsShowButton({
     }
   }, [subjectDetail]);
 
+  useEffect(() => {
+    setSelectedSection(section);
+  }, [section]);
+
   return (
     <div className="relative">
       <div className="flex  bg-white rounded-lg border-[1px]  border-gray-300">
@@ -213,7 +223,11 @@ export default function TinySubjectCardWithIsShowButton({
                   {subjectDetail.category &&
                     subjectDetail.category.map((category) => (
                       <Chip
-                        key={category.category_id}
+                        key={
+                          category.category_id +
+                          category.group_name +
+                          category.subgroup_name
+                        }
                         label={`${category.group_name} + ${category.subgroup_name}`}
                         size="small"
                         variant="outlined"

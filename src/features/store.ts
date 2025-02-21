@@ -4,7 +4,10 @@ import authReducer from './auth/authSlice';
 import bookmarkReducer from './bookmark/bookmarkSlice';
 import selectorValueReducer from './selectorValueSlice';
 import reviewReducer from './review/reviewSlice';
-
+import facultyReducer from './facultySlice';
+import transcriptReducer from './transcriptSlice';
+import semesterSettingsReducer from './admin/semesterSettingsSlice';
+import scheduleReducer from './scheduleSlice';
 export const makeStore = () => {
   return configureStore({
     reducer: {
@@ -13,6 +16,10 @@ export const makeStore = () => {
       bookmark: bookmarkReducer,
       selectorValue: selectorValueReducer,
       review: reviewReducer,
+      faculty: facultyReducer,
+      transcript: transcriptReducer,
+      semesterSettings: semesterSettingsReducer,
+      schedule: scheduleReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',
     middleware: (getDefaultMiddleware) =>

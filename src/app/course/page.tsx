@@ -1,5 +1,5 @@
 'use client';
-import { use, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
@@ -8,7 +8,7 @@ import {
   CursorMetaDto,
   ListSubjectQueryParams,
 } from '@/Interfaces';
-import { fetchListSubject, fetchListSubjectByIds } from '@/api/subjectApi';
+import { fetchListSubject } from '@/api/subjectApi';
 import { initSelectOption, SelectOption } from '@/types';
 import {
   BookmarkModal,
@@ -17,35 +17,28 @@ import {
   FilterRow,
 } from './components';
 import { useInView } from 'react-intersection-observer';
-import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
+import { ListSubjectOrderBy, Order, SubjectCategoryEnum } from '@/enums';
 import { fetchListFaculty } from '@/api/facultyApi';
-import { CustomSearchBar, CustomSelect } from '@/components';
+import { CustomSearchBar, CustomSelect, Loading } from '@/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/features/store';
-import {
-  setCurrigroup,
-  setSemester,
-  setYear,
-} from '@/features/selectorValueSlice';
+import { setSemester, setYear } from '@/features/selectorValueSlice';
 import TuneIcon from '@mui/icons-material/Tune';
+import { fetchActiveSetting } from '@/features/admin/semesterSettingsSlice';
 import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
 import {
-  BookmarkStateItem,
   loadBookmarks,
-  saveBookmarks,
-  setBookmarks,
+  loadBookmarksApi,
   updateBookmarksOnCurriChange,
 } from '@/features/bookmark/bookmarkSlice';
-import { addMultipleBookmarkApi, fetchBookmark } from '@/api/bookmarkApi';
+import { addMultipleBookmarkApi } from '@/api/bookmarkApi';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
-import {
-  formatBookmarksDtoToItem,
-  formatFacultyOption,
-  getAllBookmarks,
-} from '@/utils';
+import { formatFacultyOption, getAllBookmarks } from '@/utils';
 import AddBookmarkModal from './components/AddBookmarkModal';
 import Backdrop from '@/components/Backdrop';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { setUserCurriGroupByCurriGroup } from '@/features/facultySlice';
+import { updateUser } from '@/api/userApi';
 
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
@@ -63,7 +56,9 @@ const yearOptions: SelectOption[] = [
 export default function CourseWrapper() {
   return (
     <CourseProvider>
-      <Course />
+      <Suspense fallback={<Loading />}>
+        <Course />
+      </Suspense>
     </CourseProvider>
   );
 }
@@ -73,6 +68,9 @@ function Course() {
   const { listSubjects, setListSubjects } = useCourseContext();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
+  );
+  const selectedCurriGroup = useSelector(
+    (state: RootState) => state.faculty.userCurriGroup,
   );
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [selectedSemester, setSelectedSemester] = useState<string>(semester);
@@ -91,12 +89,12 @@ function Course() {
   const [customEndTimeFilter, setCustomEndTimeFilter] = useState<string>('');
   const [searchValue, setSearchValue] = useState<string>('');
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
-  const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
-    faculty: initSelectOption(),
-    department: initSelectOption(),
-    curriculum: initSelectOption(),
-    curriculumYear: initSelectOption(),
-  });
+  // const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
+  //   faculty: initSelectOption(),
+  //   department: initSelectOption(),
+  //   curriculum: initSelectOption(),
+  //   curriculumYear: initSelectOption(),
+  // });
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
@@ -139,11 +137,11 @@ function Course() {
       }
 
       controllerRef.current = new AbortController();
-      const getCategory = (category: string[]): SubjectCategory => {
-        if (category.length === 2) return SubjectCategory.ALL;
-        else if (category.includes(SubjectCategory.GENERAL))
-          return SubjectCategory.GENERAL;
-        return SubjectCategory.MAJOR;
+      const getCategory = (category: string[]): SubjectCategoryEnum => {
+        if (category.length === 2) return SubjectCategoryEnum.ALL;
+        else if (category.includes(SubjectCategoryEnum.GENERAL))
+          return SubjectCategoryEnum.GENERAL;
+        return SubjectCategoryEnum.MAJOR;
       };
 
       const getSubjectParams = (
@@ -263,14 +261,28 @@ function Course() {
     document.documentElement.style.overflowY = 'auto';
   }, []);
 
+  // useEffect(() => {
+  //   if (userCurriGroup) {
+  //     setSelectedCurriGroup(userCurriGroup);
+  //   }
+  // }, [userCurriGroup]);
+
+  useEffect(() => {
+    loadSubjects({ isLoadMore: false });
+  }, [
+    selectedSemester,
+    selectedYear,
+    selectedCurriGroup.faculty.value,
+    selectedCurriGroup.department.value,
+    selectedCurriGroup.curriculum.value,
+    selectedCurriGroup.curriculumYear.value,
+  ]);
+
   useEffect(() => {
     if (changeFromDelete) return;
     if (isFirstLoad) return;
     loadSubjects({ isLoadMore: false });
   }, [
-    selectedSemester,
-    selectedYear,
-    selectedCurriGroup,
     filterValues.courseCategory,
     filterValues.classDay,
     filterValues.classTime,
@@ -300,6 +312,19 @@ function Course() {
       setChangeFromDelete(false);
     }
   }, [filterValues, customStartTimeFilter, customEndTimeFilter]);
+
+  useEffect(() => {
+    const initializeSettings = async () => {
+      if (!semester || !year || semester === '0' || year === '0') {
+        try {
+          dispatch(fetchActiveSetting());
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    };
+    initializeSettings();
+  }, []);
 
   const handleSearchValueChange = (value: string) => setSearchValue(value);
 
@@ -381,74 +406,47 @@ function Course() {
     setSendCustomTime(false);
     setChangeFromDelete(true);
   };
-  const handleApplyCurriGroup = (curriGroup: CurriGroup) => {
-    setSelectedCurriGroup(
-      curriGroup
-        ? {
-            faculty: curriGroup.faculty,
-            department: curriGroup.department,
-            curriculum: curriGroup.curriculum,
-            curriculumYear: curriGroup.curriculumYear,
-          }
-        : {
-            faculty: initSelectOption(),
-            department: initSelectOption(),
-            curriculum: initSelectOption(),
-            curriculumYear: initSelectOption(),
-          },
-    );
-    dispatch(setCurrigroup(curriGroup));
+  const handleApplyCurriGroup = async (curriGroup: CurriGroup) => {
+    // setSelectedCurriGroup(
+    //   curriGroup
+    //     ? {
+    //         faculty: curriGroup.faculty,
+    //         department: curriGroup.department,
+    //         curriculum: curriGroup.curriculum,
+    //         curriculumYear: curriGroup.curriculumYear,
+    //       }
+    //     : {
+    //         faculty: initSelectOption(),
+    //         department: initSelectOption(),
+    //         curriculum: initSelectOption(),
+    //         curriculumYear: initSelectOption(),
+    //       },
+    // );
+
+    await updateUser({
+      facultyId: curriGroup.faculty.value,
+      departmentId: curriGroup.department.value,
+      curriculumId: curriGroup.curriculum.value,
+      curriculumYear: curriGroup.curriculumYear.value,
+    });
+    dispatch(setUserCurriGroupByCurriGroup(curriGroup));
     dispatch(updateBookmarksOnCurriChange());
   };
 
   useEffect(() => {
     if (openAddBookmarkModal === true) return;
-    const loadBookmark = async () => {
+    const addBookmark = async () => {
       try {
         if (addMultipleBookmark) {
           await addMultipleBookmarkApi(getAllBookmarks());
           setAddMultipleBookmark(false);
         }
-        const response = await fetchBookmark({
-          semester: Number(semester),
-          year: Number(year),
-        });
-        const data = response?.data || [];
-        const formatData = formatBookmarksDtoToItem(data);
-        const response2 = (
-          await fetchListSubjectByIds({
-            semester: Number(semester),
-            year: Number(year),
-            subjectIds: [...formatData.map((item) => item.subjectId)],
-          })
-        ).data;
-
-        if (response.data.length > 0) {
-          const updatedBookmarksWithDetail: BookmarkStateItem[] =
-            formatData.map((item) => {
-              const subject = response2.find(
-                (subject) => subject.subject_id === item.subjectId,
-              );
-              return {
-                ...item,
-                detail: subject,
-              };
-            });
-
-          saveBookmarks(semester, year, updatedBookmarksWithDetail);
-          dispatch(setBookmarks(updatedBookmarksWithDetail));
-        } else {
-          saveBookmarks(semester, year, formatData);
-          dispatch(setBookmarks(formatData));
-          console.log('No subject details found for bookmarks');
-        }
-      } catch (error) {
-        console.error('Error loading bookmarks:', error);
-      }
+      } catch (error) {}
     };
 
     if (isAuthenticated) {
-      loadBookmark();
+      addBookmark();
+      dispatch(loadBookmarksApi());
     } else {
       dispatch(loadBookmarks());
     }

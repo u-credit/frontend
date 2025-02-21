@@ -14,6 +14,7 @@ import { useState } from 'react';
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { formatDisplayCalculation } from '@/utils';
 export interface Row {
   id: number;
   name: string;
@@ -70,15 +71,17 @@ function Row(props: {
           </IconButton>
           <div className="pl-1">{row.name}</div>
         </TableCell>
-        <TableCell align="center">{row.requiredCredit || 0}</TableCell>
-        <TableCell align="center">{row.currentCredit || 0}</TableCell>
+        <TableCell align="center">{row.requiredCredit || '-'}</TableCell>
+        <TableCell align="center">{row.currentCredit || '-'}</TableCell>
         {showScheduleCredit && (
-          <TableCell align="center">{row.scheduledCredit || 0}</TableCell>
+          <TableCell align="center">{row.scheduledCredit || '-'}</TableCell>
         )}
         <TableCell align="center">
           {showScheduleCredit
-            ? row.creditToComplete - row.scheduledCredit
-            : row.creditToComplete}
+            ? formatDisplayCalculation(
+                row.creditToComplete - row.scheduledCredit,
+              )
+            : formatDisplayCalculation(row.creditToComplete)}
         </TableCell>
       </TableRow>
       <TableRow>

@@ -1,4 +1,4 @@
-import { ListSubjectOrderBy, Order, SubjectCategory } from '@/enums';
+import { ListSubjectOrderBy, Order, SubjectCategoryEnum } from '@/enums';
 
 export interface SubjectDetail {
   subjectCode: string;
@@ -35,17 +35,16 @@ export interface ListSubjectQueryParams {
   categoryCurriculumId?: string;
   categoryCurriculumYear?: string;
   yearLevel?: number;
-  subjectCategory?: SubjectCategory;
+  subjectCategory?: SubjectCategoryEnum;
 }
 
 export interface ListSubjectByIdsQueryParams {
   semester?: number;
   year?: number;
   subjectIds: string[];
-  facultyId?: string;
-  department?: string;
-  curriculumId?: string;
-  curriculumYear?: string;
+  categoryFacultyId?: string;
+  categoryCurriculumId?: string;
+  categoryCurriculumYear?: string;
 }
 
 export interface TeacherDto {
@@ -105,4 +104,19 @@ export interface SubjectDto {
   prerequisite?: string[];
   teach_table: TeachTableDto[];
   category?: CategoryDto[];
+}
+
+export interface CategoryItem {
+  subjectId: string;
+  category: number;
+  categoryName: string;
+  group: number;
+  groupName: string;
+  subgroup: number;
+  subgroupName: string;
+}
+
+export interface SubjectCategory {
+  subjectId: string;
+  categories: CategoryItem[];
 }

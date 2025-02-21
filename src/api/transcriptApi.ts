@@ -1,6 +1,10 @@
 import { API_PATHS } from '@/constants';
-import { Response } from '@/Interfaces';
-import { RequiredCreditDto } from '@/Interfaces/transcript.interface';
+import {
+  CreateTranscriptResponse,
+  GetTranscriptResponse,
+  RequiredCreditDto,
+  Response,
+} from '@/Interfaces';
 
 export const uploadTranscriptFindStudentInfo = async (file: File) => {
   const formData = new FormData();
@@ -93,7 +97,9 @@ export const fetchRequiredCredit = async (
   return res.json();
 };
 
-export const createTranscript = async (data: any) => {
+export const createTranscript = async (
+  data: any,
+): Promise<Response<CreateTranscriptResponse>> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/create/transcript`,
     {
@@ -109,7 +115,9 @@ export const createTranscript = async (data: any) => {
   return res.json();
 };
 
-export const fetchTranscript = async () => {
+export const fetchTranscript = async (): Promise<
+  Response<GetTranscriptResponse>
+> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}`,
     {
@@ -122,4 +130,18 @@ export const fetchTranscript = async () => {
   );
 
   return res.json();
+};
+
+export const deleteTranscript = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}`,
+    {
+      method: 'delete',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    },
+  );
+  return res;
 };

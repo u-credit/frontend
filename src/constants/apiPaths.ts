@@ -1,3 +1,5 @@
+import { use } from 'react';
+
 export const API_PATHS = {
   accessToken: '/auth/accessToken',
   bookmark: '/bookmark',
@@ -10,7 +12,10 @@ export const API_PATHS = {
   logout: '/auth/logout',
   transcript: '/transcript',
   reviews: '/api/reviews',
-  reviewOptions: '/api/reviews/options'
+  reviewOptions: '/api/reviews/options',
+  semesterSettings: '/api/semester-settings',
+  roles: '/roles',
+  user: '/user',
 };
 
 export const ROUTES = {

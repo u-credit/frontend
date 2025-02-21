@@ -6,8 +6,9 @@ import theme from '@/utils/mui-theme';
 import CssBaseline from '@mui/material/CssBaseline';
 import Navbar from '@/components/common/NavBar';
 import StoreProvider from './StoreProvider';
-import AlertNotification from '@/components/AlertNotification';
+//import AlertNotification from '@/components/AlertNotification';
 import { useAuth } from '@/hooks/useAuth';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function ClientLayout({
   children,
@@ -24,7 +25,7 @@ export default function ClientLayout({
           <div className="h-screen bg-gray-100 overflow-auto ">
             <div className="mt-12 max-w-7xl mx-auto">{children}</div>
           </div>
-          <AlertNotification />
+          <CustomAlert />
         </ThemeProvider>
       </StoreProvider>
     </AppRouterCacheProvider>

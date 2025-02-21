@@ -23,6 +23,7 @@ const SavedItems: React.FC<SavedItemsProps> = () => {
               <TinySubjectCardWithIsShowButton
                 key={subject.subjectId}
                 subjectDetail={subject.detail as SubjectDto}
+                section={subject.section || ''}
               />
             ))}
         </div>

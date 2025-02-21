@@ -52,12 +52,14 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
 
     if (isBookmarked) {
       dispatch(
-        editBookmark({
-          subjectId: subjectDetail.subject_id,
-          section: value,
-          semester: Number(semester),
-          year: Number(year),
-        }),
+        editBookmark([
+          {
+            subjectId: subjectDetail.subject_id,
+            section: value,
+            semester: Number(semester),
+            year: Number(year),
+          },
+        ]),
       );
 
       if (isAuthenticated) {

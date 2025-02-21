@@ -1,7 +1,9 @@
+//frontend/src/api/reviewApi.ts
 import { API_PATHS } from '@/constants';
 import {
   Review,
   CreateReviewDto,
+  UpdateReviewDto,
   ReviewResponse,
   TeachingOptionsResponse,
 } from '@/Interfaces/review.interface';
@@ -43,8 +45,8 @@ export const getReviews = async (
     return {
       ...data,
       data: {
-        reviews: data.data.reviews,
-        averageRating: Number(data.data.averageRating) || 0,
+        reviews: data.data?.reviews,
+        averageRating: Number(data.data?.averageRating) || 0,
       },
     };
   } catch (error) {
@@ -95,6 +97,77 @@ export const getTeachingOptions = async (
         semesters: [],
         teachers: [],
       },
+    };
+  }
+};
+
+export const updateReview = async (
+  reviewId: string,
+  data: UpdateReviewDto,
+): Promise<Response<Review>> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.reviews}/${reviewId}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    },
+  );
+  return res.json();
+};
+
+export const deleteReview = async (
+  reviewId: string,
+): Promise<Response<void>> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.reviews}/${reviewId}`,
+    {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    },
+  );
+  return res.json();
+};
+
+export const editReview = async (
+  reviewId: string,
+  data: UpdateReviewDto,
+): Promise<Response<Review>> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews/${reviewId}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    },
+  );
+  return response.json();
+};
+
+export const getMyReviewsFromTranscriptSubject = async (): Promise<
+  Response<any>
+> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.reviews}/my-ts-subject`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    );
+    return res.json();
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return {
+      data: [],
     };
   }
 };
