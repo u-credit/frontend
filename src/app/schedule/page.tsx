@@ -10,6 +10,7 @@ import { AppDispatch, RootState } from '@/features/store';
 import { useEffect, useState } from 'react';
 import SortedExamSchedule from '../schedule/components/examschedule/SortedExamSchedule';
 import { useDispatch, useSelector } from 'react-redux';
+import { BookmarkItem } from '@/Interfaces';
 import {
   selectScheduledItems,
   summaryCategoryShedule,
