@@ -10,11 +10,12 @@ import {
   TableHead,
   colors,
 } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { formatDisplayCalculation } from '@/utils';
+
 export interface Row {
   id: number;
   name: string;
@@ -29,9 +30,21 @@ function Row(props: {
   row: Row;
   showScheduleCredit?: boolean;
   depth?: number;
+  openInitially?: boolean;
 }) {
-  const { row, showScheduleCredit = false, depth = 0 } = props;
-  const [openGroup, setOpenGroup] = useState(false);
+  const {
+    row,
+    showScheduleCredit = false,
+    depth = 0,
+    openInitially = false,
+  } = props;
+  const [openGroup, setOpenGroup] = useState(openInitially);
+
+  useEffect(() => {
+    if (depth === 0 && row.children) {
+      setOpenGroup(true);
+    }
+  }, [row.children, depth]);
 
   return (
     <>
@@ -102,6 +115,7 @@ function Row(props: {
                       row={children}
                       showScheduleCredit={showScheduleCredit}
                       depth={depth + 1}
+                      openInitially={openInitially}
                     />
                   ))}
               </TableBody>
@@ -131,7 +145,6 @@ export default function SummaryTable({
         borderRadius: '10px 10px 0px 0px',
         '& td': { border: 'none', padding: '8px 16px 8px 16px' },
         '& th': { padding: '8px 32px 8px 32px' },
-        // whiteSpace: 'nowrap',
         overflowX: 'auto',
       }}
     >
@@ -172,6 +185,7 @@ export default function SummaryTable({
               key={row.id}
               row={row}
               showScheduleCredit={showScheduleCredit}
+              openInitially={true}
             />
           ))}
         </TableBody>

@@ -91,8 +91,8 @@ function SummaryPage({ onNext }: SummaryPageProps) {
   const fetchCalculateScheduledCredit = async (): Promise<
     ScheduleStateItem[]
   > => {
-    const data = await dispatch(fetchCalculateSchedule(true)).unwrap();
-    return data.matched;
+    const data = await dispatch(fetchCalculateSchedule(false)).unwrap();
+    return data.items;
   };
 
   const fetchData = async (listCategory: any) => {

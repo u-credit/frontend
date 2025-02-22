@@ -1,9 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from './store';
-import { deleteTranscript, fetchTranscript } from '@/api/transcriptApi';
+import {
+  deleteTranscript,
+  fetchTranscript,
+  updateCalculateTranscript,
+} from '@/api/transcriptApi';
 import {
   CategoryProcessDto,
   SubjectTranscriptDto,
+  UpdateRecalculateDto,
 } from '@/Interfaces/transcript.interface';
 
 export interface TranscriptItem extends SubjectTranscriptDto {
@@ -44,6 +49,19 @@ export const fetchTranscriptSubject = createAsyncThunk(
     dispatch(setInitialPage('summary'));
     dispatch(setCurrentPage('summary'));
 
+    const matched = data.groups.map((group) => group.subjects).flat();
+    dispatch(setmatched(matched));
+    dispatch(setTranscriptData(data.subjects));
+    dispatch(setGroups(data.groups));
+    dispatch(setUnmatched(data.unmatched));
+    return data;
+  },
+);
+
+export const updateCalculateTranscriptApi = createAsyncThunk(
+  'transcript/updateCalculate',
+  async (update: UpdateRecalculateDto, { dispatch }) => {
+    const data = (await updateCalculateTranscript(update)).data;
     const matched = data.groups.map((group) => group.subjects).flat();
     dispatch(setmatched(matched));
     dispatch(setTranscriptData(data.subjects));

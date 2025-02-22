@@ -8,6 +8,7 @@ import {
   CalculateBookmarkRequest,
   CalculatedSubjectDto,
   Response,
+  UpdateRecalculateBookmarkDto,
 } from '@/Interfaces';
 
 export const fetchBookmark = async (
@@ -60,19 +61,26 @@ export const addBookmarkApi = async (
 export const deleteBookmarkApi = async (
   params: BookmarkItem,
 ): Promise<Response<any>> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(params),
       },
-      credentials: 'include',
-      body: JSON.stringify(params),
-    },
-  );
+    );
 
-  return res.json();
+    return res.json();
+  } catch (e) {
+    return {
+      status: false,
+      data: null,
+    };
+  }
 };
 
 export const updateBookmarkApi = async (
@@ -142,35 +150,89 @@ export const addMultipleBookmarkApi = async (
 export const calculateBookmark = async (
   params: CalculateBookmarkRequest,
 ): Promise<Response<CalculatedSubjectDto>> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/update`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(params),
       },
-      credentials: 'include',
-      body: JSON.stringify(params),
-    },
-  );
+    );
 
-  return res.json();
+    return res.json();
+  } catch (e) {
+    return {
+      status: false,
+      data: {
+        groups: [],
+        matched: [],
+        unmatched: [],
+        custom: [],
+      },
+    };
+  }
 };
 
 export const calculateBookmarkBySubject = async (
   params: CalculateBookmarkBySubjectIdRequest,
 ): Promise<Response<CalculatedSubjectDto>> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/subject`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/update/by-subject`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(params),
       },
-      credentials: 'include',
-      body: JSON.stringify(params),
-    },
-  );
+    );
 
-  return res.json();
+    return res.json();
+  } catch (e) {
+    return {
+      status: false,
+      data: {
+        groups: [],
+        matched: [],
+        unmatched: [],
+        custom: [],
+      },
+    };
+  }
+};
+
+export const updateAndRecalculateBookmark = async (
+  params: UpdateRecalculateBookmarkDto,
+): Promise<Response<CalculatedSubjectDto>> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/update/recalculate`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(params),
+      },
+    );
+
+    return res.json();
+  } catch (e) {
+    return {
+      status: false,
+      data: {
+        groups: [],
+        matched: [],
+        unmatched: [],
+        custom: [],
+      },
+    };
+  }
 };

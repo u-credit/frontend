@@ -4,6 +4,7 @@ import {
   GetTranscriptResponse,
   RequiredCreditDto,
   Response,
+  UpdateRecalculateDto,
 } from '@/Interfaces';
 
 export const uploadTranscriptFindStudentInfo = async (file: File) => {
@@ -144,4 +145,31 @@ export const deleteTranscript = async () => {
     },
   );
   return res;
+};
+
+export const updateCalculateTranscript = async (
+  data: UpdateRecalculateDto,
+): Promise<Response<GetTranscriptResponse>> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.transcript}/update/recalculate`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      },
+    );
+    return res.json();
+  } catch (error) {
+    return {
+      data: {
+        subjects: [],
+        unmatched: [],
+        groups: [],
+      },
+    };
+  }
 };

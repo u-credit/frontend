@@ -1,4 +1,8 @@
-import { SubjectProcessDto } from '@/Interfaces';
+import {
+  CategoryProcessDto,
+  SubjectProcessDto,
+  UpdateRecalculateBookmarkDto,
+} from '@/Interfaces';
 import {
   createSlice,
   PayloadAction,
@@ -7,7 +11,10 @@ import {
   isPending,
   isRejected,
 } from '@reduxjs/toolkit';
-import { calculateBookmark } from '@/api/bookmarkApi';
+import {
+  calculateBookmark,
+  updateAndRecalculateBookmark,
+} from '@/api/bookmarkApi';
 import { loadBookmarksApi } from './bookmark/bookmarkSlice';
 
 //ใช้แค่สำหรับ การสรุปทรานสคริปต์ที่ schedule เอามาทุกปี ที่ isShow = true ซึ่งต่างจากหน้าอื่น
@@ -16,16 +23,20 @@ export interface ScheduleStateItem extends SubjectProcessDto {}
 
 export interface ScheduleState {
   items: ScheduleStateItem[];
+  groups: CategoryProcessDto[];
   matched: ScheduleStateItem[];
   unmatched: ScheduleStateItem[];
+  custom: ScheduleStateItem[];
   loading?: boolean;
   error?: string | null;
 }
 
 const initialState: ScheduleState = {
   items: [],
+  groups: [],
   matched: [],
   unmatched: [],
+  custom: [],
   loading: false,
   error: null,
 };
@@ -75,16 +86,36 @@ export const fetchCalculateSchedule = createAsyncThunk(
     //   fetchDetialSubject(unmatchItems),
     // ).unwrap();
 
-    const concat = match.concat(unmatch);
+    const concat = match.concat(unmatch).concat(data.custom);
+    dispatch(setGroups(data.groups));
+    dispatch(setCustom(data.custom));
     dispatch(setItems(concat));
     dispatch(setMatchItems(match));
     dispatch(setUnmatchItems(unmatch));
     dispatch(loadBookmarksApi());
     return {
+      groups: data.groups,
       items: concat,
       matched: match,
       unmatched: unmatch,
+      custom: data.custom,
     };
+  },
+);
+
+export const updateAndRecalculateBookmarkApi = createAsyncThunk(
+  'schedule/updateAndRecalculate',
+  async (params: UpdateRecalculateBookmarkDto, { dispatch }) => {
+    const data = (await updateAndRecalculateBookmark(params)).data;
+
+    const match = data.matched;
+    const unmatch = data.unmatched;
+    const concat = match.concat(unmatch).concat(data.custom);
+    dispatch(setItems(concat));
+    dispatch(setMatchItems(match));
+    dispatch(setUnmatchItems(unmatch));
+    dispatch(loadBookmarksApi());
+    return data;
   },
 );
 
@@ -100,6 +131,12 @@ const scheduleSlice = createSlice({
     },
     setItems: (state, action: PayloadAction<ScheduleStateItem[]>) => {
       state.items = action.payload;
+    },
+    setGroups: (state, action: PayloadAction<CategoryProcessDto[]>) => {
+      state.groups = action.payload;
+    },
+    setCustom: (state, action: PayloadAction<ScheduleStateItem[]>) => {
+      state.custom = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -119,8 +156,13 @@ const scheduleSlice = createSlice({
   },
 });
 
-export const { setMatchItems, setUnmatchItems, setItems } =
-  scheduleSlice.actions;
+export const {
+  setMatchItems,
+  setUnmatchItems,
+  setItems,
+  setGroups,
+  setCustom,
+} = scheduleSlice.actions;
 export default scheduleSlice.reducer;
 
 export const selectAllSchedule = (state: { schedule: ScheduleState }) =>
