@@ -41,7 +41,7 @@ function Row(props: {
   const [openGroup, setOpenGroup] = useState(openInitially);
 
   useEffect(() => {
-    if (depth === 0 && row.children) {
+    if (depth <= 0 && row.children) {
       setOpenGroup(true);
     }
   }, [row.children, depth]);
@@ -185,7 +185,7 @@ export default function SummaryTable({
               key={row.id}
               row={row}
               showScheduleCredit={showScheduleCredit}
-              openInitially={true}
+              openInitially={false}
             />
           ))}
         </TableBody>

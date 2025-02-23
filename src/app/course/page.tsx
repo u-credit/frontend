@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, use, useCallback, useEffect, useRef, useState } from 'react';
 import { Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Sidebar, { FilterGroup } from './components/Sidebar';
@@ -29,16 +29,19 @@ import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
 import {
   loadBookmarks,
   loadBookmarksApi,
+  selectIsBackupMatchBookmark,
+  setBackup,
   updateBookmarksOnCurriChange,
 } from '@/features/bookmark/bookmarkSlice';
 import { addMultipleBookmarkApi } from '@/api/bookmarkApi';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
-import { formatFacultyOption, getAllBookmarks } from '@/utils';
+import { formatFacultyOption, getAllBackupBookmarks } from '@/utils';
 import AddBookmarkModal from './components/AddBookmarkModal';
 import Backdrop from '@/components/Backdrop';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { setUserCurriGroupByCurriGroup } from '@/features/facultySlice';
 import { updateUser } from '@/api/userApi';
+import { log } from 'console';
 
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
@@ -72,6 +75,8 @@ function Course() {
   const selectedCurriGroup = useSelector(
     (state: RootState) => state.faculty.userCurriGroup,
   );
+  const isBackupMatchBookmark = useSelector(selectIsBackupMatchBookmark);
+
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [selectedSemester, setSelectedSemester] = useState<string>(semester);
   const [selectedYear, setSelectedYear] = useState<string>(year);
@@ -101,14 +106,17 @@ function Course() {
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const { ref, inView } = useInView();
   const [openBookmarkModal, setOpenBookmarkModal] = useState(false);
-  const [openAddBookmarkModal, setOpenAddBookmarkModal] = useState(false);
+  const [openAddBookmarkModal, setOpenAddBookmarkModal] = useState<
+    boolean | null
+  >(null);
   const [sendCustomTime, setSendCustomTime] = useState<boolean>(false);
   const [totalSearchSubject, setTotalSearchSubject] = useState<number | null>(
     null,
   );
   const [isOpenFilter, setIsOpenFilter] = useState(false);
   const [changeFromDelete, setChangeFromDelete] = useState(false);
-  const [clickBackdropToClose, setClickBackdropToClose] = useState(true);
+  const [clickBackdropToClose, setClickBackdropToClose] =
+    useState(!isAuthenticated);
   const controllerRef = useRef<AbortController | null>(null);
   const [addMultipleBookmark, setAddMultipleBookmark] = useState<
     boolean | null
@@ -434,11 +442,13 @@ function Course() {
   };
 
   useEffect(() => {
-    if (openAddBookmarkModal === true) return;
+    console.log('addMultipleBookmark', addMultipleBookmark);
+    console.log('openAddBookmarkModal', openAddBookmarkModal);
+    if (openAddBookmarkModal === true || addMultipleBookmark === null) return;
     const addBookmark = async () => {
       try {
         if (addMultipleBookmark) {
-          await addMultipleBookmarkApi(getAllBookmarks());
+          await addMultipleBookmarkApi(getAllBackupBookmarks());
           setAddMultipleBookmark(false);
         }
       } catch (error) {}
@@ -446,6 +456,7 @@ function Course() {
 
     if (isAuthenticated) {
       addBookmark();
+      dispatch(setBackup(null));
       dispatch(loadBookmarksApi());
     } else {
       dispatch(loadBookmarks());
@@ -455,21 +466,34 @@ function Course() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+
+  const backupBookmark = useSelector(
+    (state: RootState) => state.bookmark.backup,
+  );
   useEffect(() => {
     const login = searchParams.get('login');
-    if (!localStorage.getItem('bookmark')) {
-      setAddMultipleBookmark(false);
-    } else {
-      if (login === 'true') {
+    console.log('isbackupMatchBookmark', isBackupMatchBookmark);
+    console.log('backupBookmark', backupBookmark);
+    if (!login && openAddBookmarkModal === null) {
+      console.log('wtfbackupBookmark', backupBookmark);
+      setOpenAddBookmarkModal(false);
+      setClickBackdropToClose(true);
+    } else if (login && openAddBookmarkModal === null) {
+      if (backupBookmark === null) return;
+      if (!isBackupMatchBookmark) {
+        console.log('backupBookmark', backupBookmark);
+        console.log('isBackupMatchBookmark', isBackupMatchBookmark);
         setOpenAddBookmarkModal(true);
+      } else {
+        setOpenAddBookmarkModal(false);
       }
-    }
-    const updatedSearchParams = new URLSearchParams(searchParams.toString());
-    updatedSearchParams.delete('login');
+      const updatedSearchParams = new URLSearchParams(searchParams.toString());
+      updatedSearchParams.delete('login');
 
-    const newUrl = `${pathname}?${updatedSearchParams.toString()}`;
-    router.replace(newUrl);
-  }, [pathname, router, searchParams]);
+      const newUrl = `${pathname}?${updatedSearchParams.toString()}`;
+      router.replace(newUrl);
+    }
+  }, [pathname, router, searchParams, isBackupMatchBookmark, backupBookmark]);
 
   const handleCloseBackdrop = () => {
     setIsOpenFilter(false);
@@ -477,10 +501,6 @@ function Course() {
     setOpenAddBookmarkModal(false);
     document.documentElement.style.overflowY = 'auto';
   };
-
-  useEffect(() => {
-    setClickBackdropToClose(!openAddBookmarkModal);
-  }, [openAddBookmarkModal]);
 
   return (
     <main className="flex flex-row bg-gray-100 w-full ">
@@ -590,7 +610,12 @@ function Course() {
         </div>
       </div>
       <Backdrop
-        open={isOpenFilter || openBookmarkModal || openAddBookmarkModal}
+        open={
+          isOpenFilter ||
+          openBookmarkModal ||
+          openAddBookmarkModal === null ||
+          openAddBookmarkModal
+        }
         onClose={handleCloseBackdrop}
         clickToClose={clickBackdropToClose}
       />

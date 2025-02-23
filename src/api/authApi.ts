@@ -17,6 +17,7 @@ export const fetchAccessToken = async (): Promise<FetchAccessTokenResponse> => {
   } catch (e) {}
   return {
     access_token: '',
+    session_duration: 0,
     user: {
       id: '',
       username: '',
@@ -31,14 +32,20 @@ export const fetchAccessToken = async (): Promise<FetchAccessTokenResponse> => {
   };
 };
 
-export const fetchLogout = async () => {
+export const fetchLogout = async (): Promise<any> => {
   try {
-    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.logout}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.logout}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       },
-      credentials: 'include',
-    });
-  } catch (e) {}
+    );
+    return response;
+  } catch (e) {
+    return;
+  }
 };

@@ -22,6 +22,7 @@ export default function ClientLayout({
           <CssBaseline />
           <AuthWrapper />
           <Navbar />
+          {/* <Backdrop open={true} onClose={() => {}} /> */}
           <div className="h-screen bg-gray-100 overflow-auto ">
             <div className="mt-12 max-w-7xl mx-auto">{children}</div>
           </div>

@@ -45,10 +45,15 @@ export default function CurriSelectContainer({
   };
   const handleApplyCurri = async () => {
     onClickApplyCurri(selectedCurriGroup);
-    setTimeout(() => {
-      setIsExpanded(false);
-    }, 500);
+    setIsExpanded(false);
   };
+
+  const [hasTranscriptClient, setHasTranscriptClient] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    setHasTranscriptClient(hasTranscript);
+  }, [hasTranscript]);
 
   return (
     <div className="flex bg-white w-11/12 lg:max-w-5xl text-primary-400 rounded-b-lg mx-auto lg:ml-64 lg:mr-4 mb-4 p-4">
@@ -87,7 +92,7 @@ export default function CurriSelectContainer({
           }}
         >
           <span className="text-primary-400 font-semibold">
-            {hasTranscript
+            {hasTranscriptClient
               ? '*ระบบจะใช้หลักสูตรจากทรานสคริปต์เมื่อคุณมีข้อมูลทรานสคริปต์อัปโหลดไว้'
               : '*เพื่อการแสดงผลรายละเอียดหมวดหมู่รายวิชาที่ละเอียดมากยิ่งขึ้นโปรดกรอกรายละเอียดหลักสูตรของคุณ'}
           </span>
@@ -97,7 +102,7 @@ export default function CurriSelectContainer({
             <span className="font-semibold whitespace-nowrap content-center">
               หลักสูตรของคุณ
             </span>
-            {hasTranscript ? (
+            {hasTranscriptClient ? (
               <CurriSelectGroupDisable
                 selectedCurriGroup={userFacultyOptions}
               />

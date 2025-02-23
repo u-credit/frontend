@@ -155,6 +155,7 @@ export default function NavBar() {
     (state: RootState) => state.transcript.initialPage,
   );
   const handleActivePageChange = (path: string) => {
+    
     if (path === '/transcript') {
       if (hasTranscript) {
         dispatch(setCurrentPage(initialPage));

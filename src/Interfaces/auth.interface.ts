@@ -9,5 +9,6 @@ export interface AuthDto {
 
 export interface FetchAccessTokenResponse {
   access_token: string;
+  session_duration: number;
   user: User;
 }
