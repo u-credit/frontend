@@ -52,7 +52,7 @@ export default function CurriSelectContainer({
     useState<boolean>(false);
 
   useEffect(() => {
-    setHasTranscriptClient(hasTranscript);
+    setHasTranscriptClient(hasTranscript ?? false);
   }, [hasTranscript]);
 
   return (
