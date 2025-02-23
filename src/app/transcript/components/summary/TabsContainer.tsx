@@ -97,16 +97,19 @@ const TabsContainer = ({}: TabsContainerProps) => {
           sx={{
             fontWeight: '600',
           }}
+          variant="scrollable"
         >
           <Tab label="รายวิชาที่เคยลงทะเบียนเรียน" id="transcrip-tab" />
           <Tab label="รายวิชาจากตารางเรียน" id="schedule-tab" />
         </Tabs>
       </div>
       <div className="flex gap-x-5 max-w-[500px]">
-        <CustomSearchBar
-          onSearchValueChange={handleSearchValueChange}
-          onSearchAction={handleSearchBar}
-        />
+        <div className="w-44 md:w-full">
+          <CustomSearchBar
+            onSearchValueChange={handleSearchValueChange}
+            onSearchAction={handleSearchBar}
+          />
+        </div>
         <CustomSelect
           onSelectedValueChange={handleSelectSemesterYear}
           selectOptions={semesterYearOptions}

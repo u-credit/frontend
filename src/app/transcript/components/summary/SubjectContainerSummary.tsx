@@ -113,6 +113,7 @@ const SubjectContainer = ({
         value={activeTab}
         onChange={handleChange}
         aria-label="basic tabs example"
+        variant="scrollable"
         sx={{
           fontWeight: '600',
         }}
