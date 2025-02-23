@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import Cookies from 'js-cookie';
 import { fetchAccessToken } from '@/api/authApi';
 import { UpdateUser, User } from '@/Interfaces';
+import { handleLogout } from './authAction';
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  tokenExpiration: string | null;
+  tokenExpiration: number | null;
   error: string | null;
   currentRole: 'user' | 'admin';
 }
@@ -27,7 +27,7 @@ const getInitialState = (): AuthState => {
   return {
     isAuthenticated: false,
     user: null,
-    tokenExpiration: Cookies.get('session_duration') || null,
+    tokenExpiration: null,
     error: null,
     currentRole: 'user',
   };
@@ -42,7 +42,7 @@ const authSlice = createSlice({
     login(state, action) {
       state.isAuthenticated = true;
       state.user = action.payload.user;
-      state.tokenExpiration = action.payload.tokenExpiration;
+      state.tokenExpiration = action.payload.session_duration;
       if (action.payload.user?.roles?.includes('admin')) {
         state.currentRole = 'user';
       } else {
@@ -70,7 +70,7 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(refreshAccessToken.fulfilled, (state, action) => {
-        state.tokenExpiration = Cookies.get('session_duration') ?? null;
+        state.tokenExpiration = action.payload?.session_duration ?? null;
         state.user = action.payload?.user ?? null;
         state.error = null;
       })

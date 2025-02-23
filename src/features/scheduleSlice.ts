@@ -22,7 +22,7 @@ import { loadBookmarksApi } from './bookmark/bookmarkSlice';
 export interface ScheduleStateItem extends SubjectProcessDto {}
 
 export interface ScheduleState {
-  items: ScheduleStateItem[];
+  items: ScheduleStateItem[] | null;
   groups: CategoryProcessDto[];
   matched: ScheduleStateItem[];
   unmatched: ScheduleStateItem[];
@@ -32,7 +32,7 @@ export interface ScheduleState {
 }
 
 const initialState: ScheduleState = {
-  items: [],
+  items: null,
   groups: [],
   matched: [],
   unmatched: [],

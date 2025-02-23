@@ -22,10 +22,25 @@ export interface BookmarkStateItem extends BookmarkItem {
 }
 export interface BookmarkState {
   items: BookmarkStateItem[];
+  backup: any | null;
   loading?: boolean;
   error?: string | null;
   isFirstFetch: boolean;
 }
+
+export const loadBackup = createAsyncThunk(
+  'backup/loadBackup',
+  async (_, { dispatch }) => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+
+    const backup = JSON.parse(localStorage.getItem('bookmark') || '{}');
+    localStorage.setItem('backupBookmark', JSON.stringify(backup));
+    dispatch(setBackup(backup));
+    return backup;
+  },
+);
 
 const getBookmarks = (semester: string, year: string) => {
   if (typeof window === 'undefined') {
@@ -80,8 +95,10 @@ export const loadBookmarksApi = createAsyncThunk(
       const formatData = formatBookmarkToItem(data);
       saveBookmarks(semester, year, formatData);
       dispatch(setBookmarks(formatData));
+      return formatData;
     } catch (error) {
       console.error('Error loading bookmarks:', error);
+      return [];
     }
   },
 );
@@ -123,10 +140,10 @@ export const addBookmark = createAsyncThunk(
         saveBookmarks(semester, year, updatedBookmarks);
         dispatch(setBookmarks(updatedBookmarks));
 
-        console.log(
-          'No subject details found for subjectId:',
-          bookmark.subjectId,
-        );
+        // console.log(
+        //   'No subject details found for subjectId:',
+        //   bookmark.subjectId,
+        // );
       }
     }
   },
@@ -214,6 +231,7 @@ export const updateBookmarksOnCurriChange = createAsyncThunk(
 
 const initialState: BookmarkState = {
   items: [],
+  backup: null,
   loading: false,
   error: null,
   isFirstFetch: false,
@@ -225,6 +243,9 @@ const bookmarkSlice = createSlice({
   reducers: {
     setBookmarks: (state, action: PayloadAction<BookmarkStateItem[]>) => {
       state.items = action.payload;
+    },
+    setBackup: (state, action: PayloadAction<BookmarkStateItem[] | null>) => {
+      state.backup = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -248,7 +269,7 @@ const bookmarkSlice = createSlice({
   },
 });
 
-export const { setBookmarks } = bookmarkSlice.actions;
+export const { setBookmarks, setBackup } = bookmarkSlice.actions;
 export default bookmarkSlice.reducer;
 
 export const selectBookmarks = (state: RootState) => state.bookmark.items;

@@ -48,7 +48,7 @@ export default function BookmarkModal({ onClose }: BookmarkModalProps) {
   }, [summaryCredit]);
 
   return (
-    <div className="z-10 flex flex-col bg-white p-5 gap-y-2 lg:gap-y-5 absolute top-[52%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-[10px] max-w-5xl max-h-[90vh] w-11/12 overflow-y-auto ">
+    <div className="z-50 flex flex-col bg-white p-5 gap-y-2 lg:gap-y-5 absolute top-[52%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-[10px] max-w-5xl max-h-[90vh] w-11/12 overflow-y-auto ">
       <div className="flex justify-between items-center">
         <span className="font-bold text-xl">วิชาที่บันทึกไว้</span>
         <div className="flex gap-x-3">

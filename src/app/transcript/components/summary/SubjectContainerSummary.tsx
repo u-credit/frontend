@@ -1,4 +1,4 @@
-import { use, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { formatScheduleStateItemToSummarySubject } from '@/utils';
 import SummarySubjectCard, { SummarySubject } from './SummarySubjectCard';
@@ -37,9 +37,11 @@ const SubjectContainer = ({
       setSubjects(transcript.matched);
       setUnmatchSubjects(transcript.unmatched);
     } else if (subjectFlag === 'schedule') {
-      const formated = formatScheduleStateItemToSummarySubject(schedule.items);
+      const formated = formatScheduleStateItemToSummarySubject(
+        schedule.items || [],
+      );
       const formatedUnmatch = formatScheduleStateItemToSummarySubject(
-        schedule.unmatched,
+        schedule.unmatched || [],
       );
       setSubjects(formated);
       setUnmatchSubjects(formatedUnmatch);
@@ -111,6 +113,7 @@ const SubjectContainer = ({
         value={activeTab}
         onChange={handleChange}
         aria-label="basic tabs example"
+        variant="scrollable"
         sx={{
           fontWeight: '600',
         }}

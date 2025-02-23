@@ -35,7 +35,7 @@ export default function UploadTranscript({
         if (result.success) {
           setUploadStatus('File uploaded successfully!');
           uploadTranscriptSuccess(true);
-          console.log(result.data);
+          // console.log(result.data);
           extractStudentInfo({
             faculty_id: result.data.faculty_id,
             dept_id: result.data.dept_id,
