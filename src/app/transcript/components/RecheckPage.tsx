@@ -90,7 +90,6 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
     fetchData();
   }, []);
 
-
   const handleApplyCurriGroup = () => {
     const fetchData = async () => {
       setLoading(true);
@@ -121,8 +120,6 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
       updatedData.curr2_id != user.curr2_id ||
       updatedData.curriculum_year != user.curriculum_year
     ) {
-      dispatch(fetchCalculateSchedule(true));
-
       dispatch(updateUser(updatedData));
       dispatch(
         setUserCurriGroupById({
@@ -132,6 +129,7 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
           curriculumYear: updatedData.curriculum_year,
         }),
       );
+      dispatch(fetchCalculateSchedule(true));
     }
     onNext();
   };

@@ -37,9 +37,11 @@ const SubjectContainer = ({
       setSubjects(transcript.matched);
       setUnmatchSubjects(transcript.unmatched);
     } else if (subjectFlag === 'schedule') {
-      const formated = formatScheduleStateItemToSummarySubject(schedule.items);
+      const formated = formatScheduleStateItemToSummarySubject(
+        schedule.items || [],
+      );
       const formatedUnmatch = formatScheduleStateItemToSummarySubject(
-        schedule.unmatched,
+        schedule.unmatched || [],
       );
       setSubjects(formated);
       setUnmatchSubjects(formatedUnmatch);
