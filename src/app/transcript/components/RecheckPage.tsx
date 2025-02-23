@@ -90,9 +90,6 @@ export default function RecheckPage({ file, onNext }: RecheckPageProps) {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log('subjectDetail => ', unmatchSubjects);
-  }, [unmatchSubjects]);
 
   const handleApplyCurriGroup = () => {
     const fetchData = async () => {

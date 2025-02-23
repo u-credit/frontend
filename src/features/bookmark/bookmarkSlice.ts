@@ -22,7 +22,7 @@ export interface BookmarkStateItem extends BookmarkItem {
 }
 export interface BookmarkState {
   items: BookmarkStateItem[];
-  backup: BookmarkStateItem[] | null;
+  backup: any | null;
   loading?: boolean;
   error?: string | null;
   isFirstFetch: boolean;
@@ -140,10 +140,10 @@ export const addBookmark = createAsyncThunk(
         saveBookmarks(semester, year, updatedBookmarks);
         dispatch(setBookmarks(updatedBookmarks));
 
-        console.log(
-          'No subject details found for subjectId:',
-          bookmark.subjectId,
-        );
+        // console.log(
+        //   'No subject details found for subjectId:',
+        //   bookmark.subjectId,
+        // );
       }
     }
   },
@@ -312,9 +312,4 @@ export const summaryCategoryShedule = createSelector(
     const { categoryCredit, total } = getCategoryCredit(bookmarks);
     return { categoryCredit, total };
   },
-);
-
-export const selectIsBackupMatchBookmark = createSelector(
-  [selectBookmarks, (_: RootState) => _.bookmark.backup],
-  (bookmarks, backup) => JSON.stringify(bookmarks) === JSON.stringify(backup),
 );

@@ -29,7 +29,6 @@ import CourseProvider, { useCourseContext } from '../contexts/CourseContext';
 import {
   loadBookmarks,
   loadBookmarksApi,
-  selectIsBackupMatchBookmark,
   setBackup,
   updateBookmarksOnCurriChange,
 } from '@/features/bookmark/bookmarkSlice';
@@ -41,7 +40,6 @@ import Backdrop from '@/components/Backdrop';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { setUserCurriGroupByCurriGroup } from '@/features/facultySlice';
 import { updateUser } from '@/api/userApi';
-import { log } from 'console';
 
 const semesterOptions: SelectOption[] = [
   { label: '1', value: '1' },
@@ -75,7 +73,6 @@ function Course() {
   const selectedCurriGroup = useSelector(
     (state: RootState) => state.faculty.userCurriGroup,
   );
-  const isBackupMatchBookmark = useSelector(selectIsBackupMatchBookmark);
 
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [selectedSemester, setSelectedSemester] = useState<string>(semester);
@@ -222,7 +219,7 @@ function Course() {
         setHasMore((response?.meta as CursorMetaDto)?.hasNext ?? false);
       } catch (error) {
         if ((error as Error).name === 'AbortError') {
-          console.log('Fetch aborted (ไม่ใช่ error จริง)');
+          // console.log('Fetch aborted (ไม่ใช่ error จริง)');
         } else {
         }
       } finally {
@@ -442,8 +439,6 @@ function Course() {
   };
 
   useEffect(() => {
-    console.log('addMultipleBookmark', addMultipleBookmark);
-    console.log('openAddBookmarkModal', openAddBookmarkModal);
     if (openAddBookmarkModal === true || addMultipleBookmark === null) return;
     const addBookmark = async () => {
       try {
@@ -461,7 +456,14 @@ function Course() {
     } else {
       dispatch(loadBookmarks());
     }
-  }, [dispatch, isAuthenticated, semester, year, addMultipleBookmark]);
+  }, [
+    dispatch,
+    isAuthenticated,
+    semester,
+    year,
+    addMultipleBookmark,
+    openAddBookmarkModal,
+  ]);
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -472,17 +474,12 @@ function Course() {
   );
   useEffect(() => {
     const login = searchParams.get('login');
-    console.log('isbackupMatchBookmark', isBackupMatchBookmark);
-    console.log('backupBookmark', backupBookmark);
-    if (!login && openAddBookmarkModal === null) {
-      console.log('wtfbackupBookmark', backupBookmark);
+    if (!login && backupBookmark === null) {
       setOpenAddBookmarkModal(false);
       setClickBackdropToClose(true);
-    } else if (login && openAddBookmarkModal === null) {
+    } else if (login) {
       if (backupBookmark === null) return;
-      if (!isBackupMatchBookmark) {
-        console.log('backupBookmark', backupBookmark);
-        console.log('isBackupMatchBookmark', isBackupMatchBookmark);
+      if (backupBookmark !== null) {
         setOpenAddBookmarkModal(true);
       } else {
         setOpenAddBookmarkModal(false);
@@ -493,7 +490,7 @@ function Course() {
       const newUrl = `${pathname}?${updatedSearchParams.toString()}`;
       router.replace(newUrl);
     }
-  }, [pathname, router, searchParams, isBackupMatchBookmark, backupBookmark]);
+  }, [pathname, router, searchParams, backupBookmark]);
 
   const handleCloseBackdrop = () => {
     setIsOpenFilter(false);
@@ -611,10 +608,7 @@ function Course() {
       </div>
       <Backdrop
         open={
-          isOpenFilter ||
-          openBookmarkModal ||
-          openAddBookmarkModal === null ||
-          openAddBookmarkModal
+          isOpenFilter || openBookmarkModal || openAddBookmarkModal === true
         }
         onClose={handleCloseBackdrop}
         clickToClose={clickBackdropToClose}

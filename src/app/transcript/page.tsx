@@ -82,7 +82,7 @@ function Transcript() {
         setCategoryOptions(categoryOptions);
         setListCategory(resp.data);
       } catch (error) {
-        console.log('error', error);
+        // console.log('error', error);
       }
     };
 

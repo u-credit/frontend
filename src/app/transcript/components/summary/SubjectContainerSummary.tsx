@@ -1,4 +1,4 @@
-import { use, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { formatScheduleStateItemToSummarySubject } from '@/utils';
 import SummarySubjectCard, { SummarySubject } from './SummarySubjectCard';
