@@ -136,7 +136,7 @@ export const editReview = async (
   data: UpdateReviewDto,
 ): Promise<Response<Review>> => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews/${reviewId}`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/review/${reviewId}`,
     {
       method: 'PUT',
       headers: {
