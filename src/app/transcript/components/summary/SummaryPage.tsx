@@ -24,7 +24,9 @@ import { selectUser } from '@/features/auth/authSlice';
 import { selectUserFacultyOptions } from '@/features/facultySlice';
 import {
   deleteTranscriptApi,
+  fetchTranscriptSubject,
   selectTranscripts,
+  TranscriptItem,
 } from '@/features/transcriptSlice';
 import SummaryProvider, {
   useSummaryContext,
@@ -58,6 +60,7 @@ function SummaryPage({ onNext }: SummaryPageProps) {
   const isFirstFetchSchedule = useSelector(
     (state: RootState) => state.bookmark.isFirstFetch,
   );
+  const scheduleItems = useSelector((state: RootState) => state.schedule.items);
   const user = useSelector(selectUser);
   const userFacultyOptions = useSelector(selectUserFacultyOptions);
 
@@ -88,37 +91,45 @@ function SummaryPage({ onNext }: SummaryPageProps) {
     return data;
   };
 
-  const fetchCalculateScheduledCredit = async (): Promise<
-    ScheduleStateItem[]
-  > => {
-    const data = await dispatch(fetchCalculateSchedule(false)).unwrap();
-    return data.items;
-  };
-
   const fetchData = async (listCategory: any) => {
     const requiredCreditData = await fetchRequiredCreditApi();
-    const newSchedule = await fetchCalculateScheduledCredit();
 
     let newTableData = formatCategoryForTranscript(listCategory);
     newTableData = calculateRequiredCredit(newTableData, requiredCreditData);
-    newTableData = calculateCurrentCredit(newTableData, transcriptSubject);
-    newTableData = calculateScheduledCredit(newTableData, newSchedule);
+    newTableData = calculateCurrentCredit(
+      newTableData,
+      transcriptSubject || [],
+    );
+    newTableData = calculateScheduledCredit(newTableData, scheduleItems || []);
 
     setTableData(newTableData);
-    const { startSemester, startYear, endSemester, endYear } =
-      findStartEnd(transcriptSubject);
+    const { startSemester, startYear, endSemester, endYear } = findStartEnd(
+      transcriptSubject || [],
+    );
 
-    setStartYear((startYear + 543).toString());
+    setStartYear(startYear.toString());
     setStartSemester(startSemester.toString());
-    setEndYear((endYear + 543).toString());
+    setEndYear(endYear.toString());
     setEndSemester(endSemester.toString());
   };
 
   useEffect(() => {
-    if (listCategory?.length > 0 && isFirstFetchSchedule && transcriptSubject) {
+    console.log(listCategory.length);
+    console.log(transcriptSubject);
+    console.log(scheduleItems);
+    if (
+      listCategory?.length > 0 &&
+      transcriptSubject !== null &&
+      scheduleItems !== null
+    ) {
+      console.log('fetchData');
       fetchData(listCategory);
     }
-  }, [listCategory, isFirstFetchSchedule, transcriptSubject]);
+  }, [listCategory, transcriptSubject, scheduleItems]);
+
+  useEffect(() => {
+    dispatch(fetchCalculateSchedule(false));
+  }, []);
 
   const handleUploadTranscript = () => {
     onNext('upload');

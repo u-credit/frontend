@@ -42,7 +42,7 @@ const TabsContainer = ({}: TabsContainerProps) => {
       { label: 'ทั้งหมด', value: 'all' },
     ];
     if (activeTab === 0) {
-      transcriptSubject.forEach((s) => {
+      transcriptSubject?.forEach((s) => {
         if (!s.semester || !s.year) return;
         const value = `${s.semester}/${s.year}`;
         if (!seen.has(value)) {
@@ -54,7 +54,7 @@ const TabsContainer = ({}: TabsContainerProps) => {
         }
       });
     } else {
-      schedule.items.forEach((s) => {
+      schedule.items?.forEach((s) => {
         if (!s.semester || !s.year) return;
         const value = `${s.semester}/${s.year}`;
         if (!seen.has(value)) {
@@ -97,16 +97,19 @@ const TabsContainer = ({}: TabsContainerProps) => {
           sx={{
             fontWeight: '600',
           }}
+          variant="scrollable"
         >
           <Tab label="รายวิชาที่เคยลงทะเบียนเรียน" id="transcrip-tab" />
           <Tab label="รายวิชาจากตารางเรียน" id="schedule-tab" />
         </Tabs>
       </div>
       <div className="flex gap-x-5 max-w-[500px]">
-        <CustomSearchBar
-          onSearchValueChange={handleSearchValueChange}
-          onSearchAction={handleSearchBar}
-        />
+        <div className="w-44 md:w-full">
+          <CustomSearchBar
+            onSearchValueChange={handleSearchValueChange}
+            onSearchAction={handleSearchBar}
+          />
+        </div>
         <CustomSelect
           onSelectedValueChange={handleSelectSemesterYear}
           selectOptions={semesterYearOptions}

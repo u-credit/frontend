@@ -182,14 +182,14 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
         className="absolute flex items-end justify-end px-4 w-full bottom-4"
       >
         <div className="flex space-x-2">
-          <CustomSelect
+          {/* <CustomSelect
             onSelectedValueChange={handleSelectSectionChange}
             selectOptions={sectionList.map((section) => ({
               label: section,
               value: section,
             }))}
             selectedValue={selectedSection}
-          />
+          /> */}
           <Button
             variant="contained"
             startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}

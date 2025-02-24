@@ -16,7 +16,7 @@ export default function AddBookmarkModal({
     }
   }, [onClose]);
   return (
-    <div className="z-10 flex flex-col bg-white absolute top-[52%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 gap-y-2 rounded-[10px] items-center">
+    <div className="z-50 flex flex-col bg-white absolute top-[52%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 gap-y-2 rounded-[10px] items-center">
       <span className="font-bold text-xl">บันทึกรายวิชาที่เคยบันทึกไว้</span>
       <div className="flex gap-x-3">
         <Button

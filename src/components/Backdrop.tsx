@@ -14,7 +14,7 @@ const Backdrop = ({ open, onClose, clickToClose = true }: BackdropProps) => {
 
   return (
     <div
-      className={`z-10 fixed inset-0 bg-gray-500 bg-opacity-50 transition-all duration-300 ${
+      className={`z-50 fixed inset-0 bg-gray-500 bg-opacity-50 transition-all duration-300 ${
         open ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
       onClick={handleClick}

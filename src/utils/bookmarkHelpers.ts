@@ -1,8 +1,8 @@
 import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
-import { Bookmark, BookmarkDto, BookmarkItem } from '@/Interfaces';
+import { Bookmark, BookmarkItem } from '@/Interfaces';
 
-export const getAllBookmarks = (): BookmarkItem[] => {
-  const data = localStorage.getItem('bookmark');
+export const getAllBackupBookmarks = (): BookmarkItem[] => {
+  const data = localStorage.getItem('backupBookmark');
   if (!data) return [];
 
   try {

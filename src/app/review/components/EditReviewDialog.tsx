@@ -77,7 +77,6 @@ const EditReviewDialog: React.FC<EditReviewDialogProps> = ({
 
     const { isValid } = profanityFilter(reviewText);
     if (!isValid) {
-      console.log('หยาบคาย');
       dispatch(
         showAlert({
           message: 'ไม่สามารถส่งความคิดเห็นได้ เนื่องจากมีคำไม่เหมาะสม',

@@ -7,6 +7,7 @@ import {
 } from '@/api/transcriptApi';
 import {
   CategoryProcessDto,
+  GetTranscriptResponse,
   SubjectTranscriptDto,
   UpdateRecalculateDto,
 } from '@/Interfaces/transcript.interface';
@@ -16,7 +17,7 @@ export interface TranscriptItem extends SubjectTranscriptDto {
 }
 
 interface TranscriptState {
-  transcripts: TranscriptItem[];
+  transcripts: TranscriptItem[] | null;
   groups: CategoryProcessDto[];
   matched: SubjectTranscriptDto[];
   unmatched: SubjectTranscriptDto[];
@@ -27,7 +28,7 @@ interface TranscriptState {
 }
 
 const initialState: TranscriptState = {
-  transcripts: [],
+  transcripts: null,
   groups: [],
   matched: [],
   unmatched: [],
@@ -37,14 +38,18 @@ const initialState: TranscriptState = {
 
 export const fetchTranscriptSubject = createAsyncThunk(
   'transcript/fetch',
-  async (_, { getState, dispatch }) => {
+  async (_, { getState, dispatch }): Promise<GetTranscriptResponse> => {
     const response = await fetchTranscript();
     const data = response.data;
 
     if (!response.status || data.subjects.length === 0) {
       dispatch(setInitialPage('upload'));
       dispatch(setCurrentPage('upload'));
-      return [];
+      return {
+        subjects: [],
+        groups: [],
+        unmatched: [],
+      };
     }
     dispatch(setInitialPage('summary'));
     dispatch(setCurrentPage('summary'));
@@ -54,7 +59,11 @@ export const fetchTranscriptSubject = createAsyncThunk(
     dispatch(setTranscriptData(data.subjects));
     dispatch(setGroups(data.groups));
     dispatch(setUnmatched(data.unmatched));
-    return data;
+    return {
+      subjects: data.subjects,
+      groups: data.groups,
+      unmatched: data.unmatched,
+    };
   },
 );
 
@@ -123,7 +132,7 @@ const transcriptSlice = createSlice({
 });
 
 export const selectHasTranscript = (state: RootState) =>
-  state.transcript.transcripts.length > 0;
+  state.transcript.transcripts && state.transcript.transcripts.length > 0;
 export const selectTranscripts = (state: RootState) =>
   state.transcript.transcripts;
 

@@ -197,7 +197,6 @@ export default function SummarySubjectCard({
           )}
         </div>
       </div>
-      <Backdrop open={isModalOpen} onClose={handleCloseModal} />
       <ModalAddCategory
         open={isModalOpen}
         onClose={handleCloseModal}

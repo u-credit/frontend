@@ -9,6 +9,8 @@ import StoreProvider from './StoreProvider';
 //import AlertNotification from '@/components/AlertNotification';
 import { useAuth } from '@/hooks/useAuth';
 import CustomAlert from '@/components/CustomAlert';
+import { Suspense } from 'react';
+import { Loading } from '@/components';
 
 export default function ClientLayout({
   children,
@@ -20,8 +22,11 @@ export default function ClientLayout({
       <StoreProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <AuthWrapper />
+          <Suspense fallback={<Loading />}>
+            <AuthWrapper />
+          </Suspense>
           <Navbar />
+          {/* <Backdrop open={true} onClose={() => {}} /> */}
           <div className="h-screen bg-gray-100 overflow-auto ">
             <div className="mt-12 max-w-7xl mx-auto">{children}</div>
           </div>
