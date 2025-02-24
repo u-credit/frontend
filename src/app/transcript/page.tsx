@@ -16,6 +16,7 @@ import {
   setCurrentPage,
 } from '@/features/transcriptSlice';
 import { Loading } from '@/components';
+import PleaseLogin from './components/PleaseLogin'
 
 export default function TranscriptWrapper() {
   return (
@@ -108,26 +109,31 @@ function Transcript() {
   }
 
   return (
-    <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
-      <div className="w-full border-solid md:my-[10px]">
-        <div className="bg-white h-full md:rounded-3xl p-10">
-          {currentState === 'upload' && (
-            <UploadTranscriptPage
-              file={file}
-              setFile={setFile}
-              onNext={() => handleNext('recheck')}
-            />
-          )}
-          {currentState === 'recheck' && (
-            <RecheckPage file={file!} onNext={() => handleNext('summary')} />
-          )}
-          {currentState === 'pleaseLogin' && (
-            <div className="flex flex-col items-center justify-center h-full">
-              <span className="text-2xl font-bold">กรุณาเข้าสู่ระบบ</span>
-            </div>
-          )}
+    currentState === 'pleaseLogin' ? (
+      <main className="pt-8">
+        <div className="flex flex-col bg-white h-96 rounded-3xl justify-center items-center gap-10">
+          <span className="w-full">
+            <PleaseLogin />
+          </span>
         </div>
-      </div>
-    </main>
+      </main>
+    ) : (
+      <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
+        <div className="w-full border-solid md:my-[10px]">
+          <div className="bg-white h-full md:rounded-3xl p-10">
+            {currentState === 'upload' && (
+              <UploadTranscriptPage
+                file={file}
+                setFile={setFile}
+                onNext={() => handleNext('recheck')}
+              />
+            )}
+            {currentState === 'recheck' && (
+              <RecheckPage file={file!} onNext={() => handleNext('summary')} />
+            )}
+          </div>
+        </div>
+      </main>
+    )
   );
-}
+}  
