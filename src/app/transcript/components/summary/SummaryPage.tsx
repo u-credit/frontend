@@ -24,9 +24,7 @@ import { selectUser } from '@/features/auth/authSlice';
 import { selectUserFacultyOptions } from '@/features/facultySlice';
 import {
   deleteTranscriptApi,
-  fetchTranscriptSubject,
   selectTranscripts,
-  TranscriptItem,
 } from '@/features/transcriptSlice';
 import SummaryProvider, {
   useSummaryContext,
@@ -34,7 +32,7 @@ import SummaryProvider, {
 import { getMyReviewsFromTranscriptSubject } from '@/api/reviewApi';
 import {
   fetchCalculateSchedule,
-  ScheduleStateItem,
+  fetchOriginalSchedule,
 } from '@/features/scheduleSlice';
 
 interface SummaryPageProps {
@@ -114,16 +112,13 @@ function SummaryPage({ onNext }: SummaryPageProps) {
   };
 
   useEffect(() => {
-    console.log(listCategory.length);
-    console.log(transcriptSubject);
-    console.log(scheduleItems);
     if (
       listCategory?.length > 0 &&
       transcriptSubject !== null &&
       scheduleItems !== null
     ) {
-      console.log('fetchData');
       fetchData(listCategory);
+      dispatch(fetchOriginalSchedule());
     }
   }, [listCategory, transcriptSubject, scheduleItems]);
 

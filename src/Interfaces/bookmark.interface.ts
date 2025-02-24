@@ -1,7 +1,5 @@
 import { SubjectDto } from './subject.interface';
-import {
-  UpdateRecalculateDto,
-} from './transcript.interface';
+import { UpdateRecalculateDto } from './transcript.interface';
 
 export interface BookmarkItem extends BookmarkParam {
   subjectId: string;

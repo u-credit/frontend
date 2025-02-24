@@ -204,6 +204,7 @@ export default function SummarySubjectCard({
         isSubjectAddCategory={subject.category !== null}
         isUpdateOnSubmit={true}
         subjectFlag={subjectFlag}
+        showResetCalculation={subjectFlag === 'schedule'}
       />
       {editDialogOpen && (
         <EditReviewDialog

@@ -1,4 +1,5 @@
 import {
+  CalculateBookmarkBySubjectIdRequest,
   CategoryProcessDto,
   SubjectProcessDto,
   UpdateRecalculateBookmarkDto,
@@ -10,9 +11,12 @@ import {
   isFulfilled,
   isPending,
   isRejected,
+  createSelector,
 } from '@reduxjs/toolkit';
 import {
   calculateBookmark,
+  calculateBookmarkBySubject,
+  calculateOriginalSchedule,
   updateAndRecalculateBookmark,
 } from '@/api/bookmarkApi';
 import { loadBookmarksApi } from './bookmark/bookmarkSlice';
@@ -27,6 +31,9 @@ export interface ScheduleState {
   matched: ScheduleStateItem[];
   unmatched: ScheduleStateItem[];
   custom: ScheduleStateItem[];
+  originalItems: ScheduleStateItem[];
+  originalMatched: ScheduleStateItem[];
+  originalUnmatched: ScheduleStateItem[];
   loading?: boolean;
   error?: string | null;
 }
@@ -37,6 +44,9 @@ const initialState: ScheduleState = {
   matched: [],
   unmatched: [],
   custom: [],
+  originalItems: [],
+  originalMatched: [],
+  originalUnmatched: [],
   loading: false,
   error: null,
 };
@@ -69,7 +79,7 @@ export const fetchDetialSubject = createAsyncThunk(
 // ใส่โหลด bookmark ไปด้วย สำหรับการเรียกใช้งานที่หน้าอื่น
 export const fetchCalculateSchedule = createAsyncThunk(
   'schedule/calculate',
-  async (updateExistingCat: boolean, { dispatch }): Promise<ScheduleState> => {
+  async (updateExistingCat: boolean, { dispatch }) => {
     const data = (
       await calculateBookmark({
         isShow: true,
@@ -85,6 +95,38 @@ export const fetchCalculateSchedule = createAsyncThunk(
     // const updatedUnmatchWithDetail = await dispatch(
     //   fetchDetialSubject(unmatchItems),
     // ).unwrap();
+
+    const concat = match.concat(unmatch).concat(data.custom);
+    dispatch(setGroups(data.groups));
+    dispatch(setCustom(data.custom));
+    dispatch(setItems(concat));
+    dispatch(setMatchItems(match));
+    dispatch(setUnmatchItems(unmatch));
+    dispatch(loadBookmarksApi());
+    return {
+      groups: data.groups,
+      items: concat,
+      matched: match,
+      unmatched: unmatch,
+      custom: data.custom,
+    };
+  },
+);
+
+export const fetchCalculateScheduleBySubjectId = createAsyncThunk(
+  'schedule/calculateBySubjectId',
+  async (params: CalculateBookmarkBySubjectIdRequest, { dispatch }) => {
+    const data = (
+      await calculateBookmarkBySubject({
+        subjectId: params.subjectId,
+        semester: params.semester,
+        year: params.year,
+        isShow: true,
+      })
+    ).data;
+
+    const match = data.matched;
+    const unmatch = data.unmatched;
 
     const concat = match.concat(unmatch).concat(data.custom);
     dispatch(setGroups(data.groups));
@@ -119,6 +161,21 @@ export const updateAndRecalculateBookmarkApi = createAsyncThunk(
   },
 );
 
+export const fetchOriginalSchedule = createAsyncThunk(
+  'schedule/fetchOriginal',
+  async (_, { dispatch }) => {
+    const data = (await calculateOriginalSchedule()).data;
+
+    const match = data.matched;
+    const unmatch = data.unmatched;
+    const concat = match.concat(unmatch).concat(data.custom);
+    dispatch(setOriginalItems(concat));
+    dispatch(setOriginalMatched(match));
+    dispatch(setOriginalUnmatched(unmatch));
+    return data;
+  },
+);
+
 const scheduleSlice = createSlice({
   name: 'schedule',
   initialState: initialState,
@@ -137,6 +194,18 @@ const scheduleSlice = createSlice({
     },
     setCustom: (state, action: PayloadAction<ScheduleStateItem[]>) => {
       state.custom = action.payload;
+    },
+    setOriginalItems: (state, action: PayloadAction<ScheduleStateItem[]>) => {
+      state.originalItems = action.payload;
+    },
+    setOriginalMatched: (state, action: PayloadAction<ScheduleStateItem[]>) => {
+      state.originalMatched = action.payload;
+    },
+    setOriginalUnmatched: (
+      state,
+      action: PayloadAction<ScheduleStateItem[]>,
+    ) => {
+      state.originalUnmatched = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -162,8 +231,30 @@ export const {
   setItems,
   setGroups,
   setCustom,
+  setOriginalItems,
+  setOriginalMatched,
+  setOriginalUnmatched,
 } = scheduleSlice.actions;
 export default scheduleSlice.reducer;
 
 export const selectAllSchedule = (state: { schedule: ScheduleState }) =>
   state.schedule.matched.concat(state.schedule.unmatched);
+
+export const selectOriginalItems = (state: { schedule: ScheduleState }) =>
+  state.schedule.originalItems;
+
+export const selectOriginalItem = createSelector(
+  [
+    (state: { schedule: ScheduleState }) => state.schedule.originalItems,
+    (_: any, subjectId: string) => subjectId,
+    (_: any, __: string, semester: number) => semester,
+    (_: any, __: string, ___: number, year: number) => year,
+  ],
+  (originalItems, subjectId, semester, year) =>
+    originalItems.find(
+      (item) =>
+        item.subject_id === subjectId &&
+        Number(item.semester) === semester &&
+        Number(item.year) === year,
+    ),
+);
