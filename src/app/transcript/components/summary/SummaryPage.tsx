@@ -192,7 +192,7 @@ function SummaryPage({ onNext }: SummaryPageProps) {
               sx={{ padding: 0, color: 'grey.300', marginRight: '16px' }}
             />
           }
-          label="นำหน่วยกิตจากตารางเรียนที่จัดไว้มาคำนวนด้วย"
+          label="นำหน่วยกิตจากตารางเรียนที่จัดไว้มาคำนวณด้วย"
         />
         <SummaryTable data={tableData} showScheduleCredit={includeSchedule} />
         <TabsContainer />
