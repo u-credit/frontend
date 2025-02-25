@@ -1,5 +1,13 @@
 'use client';
-import { Button } from '@mui/material';
+import { 
+  Button,
+  Chip,
+  AccordionDetails,
+  Typography,
+  AccordionSummary,
+  Accordion,
+} from '@mui/material';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import Timetable from './components/timetable/components/Timetable';
 import Tabs from './components/tabs/tabs';
 import { CustomSelect } from '@/components';
@@ -11,6 +19,7 @@ import { useEffect, useState } from 'react';
 import SortedExamSchedule from '../schedule/components/examschedule/SortedExamSchedule';
 import { useDispatch, useSelector } from 'react-redux';
 import { BookmarkItem } from '@/Interfaces';
+import { useRouter } from 'next/navigation';
 import {
   selectScheduledItems,
   summaryCategoryShedule,
@@ -19,6 +28,8 @@ import {
   setSemester,
   setYear,
 } from '@/features/selectorValueSlice';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 
 export default function Home() {
   const dispatch: AppDispatch = useDispatch();
@@ -42,6 +53,7 @@ export default function Home() {
     setCategoryCredit(summaryCredit.categoryCredit);
     setSumCredit(summaryCredit.total);
   }, [summaryCredit]);
+
 
   const [selectedSemester, setSelectedSemester] = useState<string>(semester);
   const [selectedYear, setSelectedYear] = useState<string>(year);
@@ -71,6 +83,11 @@ export default function Home() {
 
   const handleExamSchedule = () => {
     setIsExamSchedule((isExamSchedule) => !isExamSchedule);
+  };
+    
+  const router = useRouter();
+  const handleOpenTranscriptPage = () => {
+    router.push(`/transcript`);
   };
 
   return (
@@ -130,21 +147,108 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <Timetable
-              subjects={scheduledItems}
-              section={scheduledItems.map((item: BookmarkItem) => ({
-                subjectId: item.subjectId,
-                selectedSection: item.section,
-              }))}
-            />
+            <div className='mb-10'>
+              <Timetable
+                subjects={scheduledItems}
+                section={scheduledItems.map((item: BookmarkItem) => ({
+                  subjectId: item.subjectId,
+                  selectedSection: item.section,
+                }))}
+              />
+            </div>
+            
           )}
         </div>
+        
+        {sumCredit > 0 && (
+        Object.keys(categoryCredit).length === 0 ? (
+          <div className="text-primary-400 pl-2">
+            หน่วยกิตรวมในตาราง {sumCredit} หน่วยกิต
+          </div>
+        ) : (
+          <Accordion
+            aria-controls="panel1bh-content"
+            sx={{
+              borderRadius: 2,
+              borderWidth: 1,
+              boxShadow: 'none',
+              backgroundColor: 'white',
+              cursor: 'pointer',
+              '&.Mui-expanded': {
+                margin: 0,
+              },
+              '&:before': {
+                display: 'none',
+              },
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1-content"
+              id="panel1-header"
+              sx={{
+                minHeight: 'unset !important',
+                '&.Mui-expanded': {
+                  minHeight: 'unset !important',
+                },
+                '& .MuiAccordionSummary-content': {
+                  marginTop: '12px !important',
+                  marginBottom: '12px !important',
+                  alignItems: 'center',
+                },
+              }}
+            >
+              <Typography component="span" className="text-primary-400">
+                หน่วยกิตรวมในตาราง {sumCredit} หน่วยกิต
+              </Typography>
+            </AccordionSummary>
 
-        <div className="text-primary-400 pt-5">
-          หน่วยกิตรวมในตาราง {sumCredit} หน่วยกิต
-        </div>
+            <AccordionDetails>
+              <Typography>
+                <div className="bg-gray-100 rounded-lg p-2">
+                  {Object.entries(categoryCredit).map(([key, value]) => (
+                    <div key={key} className="flex m-2">
+                      <div className="min-w-[100px]">{value} หน่วยกิต</div>
+                      <Chip
+                        key={key}
+                        label={key}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          textOverflow: 'ellipsis',
+                          '@media (max-width: 600px)': {
+                            maxWidth: '200px',
+                          },
+                          '@media (max-width: 400px)': {
+                            maxWidth: '180px',
+                          },
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Typography>
+              <div className="flex justify-end">
+                <Button
+                  startIcon={<CalculateIcon />}
+                  onClick={handleOpenTranscriptPage}
+                  variant="contained"
+                  sx={{
+                    marginTop: 2,
+                    minWidth: '89px',
+                  }}
+                >
+                  คำนวณหน่วยกิต
+                </Button>
+              </div>
+            </AccordionDetails>
+          </Accordion>
+        )
+      )}
 
-        <div className="my-[40px]">
+
+        <div className="mt-4">
           <Tabs sumCredit={sumCredit} categoryCredit={categoryCredit} />
         </div>
       </div>
