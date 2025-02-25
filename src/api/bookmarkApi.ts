@@ -10,6 +10,7 @@ import {
   Response,
   UpdateRecalculateBookmarkDto,
 } from '@/Interfaces';
+import { buildQueryParams } from '@/utils';
 
 export const fetchBookmark = async (
   params: BookmarkParam,
@@ -147,19 +148,48 @@ export const addMultipleBookmarkApi = async (
   return res.json();
 };
 
-export const calculateBookmark = async (
-  params: CalculateBookmarkRequest,
-): Promise<Response<CalculatedSubjectDto>> => {
+export const calculateOriginalSchedule = async (): Promise<
+  Response<CalculatedSubjectDto>
+> => {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/update`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate?isShow=1`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(params),
+      },
+    );
+
+    return res.json();
+  } catch (e) {
+    return {
+      status: false,
+      data: {
+        groups: [],
+        matched: [],
+        unmatched: [],
+        custom: [],
+      },
+    };
+  }
+};
+
+export const calculateBookmark = async (
+  params: CalculateBookmarkRequest,
+): Promise<Response<CalculatedSubjectDto>> => {
+  const queryParams = buildQueryParams(params);
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/update?${queryParams}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       },
     );
 
@@ -180,16 +210,16 @@ export const calculateBookmark = async (
 export const calculateBookmarkBySubject = async (
   params: CalculateBookmarkBySubjectIdRequest,
 ): Promise<Response<CalculatedSubjectDto>> => {
+  const queryParams = buildQueryParams(params);
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/update/by-subject`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate/update/by-subject/${params.subjectId}?${queryParams}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(params),
       },
     );
 

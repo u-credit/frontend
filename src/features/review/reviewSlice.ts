@@ -12,7 +12,7 @@ export const toggleReviewLike = createAsyncThunk(
   'review/toggleLike',
   async (reviewId: string) => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews/${reviewId}/like`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/review/${reviewId}/like`,
       {
         method: 'POST',
         headers: {

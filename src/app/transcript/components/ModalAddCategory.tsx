@@ -6,11 +6,17 @@ import { initSelectOption } from '@/types';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
-import { AppDispatch } from '@/features/store';
+import { AppDispatch, RootState } from '@/features/store';
 import { updateCalculateTranscriptApi } from '@/features/transcriptSlice';
-import { useDispatch } from 'react-redux';
-import { updateAndRecalculateBookmarkApi } from '@/features/scheduleSlice';
-
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchCalculateScheduleBySubjectId,
+  ScheduleState,
+  selectOriginalItem,
+  updateAndRecalculateBookmarkApi,
+} from '@/features/scheduleSlice';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { stat } from 'fs';
 interface ModalAddCategoryProps {
   open: boolean;
   onClose: () => void;
@@ -18,6 +24,7 @@ interface ModalAddCategoryProps {
   isSubjectAddCategory?: boolean;
   isUpdateOnSubmit?: boolean;
   subjectFlag?: string;
+  showResetCalculation?: boolean;
 }
 
 export default function ModalAddCategory({
@@ -27,6 +34,7 @@ export default function ModalAddCategory({
   isSubjectAddCategory,
   isUpdateOnSubmit,
   subjectFlag,
+  showResetCalculation = false,
 }: ModalAddCategoryProps) {
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -158,6 +166,60 @@ export default function ModalAddCategory({
     handleClose();
   };
 
+  const originalItems = useSelector(
+    (state: RootState) => state.schedule.originalItems,
+  );
+
+  const formatAndUpdateSelectCategory = (cat, gro, sub, chi) => {
+    const category = categoryOptions.find((c) => c.value == String(cat));
+
+    const group = category?.children?.find((g) => g.value == String(gro));
+
+    const subgroup = group?.children?.find((sg) => sg.value == String(sub));
+
+    const childgroup = subgroup?.children?.find(
+      (cg) => cg.value == String(chi),
+    );
+
+    const selectCategory = {
+      category: category || initSelectOption(),
+      group: group || initSelectOption(),
+      subgroup: subgroup || initSelectOption(),
+      childgroup: childgroup || initSelectOption(),
+    };
+
+    setSelectCategory(selectCategory);
+  };
+
+  const handleRecalculate = () => {
+    if (subjectFlag === 'schedule') {
+      // console.log('ori', originalItems);
+      const originalItem = originalItems?.find(
+        (item) =>
+          item.subject_id === subject.subject_id &&
+          Number(item.semester) === subject.semester &&
+          Number(item.year) === subject.year,
+      );
+      // console.log('originalItem', originalItem);
+
+      if (!originalItem) return;
+      formatAndUpdateSelectCategory(
+        originalItem.category,
+        originalItem.group,
+        originalItem.subgroup,
+        originalItem.childgroup,
+      );
+
+      // dispatch(
+      //   fetchCalculateScheduleBySubjectId({
+      //     subjectId: subject.subject_id,
+      //     semester: subject.semester || 0,
+      //     year: subject.year || 0,
+      //   }),
+      // );
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -175,9 +237,7 @@ export default function ModalAddCategory({
       maxWidth="md"
       fullWidth
     >
-      <Box
-        className="bg-white border-gray-300 flex flex-col gap-2 md:gap-5 "
-      >
+      <Box className="bg-white border-gray-300 flex flex-col gap-2 md:gap-5 ">
         <div className="flex justify-between items-center">
           <div className="font-mitr font-medium text-lg md:text-2xl">
             เพิ่มหมวดหมู่
@@ -205,7 +265,18 @@ export default function ModalAddCategory({
             categoryOptions={categoryOptions}
           />
         </div>
-        <div className="flex justify-end pt-1">
+        <div className="flex justify-end pt-1 gap-x-3">
+          {showResetCalculation && (
+            <Button
+              startIcon={<AutoAwesomeIcon />}
+              onClick={handleRecalculate}
+              size="medium"
+              variant="outlined"
+              disabled={!isEnableSave}
+            >
+              คำนวณอัตโนมัติ
+            </Button>
+          )}
           <Button
             startIcon={<SaveIcon />}
             onClick={handleSave}
