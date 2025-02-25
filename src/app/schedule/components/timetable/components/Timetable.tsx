@@ -59,17 +59,15 @@ const transformSubjectsToSchedule = (
       (section) => section.subjectId === subject.detail?.subject_id,
     );
 
+
     if (
       matchingSection &&
       subject.detail.teach_table &&
       Array.isArray(subject.detail.teach_table)
     ) {
       subject.detail.teach_table.forEach((table: Table) => {
-        if (
-          table.section === matchingSection.selectedSection &&
-          table.teach_day
-        ) {
-          if (table.teach_time_start && table.teach_time_end) {
+        if(table.section === matchingSection.selectedSection){
+          if (table.teach_day == 0){
             scheduleData.push({
               day: thaiDayMap[table.teach_day],
               timeStart: table.teach_time_start,
@@ -80,25 +78,40 @@ const transformSubjectsToSchedule = (
               room: table.room_name,
             });
           }
-
-          if (table.teach_time_str) {
-            const match = table.teach_time_str.match(
-              /^(\d)x(\d{2}:\d{2})-(\d{2}:\d{2})$/,
-            );
-            if (match) {
-              const [, day, timeStart, timeEnd] = match;
+          else {
+            if (table.teach_time_start && table.teach_time_end) {
               scheduleData.push({
-                day: thaiDayMap[parseInt(day)],
-                timeStart,
-                timeEnd,
+                day: thaiDayMap[table.teach_day],
+                timeStart: table.teach_time_start,
+                timeEnd: table.teach_time_end,
                 subject: subject.detail?.subject_english_name || '',
                 code: subject.detail?.subject_id || '',
                 section: `sec ${table.section}`,
                 room: table.room_name,
               });
             }
+  
+            if (table.teach_time_str) {
+              const match = table.teach_time_str.match(
+                /^(\d)x(\d{2}:\d{2})-(\d{2}:\d{2})$/,
+              );
+              if (match) {
+                const [, day, timeStart, timeEnd] = match;
+                
+                scheduleData.push({
+                  day: thaiDayMap[parseInt(day)],
+                  timeStart,
+                  timeEnd,
+                  subject: subject.detail?.subject_english_name || '',
+                  code: subject.detail?.subject_id || '',
+                  section: `sec ${table.section}`,
+                  room: table.room_name,
+                });
+              }
+            }
           }
         }
+        
       });
     }
   });
@@ -119,6 +132,7 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
 
   const times = useMemo(() => generateTimeRange(scheduleData), [scheduleData]);
   const days = useMemo(() => generateDays(scheduleData), [scheduleData]);
+
   const conflictingSubjects = useMemo(() => {
     const conflicts = new Set<string>();
 
@@ -156,12 +170,14 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
     return colors;
   }, [scheduleData]);
 
+
+  console.log(scheduleData)
   return (
     <Box sx={{ border: '1px solid #BB4100' }} className="rounded-xl">
       <HeaderRow times={times} />
       {days.map((day, dayIndex) => (
         <Grid container key={day}>
-          <DayLabel day={day} isLast={dayIndex === days.length} />
+          <DayLabel day={day} isLast={dayIndex === days.length-1} />
           <Grid item xs={11} sx={{ position: 'relative', display: 'flex' }}>
             {times.map((time, timeIndex) => (
               <TimeSlot
@@ -198,6 +214,7 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
                     width={width}
                     color={color}
                     hasConflict={hasConflict}
+                    hasDay={day != 'ไม่ระบุ'}
                   />
                 );
               })}
