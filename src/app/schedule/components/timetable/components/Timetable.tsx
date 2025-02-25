@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Box, Grid } from '@mui/material';
 import HeaderRow from '../components/HeaderRow';
 import DayLabel from '../components/DayLabel';
@@ -8,6 +8,10 @@ import { generateDays } from '../utils/generateDays';
 import { generateTimeRange } from '../utils/generateTimeRange';
 import { ScheduleItem } from './types';
 import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
+import { setConflictingSubjects } from '@/features/timetable/timetableSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/features/store';
+
 
 export interface Table {
   teach_day: number;
@@ -59,15 +63,14 @@ const transformSubjectsToSchedule = (
       (section) => section.subjectId === subject.detail?.subject_id,
     );
 
-
     if (
       matchingSection &&
       subject.detail.teach_table &&
       Array.isArray(subject.detail.teach_table)
     ) {
       subject.detail.teach_table.forEach((table: Table) => {
-        if(table.section === matchingSection.selectedSection){
-          if (table.teach_day == 0){
+        if (table.section === matchingSection.selectedSection) {
+          if (table.teach_day == 0) {
             scheduleData.push({
               day: thaiDayMap[table.teach_day],
               timeStart: table.teach_time_start,
@@ -77,8 +80,7 @@ const transformSubjectsToSchedule = (
               section: `sec ${table.section}`,
               room: table.room_name,
             });
-          }
-          else {
+          } else {
             if (table.teach_time_start && table.teach_time_end) {
               scheduleData.push({
                 day: thaiDayMap[table.teach_day],
@@ -90,14 +92,14 @@ const transformSubjectsToSchedule = (
                 room: table.room_name,
               });
             }
-  
+
             if (table.teach_time_str) {
               const match = table.teach_time_str.match(
                 /^(\d)x(\d{2}:\d{2})-(\d{2}:\d{2})$/,
               );
               if (match) {
                 const [, day, timeStart, timeEnd] = match;
-                
+
                 scheduleData.push({
                   day: thaiDayMap[parseInt(day)],
                   timeStart,
@@ -111,7 +113,6 @@ const transformSubjectsToSchedule = (
             }
           }
         }
-        
       });
     }
   });
@@ -132,21 +133,24 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
 
   const times = useMemo(() => generateTimeRange(scheduleData), [scheduleData]);
   const days = useMemo(() => generateDays(scheduleData), [scheduleData]);
-
-  const conflictingSubjects = useMemo(() => {
+  const dispatch = useDispatch();
+  const conflictingSubjects = useSelector(
+    (state: RootState) => state.conflicts.conflictingSubjects
+  );
+  
+  useEffect(() => {
     const conflicts = new Set<string>();
-
     for (let i = 0; i < scheduleData.length; i++) {
       for (let j = i + 1; j < scheduleData.length; j++) {
         const schedule1 = scheduleData[i];
         const schedule2 = scheduleData[j];
-
+  
         if (schedule1.day === schedule2.day) {
           const start1 = convertToDecimalHour(schedule1.timeStart);
           const end1 = convertToDecimalHour(schedule1.timeEnd);
           const start2 = convertToDecimalHour(schedule2.timeStart);
           const end2 = convertToDecimalHour(schedule2.timeEnd);
-
+  
           if (
             (start1 <= start2 && end1 > start2) ||
             (start2 <= start1 && end2 > start1)
@@ -157,8 +161,12 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
         }
       }
     }
-    return conflicts;
-  }, [scheduleData]);
+  
+    if (conflictingSubjects.size !== conflicts.size) {
+      dispatch(setConflictingSubjects(conflicts));
+    }
+  }, [scheduleData, dispatch, conflictingSubjects]); 
+
 
   const codeColors = useMemo(() => {
     const colors = new Map<string, string>();
@@ -170,14 +178,12 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
     return colors;
   }, [scheduleData]);
 
-
-  console.log(scheduleData)
   return (
     <Box sx={{ border: '1px solid #BB4100' }} className="rounded-xl">
       <HeaderRow times={times} />
       {days.map((day, dayIndex) => (
         <Grid container key={day}>
-          <DayLabel day={day} isLast={dayIndex === days.length-1} />
+          <DayLabel day={day} isLast={dayIndex === days.length - 1} />
           <Grid item xs={11} sx={{ position: 'relative', display: 'flex' }}>
             {times.map((time, timeIndex) => (
               <TimeSlot
@@ -204,7 +210,7 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
                 const color = codeColors.get(item.code) || COLORS[0];
                 const hasConflict = conflictingSubjects.has(
                   `${item.code}-${item.section}`,
-                );
+                ); // ใช้ conflictingSubjects จาก Redux
 
                 return (
                   <SubjectBox
@@ -214,7 +220,7 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
                     width={width}
                     color={color}
                     hasConflict={hasConflict}
-                    hasDay={day != 'ไม่ระบุ'}
+                    hasDay={day !== 'ไม่ระบุ'}
                   />
                 );
               })}
