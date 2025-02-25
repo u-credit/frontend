@@ -170,7 +170,12 @@ export default function ModalAddCategory({
     (state: RootState) => state.schedule.originalItems,
   );
 
-  const formatAndUpdateSelectCategory = (cat, gro, sub, chi) => {
+  const formatAndUpdateSelectCategory = (
+    cat: number,
+    gro: number,
+    sub: number,
+    chi?: number,
+  ) => {
     const category = categoryOptions.find((c) => c.value == String(cat));
 
     const group = category?.children?.find((g) => g.value == String(gro));
@@ -195,12 +200,9 @@ export default function ModalAddCategory({
     if (subjectFlag === 'schedule') {
       // console.log('ori', originalItems);
       const originalItem = originalItems?.find(
-        (item) =>
-          item.subject_id === subject.subject_id &&
-          Number(item.semester) === subject.semester &&
-          Number(item.year) === subject.year,
+        (item) => item.subject_id === subject.subject_id,
       );
-      // console.log('originalItem', originalItem);
+      // console.log('originalItem', originalItem, subject);
 
       if (!originalItem) return;
       formatAndUpdateSelectCategory(
@@ -272,7 +274,6 @@ export default function ModalAddCategory({
               onClick={handleRecalculate}
               size="medium"
               variant="outlined"
-              disabled={!isEnableSave}
             >
               คำนวณอัตโนมัติ
             </Button>

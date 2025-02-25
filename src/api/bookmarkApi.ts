@@ -153,7 +153,7 @@ export const calculateOriginalSchedule = async (): Promise<
 > => {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate?isShow=1`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/calculate?isShow=true`,
       {
         method: 'GET',
         headers: {
