@@ -7,6 +7,8 @@ import {
   AccordionSummary,
   Accordion,
 } from '@mui/material';
+import SwitchLeftIcon from '@mui/icons-material/SwitchLeft';
+import SwitchRightIcon from '@mui/icons-material/SwitchRight';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import Timetable from './components/timetable/components/Timetable';
 import Tabs from './components/tabs/tabs';
@@ -116,21 +118,38 @@ export default function Home() {
             className="flex gap-[10px] items-center h-full"
             data-testid="button-container"
           >
-            <Button
-              onClick={handleExamSchedule}
-              variant="outlined"
-              sx={{ minWidth: '89px' }}
-              data-testid="exam-schedule-button"
-            >
-              {isExamSchedule ? 'ตารางเรียน' : 'ตารางสอบ'}
-            </Button>
+            { isExamSchedule ? (
+                <Button
+                  startIcon={<SwitchRightIcon/>}
+
+                  onClick={handleExamSchedule}
+                  variant="outlined"
+                  sx={{ minWidth: '89px' }}
+                  data-testid="exam-schedule-button"
+                >
+                  ตารางเรียน
+                </Button>
+              ) : (
+                <Button
+                  endIcon={<SwitchLeftIcon/>}
+                  onClick={handleExamSchedule}
+                  variant="outlined"
+                  sx={{ minWidth: '89px' }}
+                  data-testid="exam-schedule-button"
+                >
+                  ตารางสอบ
+                </Button>
+              )
+            }
+
+            
             <DownloadButton />
           </div>
         </div>
         <div className="timetable-container mt-[20px]">
           {isExamSchedule ? (
             <div>
-              <div  className="flex w-full">
+              <div  className="flex w-full mb-4">
                 <div className="flex w-full flex-col mt-4">
                   <div className="w-full flex justify-center font-semibold">
                     กลางภาค
