@@ -15,6 +15,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import { useRouter } from 'next/navigation';
+
 import {
   addBookmarkApi,
   deleteBookmarkApi,
@@ -40,6 +42,10 @@ export default function TinySubjectCardWithIsShowButton({
   const [isShow, setIsShow] = useState(false);
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
   const [sectionList, setSectionList] = useState<string[]>([]);
+  const router = useRouter();
+  const handleMoreDetail = () => {
+    router.push(`/course/${subjectDetail.subject_id}`);
+  };
   const hasBookmark = useSelector((state: RootState) =>
     selectIsBookmark(state, subjectDetail.subject_id),
   );
@@ -217,7 +223,9 @@ export default function TinySubjectCardWithIsShowButton({
                   <div className="font-bold text-sm sm:text-lg">
                     {subjectDetail.subject_id}
                   </div>
-                  <div className="font-bold text-sm sm:text-lg">
+                  <div 
+                    className="font-bold text-sm sm:text-lg hover:underline cursor-pointer" 
+                    onClick={handleMoreDetail}>
                     {subjectDetail.subject_english_name}
                   </div>
                   {subjectDetail.category &&
