@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import ModalAddCategory from '../ModalAddCategory';
 import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
 import { CategoryItem, CreateReviewDto, Review } from '@/Interfaces';
-import { chipCategoryItem, getChipColor } from '@/utils';
+import { chipCategoryItem, chipSeletedCategory, getChipColor } from '@/utils';
 import EditReviewDialog from '@/app/review/components/EditReviewDialog';
 import { useSummaryContext } from '@/app/contexts/SummaryContext';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -24,6 +24,7 @@ import {
   editReview,
   getMyReviewsFromTranscriptSubject,
 } from '@/api/reviewApi';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 export interface SummarySubject extends SubjectTranscriptDto {
   categories: CategoryItem[];
 }
@@ -123,6 +124,14 @@ export default function SummarySubjectCard({
       ? 'เพิ่มหมวดหมู่'
       : 'แก้ไขหมวดหมู่';
 
+  const { listCategory } = useTranscriptContext();
+  const chipLabel = chipSeletedCategory(
+    subject.category || null,
+    subject.group || null,
+    subject.subgroup || null,
+    subject.childgroup || null,
+    listCategory,
+  );
   return (
     <>
       <div className="flex flex-col mobile:flex-row justify-between border-[1px] border-gray-300 rounded-lg">
@@ -142,7 +151,7 @@ export default function SummarySubjectCard({
                 ปี {subject.year} เทอม {subject.semester}
               </div>
             )}
-            {subject.categories?.length > 0 &&
+            {/* {subject.categories?.length > 0 &&
               subject.categories.map((category: CategoryItem) => (
                 <Tooltip
                   title={chipCategoryItem(category)}
@@ -176,7 +185,38 @@ export default function SummarySubjectCard({
                     }
                   />
                 </Tooltip>
-              ))}
+              ))} */}
+            {chipLabel && (
+              <Tooltip title={chipLabel}>
+                <Chip
+                  label={chipLabel}
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: {
+                      xs: '200px',
+                      sm: '300px',
+                      md: '500px',
+                      lg: '600px',
+                      xl: '700px',
+                    },
+                  }}
+                  color={
+                    getChipColor(subject.category || 0) as
+                      | 'default'
+                      | 'primary'
+                      | 'secondary'
+                      | 'error'
+                      | 'info'
+                      | 'success'
+                      | 'warning'
+                  }
+                />
+              </Tooltip>
+            )}
           </div>
           <div id="row2" className="flex flex-row gap-4 ">
             <h4>{subject.credit} หน่วยกิต</h4>

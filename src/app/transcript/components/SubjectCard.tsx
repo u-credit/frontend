@@ -1,10 +1,12 @@
 import { Add } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { Button } from '@mui/material';
+import { Button, Chip, Tooltip } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import ModalAddCategory from './ModalAddCategory';
 import CreateIcon from '@mui/icons-material/Create';
 import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
+import { chipSeletedCategory, getChipColor } from '@/utils';
+import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
 
 interface SubjectCardProps {
   subject: SubjectTranscriptDto;
@@ -17,6 +19,14 @@ export default function SubjectCard({ subject }: SubjectCardProps) {
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
 
+  const { listCategory } = useTranscriptContext();
+  const chipLabel = chipSeletedCategory(
+    subject.category || null,
+    subject.group || null,
+    subject.subgroup || null,
+    subject.childgroup || null,
+    listCategory,
+  );
   useEffect(() => {
     setSubjectAddCategory(
       subject?.category !== null &&
@@ -32,13 +42,49 @@ export default function SubjectCard({ subject }: SubjectCardProps) {
       >
         <div className={`flex flex-col justify-between`}>
           <div id="row-1" className="flex flex-wrap gap-2 items-center">
-            <div className="font-bold text-md md:text-lg">{subject.subject_id}</div>
-            <div className="font-bold text-md md:text-lg text-wrap">{subject.subject_ename}</div>
+            <div className="font-bold text-md md:text-lg">
+              {subject.subject_id}
+            </div>
+            <div className="font-bold text-md md:text-lg text-wrap">
+              {subject.subject_ename}
+            </div>
             {subject.year && subject.semester ? (
               <div>
                 ปี {subject.year} เทอม {subject.semester}
               </div>
             ) : null}
+
+            {chipLabel && (
+              <Tooltip title={chipLabel}>
+                <Chip
+                  label={chipLabel}
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: {
+                      xs: '200px',
+                      sm: '300px',
+                      md: '500px',
+                      lg: '600px',
+                      xl: '700px',
+                    },
+                  }}
+                  color={
+                    getChipColor(subject.category || 0) as
+                      | 'default'
+                      | 'primary'
+                      | 'secondary'
+                      | 'error'
+                      | 'info'
+                      | 'success'
+                      | 'warning'
+                  }
+                />
+              </Tooltip>
+            )}
           </div>
           <div id="row-2" className="flex flex-wrap gap-2 items-center">
             <div>{subject.credit} หน่วยกิต</div>
