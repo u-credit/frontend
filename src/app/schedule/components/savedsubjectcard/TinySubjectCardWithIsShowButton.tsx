@@ -189,7 +189,7 @@ export default function TinySubjectCardWithIsShowButton({
   console.log(isConflicting)
   return (
     <div className="relative">
-      <div className={`flex bg-white rounded-lg border-[1px] ${isConflicting ? 'border-red-500' : 'border-gray-300' }`}>
+      <div className={`flex bg-white rounded-lg ${isConflicting ? 'border-red-500 border-[2px]' : 'border-gray-300 border-[1px]' }`}>
         <div className="  border-r-[1px] w-[100px] sm:w-[148px] ">
           <div className="flex flex-col  justify-center items-center h-full sm:py-5 px-2 ">
             <CustomSelect
@@ -200,6 +200,10 @@ export default function TinySubjectCardWithIsShowButton({
               }))}
               selectedValue={selectedSection}
               label="sec"
+              sx = {{
+                width: '80px',
+                fontSize: { xs: '12px', sm: '14px' },
+              }}
             />
             <Checkbox
               checked={bookmarkDetail?.isShow ?? false}

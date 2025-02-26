@@ -7,8 +7,8 @@ import {
   AccordionSummary,
   Accordion,
 } from '@mui/material';
-import SwitchLeftIcon from '@mui/icons-material/SwitchLeft';
-import SwitchRightIcon from '@mui/icons-material/SwitchRight';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import Timetable from './components/timetable/components/Timetable';
 import Tabs from './components/tabs/tabs';
@@ -94,58 +94,76 @@ export default function Home() {
 
   return (
     <main className="flex flex-row bg-gray-100 min-h-[calc(100vh-48px)] w-full">
-      <div className="bg-white w-full sm:mx-[80px] px-[20px] sm:px-[40px] sm:pt-[56px] pt-[20px]">
-        <div className="w-full flex justify-between items-center">
-          <div className="flex gap-x-4 items-center">
-            <div id="header-content" data-testid="header-content">
-              {isExamSchedule ? 'ตารางสอบ' : 'ตารางเรียน'}
+      <div className="bg-white w-full sm:mx-[80px] px-[20px] sm:px-[40px] sm:pt-[56px] pt-[40px]">
+        <div className="w-full flex flex-wrap sm:flex-nowrap justify-between items-center">
+          <div className="w-full sm:w-fit  flex items-center justify-between">
+            <div className='flex gap-x-4 items-center '>
+              <div id="header-content" data-testid="header-content" className="hidden sm:block">
+                {isExamSchedule ? 'ตารางสอบ' : 'ตารางเรียน'}
+              </div>
+              <CustomSelect
+                onSelectedValueChange={handleSelectSemester}
+                selectOptions={semesterOptions}
+                selectedValue={selectedSemester}
+                label="ภาคเรียน"
+                sx = {{
+                  fontSize: { xs: '12px', sm: '14px' },
+                }}
+              />
+              <CustomSelect
+                onSelectedValueChange={handleSelectYear}
+                selectOptions={yearOptions}
+                selectedValue={selectedYear}
+                label="ปีการศึกษา"
+                sx = {{
+                  fontSize: { xs: '12px', sm: '14px' },
+                }}
+              />
             </div>
-            <CustomSelect
-              onSelectedValueChange={handleSelectSemester}
-              selectOptions={semesterOptions}
-              selectedValue={selectedSemester}
-              label="ภาคเรียน"
-            />
-            <CustomSelect
-              onSelectedValueChange={handleSelectYear}
-              selectOptions={yearOptions}
-              selectedValue={selectedYear}
-              label="ปีการศึกษา"
-            />
+            <div className='block sm:hidden'>
+              <DownloadButton />
+            </div>
           </div>
+          
           <div
             id="button-container"
-            className="flex gap-[10px] items-center h-full"
+            className="flex flex-row-reverse mt-4 sm:mt-0 sm:flex-row gap-[10px] items-center w-full sm:w-auto justify-end"
             data-testid="button-container"
           >
-            { isExamSchedule ? (
-                <Button
-                  startIcon={<SwitchRightIcon/>}
-
-                  onClick={handleExamSchedule}
-                  variant="outlined"
-                  sx={{ minWidth: '89px' }}
-                  data-testid="exam-schedule-button"
-                >
-                  ตารางเรียน
-                </Button>
-              ) : (
-                <Button
-                  endIcon={<SwitchLeftIcon/>}
-                  onClick={handleExamSchedule}
-                  variant="outlined"
-                  sx={{ minWidth: '89px' }}
-                  data-testid="exam-schedule-button"
-                >
-                  ตารางสอบ
-                </Button>
-              )
-            }
-
+            {isExamSchedule ? (
+              <Button
+                startIcon={<ChevronLeftIcon />}
+                onClick={handleExamSchedule}
+                variant="outlined"
+                sx={{ 
+                  minWidth: '89px',
+                  fontSize: { xs: '12px', sm: '14px' },
+                }}
+                data-testid="exam-schedule-button"
+              >
+                ตารางเรียน
+              </Button>
+            ) : (
+              <Button
+                endIcon={<NavigateNextIcon />}
+                onClick={handleExamSchedule}
+                variant="outlined"
+                sx={{ 
+                  minWidth: '89px',
+                  fontSize: { xs: '12px', sm: '14px' },
+                }}
+                data-testid="exam-schedule-button"
+              >
+                ตารางสอบ
+              </Button>
+            )}
             
-            <DownloadButton />
+            <div className='hidden sm:block'>
+              <DownloadButton />
+            </div>
           </div>
         </div>
+
         <div className="timetable-container mt-[20px]">
           {isExamSchedule ? (
             <div>

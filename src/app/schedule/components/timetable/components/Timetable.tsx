@@ -179,56 +179,59 @@ const Timetable: React.FC<TimetableProps> = ({ subjects, section }) => {
   }, [scheduleData]);
 
   return (
-    <Box sx={{ border: '1px solid #BB4100' }} className="rounded-xl">
-      <HeaderRow times={times} />
-      {days.map((day, dayIndex) => (
-        <Grid container key={day}>
-          <DayLabel day={day} isLast={dayIndex === days.length - 1} />
-          <Grid item xs={11} sx={{ position: 'relative', display: 'flex' }}>
-            {times.map((time, timeIndex) => (
-              <TimeSlot
-                key={`${day}-${time}`}
-                day={day}
-                time={time}
-                index={timeIndex}
-                totalTimes={times.length}
-                hasBorder={timeIndex !== times.length - 1}
-                isLastRow={dayIndex === days.length - 1}
-              />
-            ))}
-            {scheduleData
-              .filter((item) => item.day === day)
-              .map((item, index) => {
-                const startHour = convertToDecimalHour(item.timeStart);
-                const endHour = convertToDecimalHour(item.timeEnd);
-                const timePerSlot = 1;
-                const left =
-                  ((startHour - parseInt(times[0])) / timePerSlot) *
-                  (100 / times.length);
-                const width =
-                  ((endHour - startHour) / timePerSlot) * (100 / times.length);
-                const color = codeColors.get(item.code) || COLORS[0];
-                const hasConflict = conflictingSubjects.has(
-                  `${item.code}-${item.section}`,
-                ); // ใช้ conflictingSubjects จาก Redux
-
-                return (
-                  <SubjectBox
-                    key={index}
-                    item={item}
-                    left={left}
-                    width={width}
-                    color={color}
-                    hasConflict={hasConflict}
-                    hasDay={day !== 'ไม่ระบุ'}
-                  />
-                );
-              })}
+    <div className="overflow-x-auto">
+      <Box sx={{ border: '1px solid #BB4100', minWidth: '600px' }} className="rounded-xl">
+        <HeaderRow times={times} />
+        {days.map((day, dayIndex) => (
+          <Grid container key={day} sx={{ minWidth: '600px' }}>
+            <DayLabel day={day} isLast={dayIndex === days.length - 1} />
+            <Grid item xs={11} sx={{ position: 'relative', display: 'flex' }}>
+              {times.map((time, timeIndex) => (
+                <TimeSlot
+                  key={`${day}-${time}`}
+                  day={day}
+                  time={time}
+                  index={timeIndex}
+                  totalTimes={times.length}
+                  hasBorder={timeIndex !== times.length - 1}
+                  isLastRow={dayIndex === days.length - 1}
+                />
+              ))}
+              {scheduleData
+                .filter((item) => item.day === day)
+                .map((item, index) => {
+                  const startHour = convertToDecimalHour(item.timeStart);
+                  const endHour = convertToDecimalHour(item.timeEnd);
+                  const timePerSlot = 1;
+                  const left =
+                    ((startHour - parseInt(times[0])) / timePerSlot) *
+                    (100 / times.length);
+                  const width =
+                    ((endHour - startHour) / timePerSlot) * (100 / times.length);
+                  const color = codeColors.get(item.code) || COLORS[0];
+                  const hasConflict = conflictingSubjects.has(
+                    `${item.code}-${item.section}`,
+                  );
+  
+                  return (
+                    <SubjectBox
+                      key={index}
+                      item={item}
+                      left={left}
+                      width={width}
+                      color={color}
+                      hasConflict={hasConflict}
+                      hasDay={day !== 'ไม่ระบุ'}
+                    />
+                  );
+                })}
+            </Grid>
           </Grid>
-        </Grid>
-      ))}
-    </Box>
+        ))}
+      </Box>
+    </div>
   );
+  
 };
 
 export default Timetable;
