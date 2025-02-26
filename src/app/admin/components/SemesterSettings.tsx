@@ -6,6 +6,11 @@ import { SemesterSettingCard } from './SemesterSettingCard';
 import { ChangeSemesterModal } from './ChangeSemesterModal';
 import CustomAlert from '@/components/CustomAlert';
 import { SemesterSetting } from '@/Interfaces/semester-settings.interface';
+import { API_PATHS } from '@/constants';
+import {
+  createSemesterSetting,
+  fetchSemesterSettings,
+} from '@/api/semesterSettingsApi';
 
 interface YearRange {
   maxSemester: number;
@@ -43,7 +48,14 @@ export default function SemesterSettings() {
   const fetchYearRange = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/semester-settings/year-range`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.semesterSettings}/year-range`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
       );
       if (!response.ok) throw new Error('Failed to fetch year range');
 
@@ -70,12 +82,9 @@ export default function SemesterSettings() {
     setLoading(true);
     setError(false);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/semester-settings`,
-      );
-      if (!response.ok) throw new Error('Network response was not ok');
+      const response = await fetchSemesterSettings();
 
-      const { data } = await response.json();
+      const { data } = await response;
       if (data?.[0]) {
         setSetting(data[0]);
         dispatch(setSemester(String(data[0].semester)));
@@ -103,15 +112,12 @@ export default function SemesterSettings() {
 
   const handleAddSetting = async (year: number, semester: number) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/semester-settings`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ year, semester }),
-        },
-      );
-      if (!response.ok) throw new Error('Failed to add setting');
+      const data = {
+        semester,
+        year,
+      };
+
+      await createSemesterSetting(data);
 
       setAlert({
         open: true,

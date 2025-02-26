@@ -19,8 +19,12 @@ export const fetchSemesterSettings = async (): Promise<
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     },
   );
+
+  if (!res.ok) throw new Error('Network response was not ok');
+
   return res.json();
 };
 
@@ -62,9 +66,13 @@ export const createSemesterSetting = async (data: {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     },
   );
+  
+  if (!res.ok) throw new Error('Failed to add setting');
+
   return res.json();
 };
 
@@ -78,6 +86,7 @@ export const activateSemesterSetting = async (
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     },
   );
   return res.json();
