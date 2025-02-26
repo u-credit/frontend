@@ -7,13 +7,21 @@ export function buildQueryParams<T extends object>(params: T): URLSearchParams {
         value.forEach((item) =>
           queryParams.append(
             key,
-            typeof item === 'boolean' ? (item ? '1' : '0') : item.toString(),
+            typeof item === 'boolean'
+              ? item
+                ? 'true'
+                : 'false'
+              : item.toString(),
           ),
         );
       } else {
         queryParams.append(
           key,
-          typeof value === 'boolean' ? (value ? '1' : '0') : value.toString(),
+          typeof value === 'boolean'
+            ? value
+              ? 'true'
+              : 'false'
+            : value.toString(),
         );
       }
     }

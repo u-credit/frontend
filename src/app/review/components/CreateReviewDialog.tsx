@@ -9,7 +9,7 @@ import { profanityFilter } from '@/utils/profanityFilter';
 interface CreateReviewDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: any) => Promise<boolean>;
   subjectId: string;
 }
 
@@ -98,15 +98,15 @@ const CreateReviewDialog: React.FC<CreateReviewDialogProps> = ({
 
     setSubmitting(true);
 
-    try {
-      await onSubmit({
-        rating,
-        year: Number(selectedYear),
-        semester: Number(selectedSemester),
-        teacherName: selectedTeacherName,
-        reviewText,
-      });
+    const status = await onSubmit({
+      rating,
+      year: Number(selectedYear),
+      semester: Number(selectedSemester),
+      teacherName: selectedTeacherName,
+      reviewText,
+    });
 
+    if (status) {
       dispatch(
         showAlert({
           message: 'คุณเพิ่มรีวิวรายวิชานี้สำเร็จแล้ว',
@@ -115,7 +115,7 @@ const CreateReviewDialog: React.FC<CreateReviewDialogProps> = ({
       );
 
       onClose();
-    } catch (error) {
+    } else {
       dispatch(
         showAlert({
           message: 'เกิดข้อผิดพลาดในการเพิ่มรีวิว',
