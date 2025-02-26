@@ -4,13 +4,13 @@ import { formatScheduleStateItemToSummarySubject } from '@/utils';
 import SummarySubjectCard, { SummarySubject } from './SummarySubjectCard';
 import { useSummaryContext } from '@/app/contexts/SummaryContext';
 import { RootState } from '@/features/store';
-import { Tabs, Tab } from '@mui/material';
 
 interface SubjectContainerProps {
   subjectFlag: string;
   semester: string;
   year: string;
   searchValue: string;
+  activeCategoryTab: number;
 }
 
 const SubjectContainer = ({
@@ -18,6 +18,7 @@ const SubjectContainer = ({
   semester,
   year,
   searchValue,
+  activeCategoryTab,
 }: SubjectContainerProps) => {
   const { tableData } = useSummaryContext();
   const schedule = useSelector((state: RootState) => state.schedule);
@@ -28,11 +29,6 @@ const SubjectContainer = ({
   const [filteredUnmatchSubject, setFilteredUnmatchSubject] = useState<
     SummarySubject[]
   >([]);
-  const [activeTab, setActiveTab] = useState(0);
-
-  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
 
   useEffect(() => {
     if (subjectFlag === 'transcript') {
@@ -77,12 +73,12 @@ const SubjectContainer = ({
     prepareSubject();
   }, [semester, year, searchValue, prepareSubject]);
 
-  const isUnmatchedTabActive = activeTab === tableData.length + 1;
-  const isAllTabActive = activeTab === 0;
+  const isUnmatchedTabActive = activeCategoryTab === tableData.length + 1;
+  const isAllTabActive = activeCategoryTab === 0;
 
   const getFilteredSubjects = () => {
     if (isAllTabActive) return filteredSubject;
-    return filteredSubject.filter((s) => s.category === activeTab);
+    return filteredSubject.filter((s) => s.category === activeCategoryTab);
   };
 
   const isEmpty = (list: SummarySubject[]) => list.length === 0;
@@ -101,29 +97,15 @@ const SubjectContainer = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <Tabs
-        value={activeTab}
-        onChange={handleChange}
-        aria-label="subject tabs"
-        variant="scrollable"
-        sx={{ fontWeight: '600' }}
-      >
-        <Tab label="ทั้งหมด" id="all-tab" />
-        {tableData.map((cat, index) => (
-          <Tab key={cat.id} label={cat.name} id={`tab-${index + 1}`} />
-        ))}
-        <Tab label="ไม่ตรงหลักสูตร" id="unmatched-tab" />
-      </Tabs>
-
+    <div className="flex flex-row gap-4 w-full grow">
       {isUnmatchedTabActive ? (
-        <div className="gap-y-4 flex flex-col">
-          <div className="font-bai-jamjuree font-semibold">
+        <div className="gap-y-4 flex flex-col grow">
+          <div className="font-bai-jamjuree font-semibold ">
             <span className="mr-4">รายวิชาที่ไม่ตรงหลักสูตร</span>
-            <span className="text-red-500">
+            <span className="text-red-500 mr-1">
               {unmatchSubjects.reduce((sum, s) => sum + s.credit, 0)}
             </span>
-            <span>/-</span>
+            <span>หน่วยกิต</span>
           </div>
           {isEmpty(filteredUnmatchSubject) ? (
             <p className="text-center text-gray-500">
@@ -140,7 +122,7 @@ const SubjectContainer = ({
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-y-4 w-full">
           <div className="font-bai-jamjuree font-semibold">
             <span className="mr-4">
               {isAllTabActive ? (
@@ -149,20 +131,20 @@ const SubjectContainer = ({
                   <span className="text-red-500">
                     {getTotalCredits().current}
                   </span>
-                  <span>/-</span>
+                  <span>/{getTotalCredits().required}</span>
                 </>
               ) : (
-                tableData[activeTab - 1]?.name
+                tableData[activeCategoryTab - 1]?.name
               )}
             </span>
             {!isAllTabActive && (
               <>
                 <span className="text-red-500">
                   {subjectFlag === 'transcript'
-                    ? tableData[activeTab - 1]?.currentCredit
-                    : tableData[activeTab - 1]?.scheduledCredit}
+                    ? tableData[activeCategoryTab - 1]?.currentCredit
+                    : tableData[activeCategoryTab - 1]?.scheduledCredit}
                 </span>
-                <span>/{tableData[activeTab - 1]?.requiredCredit}</span>
+                <span>/{tableData[activeCategoryTab - 1]?.requiredCredit}</span>
               </>
             )}
           </div>

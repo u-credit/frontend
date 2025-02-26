@@ -1,15 +1,17 @@
 'use client';
-import { InputAdornment, TextField } from '@mui/material';
+import { InputAdornment, SxProps, TextField, Theme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 interface SearchBarProps {
   onSearchValueChange: (value: string) => void;
   onSearchAction: () => void;
+  sx?: SxProps<Theme>;
 }
 
 export default function CustomSearchBar({
   onSearchValueChange,
   onSearchAction,
+  sx,
 }: SearchBarProps) {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onSearchValueChange(event.target.value);
@@ -44,6 +46,7 @@ export default function CustomSearchBar({
             borderColor: 'primary.main',
           },
         },
+        ...sx,
       }}
     />
   );

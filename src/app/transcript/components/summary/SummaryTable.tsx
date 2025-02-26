@@ -92,9 +92,9 @@ function Row(props: {
         <TableCell align="center">
           {showScheduleCredit
             ? formatDisplayCalculation(
-                row.creditToComplete - row.scheduledCredit,
+                row.creditToComplete - row.scheduledCredit,row.requiredCredit
               )
-            : formatDisplayCalculation(row.creditToComplete)}
+            : formatDisplayCalculation(row.creditToComplete,row.requiredCredit)}
         </TableCell>
       </TableRow>
       <TableRow>
