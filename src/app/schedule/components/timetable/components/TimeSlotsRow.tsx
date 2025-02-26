@@ -19,12 +19,12 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   isLastRow,
 }) => (
   <Box
-    sx={{
+    sx={day !== 'ไม่ระบุ' ?{
       width: `${100 / totalTimes}%`,
       borderRight: hasBorder ? '1px solid #D9D9D9' : 'none',
       minHeight: '80px',
       borderBottom: isLastRow ? 'none' : '1px solid #D9D9D9',
-    }}
+    }: {}}
     key={`${day}-${time}`}
   />
 );

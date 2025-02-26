@@ -52,18 +52,18 @@ const ExamSchedule: React.FC<ExamScheduleProps> = ({ item, selectedSection, exam
     const examEndTime = examType === 'midterm' ? midterm_exam_time_end : final_exam_time_end;
 
     return (
-        <div className="flex gap-x-4 m-2">
-        <div className="w-full border rounded-lg p-4">
-            <Typography fontWeight="bold" fontSize="14px">
-            {item.subjectId} {item.detail?.subject_english_name}
-            </Typography>
-            <Typography>{formatDateToThai(examDate)}</Typography>
-            {examDate && (
-            <Typography>
-                {`${formatTime(examStartTime)} - ${formatTime(examEndTime)}`}
-            </Typography>
-            )}
-        </div>
+        <div className="flex gap-x-4 m-1">
+            <div className={`w-full border rounded-lg p-4 min-h-[125px] ${examType === 'midterm' ? 'bg-blue-100':'bg-red-100'}`}>
+                <Typography fontWeight="bold" fontSize="14px">
+                {item.subjectId} {item.detail?.subject_english_name}
+                </Typography>
+                <Typography>{formatDateToThai(examDate)}</Typography>
+                {examDate && (
+                <Typography>
+                    {`${formatTime(examStartTime)} - ${formatTime(examEndTime)}`}
+                </Typography>
+                )}
+            </div>
         </div>
     );
 };

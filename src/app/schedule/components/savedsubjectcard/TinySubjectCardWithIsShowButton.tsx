@@ -15,6 +15,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import { useRouter } from 'next/navigation';
+
 import {
   addBookmarkApi,
   deleteBookmarkApi,
@@ -30,6 +32,13 @@ export default function TinySubjectCardWithIsShowButton({
   subjectDetail,
   section,
 }: SubjectCardProps) {
+  const conflictingSubjects = useSelector(
+    (state: RootState) => state.conflicts.conflictingSubjects
+  );
+  const isConflicting = new Set(Array.from(conflictingSubjects).map(subject => subject.split('-')[0])).has(subjectDetail.subject_id)
+
+  console.log(conflictingSubjects)
+
   const dispatch: AppDispatch = useDispatch();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
@@ -40,6 +49,10 @@ export default function TinySubjectCardWithIsShowButton({
   const [isShow, setIsShow] = useState(false);
   const [daySection, setDaySection] = useState<string[]>(new Array(8).fill(''));
   const [sectionList, setSectionList] = useState<string[]>([]);
+  const router = useRouter();
+  const handleMoreDetail = () => {
+    router.push(`/course/${subjectDetail.subject_id}`);
+  };
   const hasBookmark = useSelector((state: RootState) =>
     selectIsBookmark(state, subjectDetail.subject_id),
   );
@@ -173,9 +186,10 @@ export default function TinySubjectCardWithIsShowButton({
     setSelectedSection(section);
   }, [section]);
 
+  console.log(isConflicting)
   return (
     <div className="relative">
-      <div className="flex  bg-white rounded-lg border-[1px]  border-gray-300">
+      <div className={`flex bg-white rounded-lg ${isConflicting ? 'border-red-500 border-[2px]' : 'border-gray-300 border-[1px]' }`}>
         <div className="  border-r-[1px] w-[100px] sm:w-[148px] ">
           <div className="flex flex-col  justify-center items-center h-full sm:py-5 px-2 ">
             <CustomSelect
@@ -186,6 +200,10 @@ export default function TinySubjectCardWithIsShowButton({
               }))}
               selectedValue={selectedSection}
               label="sec"
+              sx = {{
+                width: '80px',
+                fontSize: { xs: '12px', sm: '14px' },
+              }}
             />
             <Checkbox
               checked={bookmarkDetail?.isShow ?? false}
@@ -214,10 +232,14 @@ export default function TinySubjectCardWithIsShowButton({
                 className="flex flex-col gap-[10px]"
               >
                 <div id="row-1" className="flex flex-wrap gap-x-6 items-center">
-                  <div className="font-bold text-sm sm:text-lg">
+                  <div 
+                    className='`font-bold text-sm sm:text-lg '>
                     {subjectDetail.subject_id}
                   </div>
-                  <div className="font-bold text-sm sm:text-lg">
+
+                  <div 
+                    className="font-bold text-sm sm:text-lg hover:underline cursor-pointer" 
+                    onClick={handleMoreDetail}>
                     {subjectDetail.subject_english_name}
                   </div>
                   {subjectDetail.category &&

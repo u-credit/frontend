@@ -48,9 +48,13 @@ export default function DownloadButton() {
     <Button
       variant="contained"
       startIcon={<FileDownloadOutlinedIcon />}
-      sx={{ width: '89px' }}
+      sx = {{
+        width: '89px',
+        fontSize: { xs: '12px', sm: '14px' },
+      }}
       data-testid="download-png-button"
       onClick={handleDownloadPNG}
+      
     >
       PNG
     </Button>

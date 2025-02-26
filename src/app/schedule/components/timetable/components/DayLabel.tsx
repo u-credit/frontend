@@ -20,7 +20,7 @@ const DayLabel: React.FC<DayLabelProps> = ({ day, isLast }) => (
       backgroundColor: '#FFF7E1',
       borderRight: '1px solid #D9D9D9',
       borderBottom: !isLast ? '1px solid #D9D9D9' : 'none',
-      borderBottomLeftRadius: isLast ? '10px' : '0',
+      borderBottomLeftRadius: isLast ? '12px' : '0',
     }}
   >
     <Typography>{day}</Typography>
