@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { CategoryDto, SubjectDto } from '../../../Interfaces';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
@@ -263,7 +264,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
         <div className="flex space-x-2">
           <Button
             variant="contained"
-            startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}
+            startIcon={isBookmarked ? <DeleteOutlineIcon /> : <AddIcon />}
             sx={{
               backgroundColor: isBookmarked ? 'white' : undefined,
               color: isBookmarked ? 'primary.main' : undefined,
@@ -279,7 +280,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
               handleToggleBookmark();
             }}
           >
-            บันทึก
+            {isBookmarked ? 'ลบ' : 'บันทึก'}
           </Button>
         </div>
       </div>

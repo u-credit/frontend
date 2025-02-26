@@ -3,8 +3,8 @@ import { SubjectDto } from '@/Interfaces';
 import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import { Checkbox } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
 import { CustomSectionChip, CustomSelect } from '@/components';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {
   addBookmark,
   editBookmark,
@@ -288,7 +288,7 @@ export default function TinySubjectCardWithIsShowButton({
           >
             <Button
               variant="contained"
-              startIcon={isBookmarked ? <CheckIcon /> : <AddIcon />}
+              startIcon={isBookmarked ? <DeleteOutlineIcon /> : <AddIcon />}
               sx={{
                 fontSize: { xs: '12px', sm: '16px' },
                 width: { xs: '80px', sm: '100px' },
@@ -303,8 +303,9 @@ export default function TinySubjectCardWithIsShowButton({
               }}
               onClick={handleToggleBookmark}
             >
-              บันทึก
+              {isBookmarked ? 'ลบ' : 'บันทึก'}
             </Button>
+
           </div>
         </div>
       </div>
