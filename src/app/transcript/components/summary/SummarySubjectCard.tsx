@@ -115,6 +115,14 @@ export default function SummarySubjectCard({
     }
   };
 
+  const text =
+    subject.category === null &&
+    subject.subgroup === null &&
+    subject.group === null &&
+    subject.childgroup === null
+      ? 'เพิ่มหมวดหมู่'
+      : 'แก้ไขหมวดหมู่';
+
   return (
     <>
       <div className="flex flex-col mobile:flex-row justify-between border-[1px] border-gray-300 rounded-lg">
@@ -192,7 +200,7 @@ export default function SummarySubjectCard({
               },
             }}
           >
-            แก้ไขหมวดหมู่
+            {text}
           </Button>
           {subjectFlag === 'transcript' && (
             <Button

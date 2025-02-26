@@ -99,6 +99,7 @@ const CreateReviewDialog: React.FC<CreateReviewDialogProps> = ({
     setSubmitting(true);
 
     const status = await onSubmit({
+      subjectId,
       rating,
       year: Number(selectedYear),
       semester: Number(selectedSemester),

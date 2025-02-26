@@ -108,7 +108,7 @@ const SubjectContainer = ({
             <span>หน่วยกิต</span>
           </div>
           {isEmpty(filteredUnmatchSubject) ? (
-            <p className="text-center text-gray-500">
+            <p className="flex h-full justify-center items-center text-center text-gray-500">
               ไม่พบรายวิชาจากตารางเรียนในหมวดนี้
             </p>
           ) : (
@@ -149,11 +149,11 @@ const SubjectContainer = ({
             )}
           </div>
           {isEmpty(getFilteredSubjects()) ? (
-            <p className="text-center text-gray-500">
+            <div className="flex text-center text-gray-500 h-full justify-center item">
               {!isAllTabActive
                 ? 'ไม่พบรายวิชาจากตารางเรียนในหมวดนี้'
                 : 'ไม่พบรายวิชา'}
-            </p>
+            </div>
           ) : (
             getFilteredSubjects().map((subject, index) => (
               <SummarySubjectCard
