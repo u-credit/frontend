@@ -1,6 +1,5 @@
 import { SummarySubject } from '@/app/transcript/components/summary/SummarySubjectCard';
 import { Row } from '@/app/transcript/components/summary/SummaryTable';
-import { BookmarkStateItem } from '@/features/bookmark/bookmarkSlice';
 import { ScheduleStateItem } from '@/features/scheduleSlice';
 import { TranscriptItem } from '@/features/transcriptSlice';
 import {
@@ -140,6 +139,14 @@ export const calculateCurrentCredit = (
           (subgroup.currentCredit += item.credit);
         subgroup?.creditToComplete != undefined &&
           (subgroup.creditToComplete -= item.credit);
+
+        const children = subgroup?.children?.find(
+          (c: Row) => c.id === item.childgroup,
+        );
+        children?.currentCredit != undefined &&
+          (children.currentCredit += item.credit);
+        children?.creditToComplete != undefined &&
+          (children.creditToComplete -= item.credit);
       });
     }
   }
@@ -168,13 +175,25 @@ export const calculateScheduledCredit = (
         );
         subgroup?.scheduledCredit != undefined &&
           (subgroup.scheduledCredit += item.credit ?? 0);
+
+        const children = subgroup?.children?.find(
+          (c: Row) => c.id === item.childgroup,
+        );
+        children?.currentCredit != undefined &&
+          (children.currentCredit += item.credit);
+        children?.creditToComplete != undefined &&
+          (children.creditToComplete -= item.credit);
       });
     }
   }
   return tableData;
 };
 
-export const formatDisplayCalculation = (value: number): string => {
+export const formatDisplayCalculation = (
+  value: number,
+  required: number,
+): string => {
+  if (required === 0) return '-';
   if (value < 0) return 'เกิน ' + Math.abs(value).toString() + ' หน่วย';
   return value.toString();
 };
