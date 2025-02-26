@@ -150,31 +150,17 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   };
 
   const handleEditReview = async (data: any) => {
-    try {
-      const response = await editReview(reviewId, data);
+    const response = await editReview(reviewId, data);
 
-      if (response.status) {
-        const updatedReviews = await getReviews(subjectId);
-        if (updatedReviews.status) {
-          dispatch(setInitialReviews(updatedReviews.data.reviews));
-          dispatch(setAverageRating(updatedReviews.data.averageRating));
-        }
-        dispatch(
-          showAlert({
-            message: 'คุณแก้ไขรีวิวรายวิชานี้สำเร็จแล้ว',
-            severity: 'success',
-          }),
-        );
-        setEditDialogOpen(false);
+    if (response.status) {
+      const updatedReviews = await getReviews(subjectId);
+      if (updatedReviews.status) {
+        dispatch(setInitialReviews(updatedReviews.data.reviews));
+        dispatch(setAverageRating(updatedReviews.data.averageRating));
       }
-    } catch (error) {
-      dispatch(
-        showAlert({
-          message: 'เกิดข้อผิดพลาดในการแก้ไขรีวิว',
-          severity: 'error',
-        }),
-      );
-    }
+      setEditDialogOpen(false);
+      return true;
+    } else return false;
   };
 
   return (

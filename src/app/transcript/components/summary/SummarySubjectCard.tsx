@@ -3,10 +3,9 @@ import { Button, Chip, Tooltip } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import CreateIcon from '@mui/icons-material/Create';
 import { useEffect, useState } from 'react';
-import Backdrop from '@/components/Backdrop';
 import ModalAddCategory from '../ModalAddCategory';
 import { SubjectTranscriptDto } from '@/Interfaces/transcript.interface';
-import { CategoryItem, Review } from '@/Interfaces';
+import { CategoryItem, CreateReviewDto, Review } from '@/Interfaces';
 import { chipCategoryItem, getChipColor } from '@/utils';
 import EditReviewDialog from '@/app/review/components/EditReviewDialog';
 import { useSummaryContext } from '@/app/contexts/SummaryContext';
@@ -20,6 +19,11 @@ import {
 } from '@/features/bookmark/bookmarkSlice';
 import { AppDispatch, RootState } from '@/features/store';
 import { fetchCalculateSchedule } from '@/features/scheduleSlice';
+import {
+  createReview,
+  editReview,
+  getMyReviewsFromTranscriptSubject,
+} from '@/api/reviewApi';
 export interface SummarySubject extends SubjectTranscriptDto {
   categories: CategoryItem[];
 }
@@ -34,7 +38,7 @@ export default function SummarySubjectCard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const { myTsReview } = useSummaryContext();
+  const { myTsReview, setMyTsReview } = useSummaryContext();
 
   const handleEditCategory = (): void => {
     setIsModalOpen(true);
@@ -51,9 +55,25 @@ export default function SummarySubjectCard({
     }
   }, [isModalOpen]);
 
-  const handleEditReview = async () => {};
+  const handleEditReview = async (data: any) => {
+    const response = await editReview(review?.review_id || '', data);
 
-  const handleCreateReview = async () => {};
+    if (response.status) {
+      const res = await getMyReviewsFromTranscriptSubject();
+      setMyTsReview(res.data);
+      return true;
+    } else return false;
+  };
+
+  const handleCreateReview = async (data: CreateReviewDto) => {
+    const response = await createReview(data);
+
+    if (response.status) {
+      const res = await getMyReviewsFromTranscriptSubject();
+      setMyTsReview(res.data);
+      return true;
+    } else return false;
+  };
 
   const [review, setReview] = useState<Review | null>(null);
   useEffect(() => {

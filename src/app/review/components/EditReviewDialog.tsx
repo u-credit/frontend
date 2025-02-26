@@ -10,7 +10,7 @@ import { profanityFilter } from '@/utils/profanityFilter';
 interface EditReviewDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: any) => Promise<boolean>;
   initialData: {
     rating: number;
     year: number;
@@ -73,7 +73,6 @@ const EditReviewDialog: React.FC<EditReviewDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitting(true);
 
     const { isValid } = profanityFilter(reviewText);
     if (!isValid) {
@@ -86,16 +85,17 @@ const EditReviewDialog: React.FC<EditReviewDialogProps> = ({
       return;
     }
 
-    try {
-      await onSubmit({
-        subjectId,
-        rating,
-        year: Number(selectedYear),
-        semester: Number(selectedSemester),
-        teacherName: selectedTeacherName,
-        reviewText,
-      });
+    setSubmitting(true);
 
+    const status = await onSubmit({
+      subjectId,
+      rating,
+      year: Number(selectedYear),
+      semester: Number(selectedSemester),
+      teacherName: selectedTeacherName,
+      reviewText,
+    });
+    if (status) {
       dispatch(
         showAlert({
           message: 'คุณแก้ไขรีวิวรายวิชานี้สำเร็จแล้ว',
@@ -104,7 +104,7 @@ const EditReviewDialog: React.FC<EditReviewDialogProps> = ({
       );
 
       onClose();
-    } catch (error) {
+    } else {
       dispatch(
         showAlert({
           message: 'เกิดข้อผิดพลาดในการแก้ไขรีวิว',
