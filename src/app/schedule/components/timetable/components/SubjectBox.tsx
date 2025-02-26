@@ -8,11 +8,12 @@ interface SubjectBoxProps {
   width: number;
   color: string;
   hasConflict?: boolean;
+  hasDay?:boolean;
 }
 
-const SubjectBox: React.FC<SubjectBoxProps> = ({ item, left, width, color , hasConflict }) => (
+const SubjectBox: React.FC<SubjectBoxProps> = ({ item, left, width, color , hasConflict , hasDay}) => (
   <Box
-    sx={{
+    sx={hasDay ?{
       position: 'absolute',
       left: `${left}%`,
       width: `${width}%`,
@@ -24,6 +25,16 @@ const SubjectBox: React.FC<SubjectBoxProps> = ({ item, left, width, color , hasC
       overflow: 'hidden',
       zIndex: 1,
       border: hasConflict ? '2px solid #ff5070' : 'none',
+    }:{
+      backgroundColor: color,
+      width: '200px',
+      borderRadius: '5px',
+      padding: '5px',
+      height: '80px',
+      overflow: 'hidden',
+      zIndex: 1,
+      margin:'10px 5px 10px 5px',
+
     }}
   >
     <div className="flex flex-col h-full justify-between">

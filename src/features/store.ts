@@ -8,6 +8,7 @@ import facultyReducer from './facultySlice';
 import transcriptReducer from './transcriptSlice';
 import semesterSettingsReducer from './admin/semesterSettingsSlice';
 import scheduleReducer from './scheduleSlice';
+import conflictsReducer from './timetable/timetableSlice'
 export const makeStore = () => {
   return configureStore({
     reducer: {
@@ -20,6 +21,7 @@ export const makeStore = () => {
       transcript: transcriptReducer,
       semesterSettings: semesterSettingsReducer,
       schedule: scheduleReducer,
+      conflicts: conflictsReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',
     middleware: (getDefaultMiddleware) =>

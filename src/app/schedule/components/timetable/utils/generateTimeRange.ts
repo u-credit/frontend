@@ -9,6 +9,12 @@ export const generateTimeRange = (data: ScheduleItem[]) => {
     const endTime = parseInt(item.timeEnd.split(":")[0]);
     minTime = Math.min(minTime, startTime);
     maxTime = Math.max(maxTime, endTime);
+    if(minTime==0){
+      minTime = 8
+    }
+    if(maxTime==0){
+      maxTime = 16
+    }
   });
 
   const times: string[] = [];
