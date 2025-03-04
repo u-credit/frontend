@@ -27,13 +27,20 @@ export const useAuth = () => {
 
   useEffect(() => {
     if (isAuthenticated && tokenExpiration) {
-      const timeUntilExpiration = tokenExpiration - 60 * 1000;
-      const timeoutId = setTimeout(
-        () => dispatch(handleTokenRefresh()),
-        timeUntilExpiration,
-      );
+      const refreshTokenBeforeExpiration = () => {
+        const timeUntilExpiration = tokenExpiration * 1000;
 
-      return () => clearTimeout(timeoutId);
+        if (timeUntilExpiration <= 0) {
+          dispatch(handleTokenRefresh());
+        } else {
+          setTimeout(() => {
+            dispatch(handleTokenRefresh());
+            refreshTokenBeforeExpiration();
+          }, timeUntilExpiration);
+        }
+      };
+
+      refreshTokenBeforeExpiration();
     }
   }, [dispatch, isAuthenticated, tokenExpiration]);
 };
