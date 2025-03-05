@@ -16,28 +16,33 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/features/store';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { useRouter } from 'next/navigation';
-
+import { Tooltip } from '@mui/material';
 import {
   addBookmarkApi,
   deleteBookmarkApi,
   updateBookmarkApi,
 } from '@/api/bookmarkApi';
+import { chipCategory } from '@/utils';
 
 interface SubjectCardProps {
   subjectDetail: SubjectDto;
   section: string;
+  showCheckbox?: boolean;
 }
 
 export default function TinySubjectCardWithIsShowButton({
   subjectDetail,
   section,
+  showCheckbox = true,
 }: SubjectCardProps) {
   const conflictingSubjects = useSelector(
-    (state: RootState) => state.conflicts.conflictingSubjects
+    (state: RootState) => state.conflicts.conflictingSubjects,
   );
-  const isConflicting = new Set(Array.from(conflictingSubjects).map(subject => subject.split('-')[0])).has(subjectDetail.subject_id)
+  const isConflicting = new Set(
+    Array.from(conflictingSubjects).map((subject) => subject.split('-')[0]),
+  ).has(subjectDetail.subject_id);
 
-  console.log(conflictingSubjects)
+  console.log(conflictingSubjects);
 
   const dispatch: AppDispatch = useDispatch();
   const { semester, year } = useSelector(
@@ -186,43 +191,46 @@ export default function TinySubjectCardWithIsShowButton({
     setSelectedSection(section);
   }, [section]);
 
-  console.log(isConflicting)
+  console.log(isConflicting);
   return (
     <div className="relative">
-      <div className={`flex bg-white rounded-lg ${isConflicting ? 'border-red-500 border-[2px]' : 'border-gray-300 border-[1px]' }`}>
-        <div className="  border-r-[1px] w-[100px] sm:w-[148px] ">
-          <div className="flex flex-col  justify-center items-center h-full sm:py-5 px-2 ">
-            <CustomSelect
-              onSelectedValueChange={handleSelectSectionChange}
-              selectOptions={sectionList.map((section) => ({
-                label: section,
-                value: section,
-              }))}
-              selectedValue={selectedSection}
-              label="sec"
-              sx = {{
-                width: '80px',
-                fontSize: { xs: '12px', sm: '14px' },
-              }}
-            />
-            <Checkbox
-              checked={bookmarkDetail?.isShow ?? false}
-              onChange={handleToggleShow}
-              disabled={!selectedSection}
-            />
-            <div className="flex flex-col items-center text-xs sm:text-base">
-              <span
-                className={!selectedSection ? 'text-gray-500' : 'text-black'}
-              >
-                แสดงในตาราง
-              </span>
-              {!selectedSection && (
-                <span className="text-xs text-red-600">กรุณาเลือก sec</span>
-              )}
+      <div
+        className={`flex bg-white rounded-lg ${isConflicting ? 'border-red-500 border-[2px]' : 'border-gray-300 border-[1px]'}`}
+      >
+        {showCheckbox && (
+          <div className="  border-r-[1px] w-[100px] sm:w-[148px] ">
+            <div className="flex flex-col  justify-center items-center h-full sm:py-5 px-2 ">
+              <CustomSelect
+                onSelectedValueChange={handleSelectSectionChange}
+                selectOptions={sectionList.map((section) => ({
+                  label: section,
+                  value: section,
+                }))}
+                selectedValue={selectedSection}
+                label="sec"
+                sx={{
+                  width: '80px',
+                  fontSize: { xs: '12px', sm: '14px' },
+                }}
+              />
+              <Checkbox
+                checked={bookmarkDetail?.isShow ?? false}
+                onChange={handleToggleShow}
+                disabled={!selectedSection}
+              />
+              <div className="flex flex-col items-center text-xs sm:text-base">
+                <span
+                  className={!selectedSection ? 'text-gray-500' : 'text-black'}
+                >
+                  แสดงในตาราง
+                </span>
+                {!selectedSection && (
+                  <span className="text-xs text-red-600">กรุณาเลือก sec</span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        
+        )}
 
         <div className="sm:flex sm:flex-row w-full justify-between">
           <div className=" w-full  p-5">
@@ -232,35 +240,44 @@ export default function TinySubjectCardWithIsShowButton({
                 className="flex flex-col gap-[10px]"
               >
                 <div id="row-1" className="flex flex-wrap gap-x-6 items-center">
-                  <div 
-                    className='`font-bold text-sm sm:text-lg '>
+                  <div className="`font-bold text-sm sm:text-lg ">
                     {subjectDetail.subject_id}
                   </div>
 
-                  <div 
-                    className="font-bold text-sm sm:text-lg hover:underline cursor-pointer" 
-                    onClick={handleMoreDetail}>
+                  <div
+                    className="font-bold text-sm sm:text-lg hover:underline cursor-pointer"
+                    onClick={handleMoreDetail}
+                  >
                     {subjectDetail.subject_english_name}
                   </div>
-                  {subjectDetail.category &&
-                    subjectDetail.category.map((category) => (
-                      <Chip
+                  {subjectDetail.categories &&
+                    subjectDetail.categories.map((category) => (
+                      <Tooltip
+                        title={chipCategory(category)}
                         key={
                           category.category_id +
                           category.group_name +
                           category.subgroup_name
                         }
-                        label={`${category.group_name} + ${category.subgroup_name}`}
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          whiteSpace: 'nowrap',
-                          textOverflow: 'ellipsis',
-                          '@media (max-width: 600px)': {
-                            maxWidth: '250px',
-                          },
-                        }}
-                      />
+                      >
+                        <Chip
+                          label={chipCategory(category)}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            maxWidth: {
+                              xs: '200px',
+                              sm: '300px',
+                              md: '500px',
+                              lg: '600px',
+                              xl: '700px',
+                            },
+                          }}
+                        />
+                      </Tooltip>
                     ))}
                 </div>
                 <div
@@ -305,7 +322,6 @@ export default function TinySubjectCardWithIsShowButton({
             >
               {isBookmarked ? 'ลบ' : 'บันทึก'}
             </Button>
-
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { API_PATHS } from '@/constants';
 import {
+  GetRecommendationRequest,
   ListSubjectByIdsQueryParams,
   ListSubjectQueryParams,
   Response,
@@ -63,4 +64,20 @@ export const fetchListSubjectByIds = async (
     return res.json();
   } catch (error) {}
   return { data: [] };
+};
+
+export const fetchRecommendSubject = async (
+  request: GetRecommendationRequest,
+): Promise<Response<SubjectDto[]>> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.subject}/recommend`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    },
+  );
+  return res.json();
 };

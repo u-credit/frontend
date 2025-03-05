@@ -187,8 +187,8 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
                 >
                   {subjectDetail.subject_english_name}
                 </div>
-                {subjectDetail.category &&
-                  subjectDetail.category.map((category: CategoryDto) => (
+                {subjectDetail.categories &&
+                  subjectDetail.categories.map((category: CategoryDto) => (
                     <Tooltip
                       title={chipCategory(category)}
                       key={
@@ -266,6 +266,7 @@ export default function SubjectCard({ subjectDetail }: SubjectCardProps) {
             variant="contained"
             startIcon={isBookmarked ? <DeleteOutlineIcon /> : <AddIcon />}
             sx={{
+              width: { xs: '80px', sm: '100px' },
               backgroundColor: isBookmarked ? 'white' : undefined,
               color: isBookmarked ? 'primary.main' : undefined,
               borderStyle: 'solid',

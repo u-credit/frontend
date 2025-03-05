@@ -301,7 +301,7 @@ export default function Page({
                 {subjectDetail?.subject_english_name}
               </h1>
               <div id="course-categories" className="flex flex-wrap gap-2 mt-2">
-                {subjectDetail?.category?.map((category) => (
+                {subjectDetail?.categories?.map((category) => (
                   <Tooltip
                     key={
                       String(category.category_id) + String(category.group_id)

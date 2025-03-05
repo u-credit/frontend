@@ -7,7 +7,9 @@ import {
   CalculateBookmarkBySubjectIdRequest,
   CalculateBookmarkRequest,
   CalculatedSubjectDto,
+  RecommendRequest,
   Response,
+  SubjectDto,
   UpdateRecalculateBookmarkDto,
 } from '@/Interfaces';
 import { buildQueryParams } from '@/utils';
@@ -263,6 +265,31 @@ export const updateAndRecalculateBookmark = async (
         unmatched: [],
         custom: [],
       },
+    };
+  }
+};
+
+export const fetchRecommendBookmark = async (
+  params: RecommendRequest,
+): Promise<Response<SubjectDto[]>> => {
+  const queryParams = buildQueryParams(params);
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_PATHS.bookmark}/recommend?${queryParams}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    );
+
+    return res.json();
+  } catch (e) {
+    return {
+      status: false,
+      data: [],
     };
   }
 };
