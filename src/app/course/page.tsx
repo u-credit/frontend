@@ -199,7 +199,7 @@ function Course() {
       const lastSubject = listSubjects?.[listSubjects.length - 1];
       const params = getSubjectParams(
         isLoadMore ? lastSubject.subject_id : '',
-        isLoadMore ? lastSubject.category?.length.toString() : '',
+        isLoadMore ? lastSubject.categories?.length.toString() : '',
       );
 
       try {
@@ -231,6 +231,7 @@ function Course() {
       year,
       isLoading,
       hasMore,
+      listSubjects,
       selectedSemester,
       selectedYear,
       searchValue,
@@ -248,6 +249,7 @@ function Course() {
       selectedCurriGroup.department.value,
       selectedCurriGroup.curriculum.value,
       selectedCurriGroup.curriculumYear.value,
+      setListSubjects,
     ],
   );
   useEffect(() => {

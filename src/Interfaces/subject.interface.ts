@@ -103,7 +103,7 @@ export interface SubjectDto {
   last_modified: Date;
   prerequisite?: string[];
   teach_table: TeachTableDto[];
-  category?: CategoryDto[];
+  categories?: CategoryDto[];
 }
 
 export interface CategoryItem {
@@ -119,4 +119,41 @@ export interface CategoryItem {
 export interface SubjectCategory {
   subjectId: string;
   categories: CategoryItem[];
+}
+
+export interface TeachTableRequest {
+  subjectId: string;
+  section: string;
+}
+
+export interface CategoryFilter {
+  category: number;
+  group: number;
+  subgroup: number;
+  childgroup: number;
+}
+
+export interface DayOption {
+  dayOfWeek: number;
+  timeStart: string | null;
+  timeEnd: string | null;
+  timeRange: string | null;
+}
+export interface ExamOption {
+  mexamDate: string | null;
+  mexamStartTime: string | null;
+  mexamEndTime: string | null;
+  examDate: string | null;
+  examStartTime: string | null;
+  examEndTime: string | null;
+}
+
+export interface GetRecommendationRequest {
+  teachTable: TeachTableRequest[];
+  faculty: string;
+  curriculum: string;
+  curriculumYear: string;
+  semester: number;
+  year: number;
+  categoryFilters?: CategoryFilter[];
 }

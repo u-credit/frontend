@@ -144,8 +144,8 @@ export default function TinySubjectCard({ subjectDetail }: SubjectCardProps) {
               <div className="font-bold text-lg">
                 {subjectDetail.subject_english_name}
               </div>
-              {subjectDetail.category &&
-                subjectDetail.category.map((category) => (
+              {subjectDetail.categories &&
+                subjectDetail.categories.map((category) => (
                   <Chip
                     key={
                       category.category_id +

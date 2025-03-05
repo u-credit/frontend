@@ -70,3 +70,11 @@ export interface UpdateRecalculateBookmarkDto extends UpdateRecalculateDto {
   semester: number;
   year: number;
 }
+
+export interface RecommendRequest {
+  semester: number;
+  year: number;
+  faculty: string;
+  curriculum: string;
+  curriculumYear: string;
+}

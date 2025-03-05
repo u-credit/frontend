@@ -33,8 +33,8 @@ export const getCategoryCredit = (
   bookmarks.forEach((bm) => {
     const detail = bm.detail;
     if (!detail) return;
-    if (detail?.category && detail?.category[0]?.subgroup_name) {
-      const key = detail.category
+    if (detail?.categories && detail?.categories[0]?.subgroup_name) {
+      const key = detail.categories
         .map((cur) => cur.group_name + cur.subgroup_name)
         .join(' หรือ ');
       catCredit[key] = (catCredit[key] || 0) + (detail.credit || 0);
