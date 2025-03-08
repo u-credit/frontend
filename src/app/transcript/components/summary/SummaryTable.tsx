@@ -26,8 +26,16 @@ export interface Row {
   children?: Row[];
 }
 
+const color = [
+  ['#8BD2EC', '#C0E4F6', '#E5F9FE', '#FFFFFF'],
+  ['#FBCCC2', '#FEE5E0', '#FFF8F8', '#FFFFFF'],
+  ['#D0F4DE', '#86CB96', '#86CB96', '#86CB96'],
+];
+
 function Row(props: {
   row: Row;
+  cat: number;
+  countRow: number;
   showScheduleCredit?: boolean;
   depth?: number;
   openInitially?: boolean;
@@ -37,6 +45,8 @@ function Row(props: {
     showScheduleCredit = false,
     depth = 0,
     openInitially = false,
+    cat,
+    countRow,
   } = props;
   const [openGroup, setOpenGroup] = useState(openInitially);
 
@@ -51,7 +61,8 @@ function Row(props: {
       <TableRow
         sx={{
           '& > *': { borderBottom: 'unset' },
-          borderBottom: '1px solid #BFBFBF',
+          borderBottom: depth === 3 ? '1px solid #eeeeee' : '1px solid #FFFFFF',
+          bgcolor: color[cat - 1][depth % 4],
           '& .MuiTableCell-root': {
             border: 'none',
             color: 'black',
@@ -92,9 +103,13 @@ function Row(props: {
         <TableCell align="center">
           {showScheduleCredit
             ? formatDisplayCalculation(
-                row.creditToComplete - row.scheduledCredit,row.requiredCredit
+                row.creditToComplete - row.scheduledCredit,
+                row.requiredCredit,
               )
-            : formatDisplayCalculation(row.creditToComplete,row.requiredCredit)}
+            : formatDisplayCalculation(
+                row.creditToComplete,
+                row.requiredCredit,
+              )}
         </TableCell>
       </TableRow>
       <TableRow>
@@ -112,10 +127,12 @@ function Row(props: {
                   row.children.map((children, index) => (
                     <Row
                       key={index}
+                      countRow={index}
                       row={children}
                       showScheduleCredit={showScheduleCredit}
                       depth={depth + 1}
                       openInitially={openInitially}
+                      cat={cat}
                     />
                   ))}
               </TableBody>
@@ -164,7 +181,7 @@ export default function SummaryTable({
             bgcolor: colors.grey[100],
             '.MuiTableCell-root': {
               fontFamily: 'Mitr',
-              fontSize: '20px',
+              fontSize: '16px',
               fontWeight: 500,
             },
           }}
@@ -184,8 +201,10 @@ export default function SummaryTable({
             <Row
               key={row.id}
               row={row}
+              countRow={0}
               showScheduleCredit={showScheduleCredit}
               openInitially={false}
+              cat={row.id}
             />
           ))}
         </TableBody>

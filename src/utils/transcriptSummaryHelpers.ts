@@ -194,7 +194,7 @@ export const formatDisplayCalculation = (
   required: number,
 ): string => {
   if (required === 0) return '-';
-  if (value < 0) return 'เกิน ' + Math.abs(value).toString() + ' หน่วย';
+  if (value < 0) return 'เกิน ' + Math.abs(value).toString();
   return value.toString();
 };
 
