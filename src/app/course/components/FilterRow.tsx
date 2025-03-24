@@ -16,6 +16,9 @@ interface FilterRowProps {
   resetFilter: () => void;
   setSendCustomTime: React.Dispatch<React.SetStateAction<boolean>>;
   setChangeFromDelete: React.Dispatch<React.SetStateAction<boolean>>;
+  sendSearchValue: string;
+  setSendSearchValue: React.Dispatch<React.SetStateAction<string>>;
+  setSearchValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const FilterRow = ({
@@ -30,12 +33,15 @@ export const FilterRow = ({
   resetFilter,
   setSendCustomTime,
   setChangeFromDelete,
+  sendSearchValue,
+  setSendSearchValue,
+  setSearchValue,
 }: FilterRowProps) => {
   return (
     <div className="flex flex-col px-4 gap-2">
       <div className="flex w-full justify-between items-end">
         <div>ค้นพบ {totalSearchSubject} วิชา</div>
-        {!isDefaultFilterValues(filterValues) ? (
+        {!isDefaultFilterValues(filterValues) || sendSearchValue ? (
           <ClearButon
             clearAll={true}
             onClick={() => {
@@ -43,6 +49,8 @@ export const FilterRow = ({
               setSendCustomTime(false);
               setCustomStartTimeFilter('');
               setCustomEndTimeFilter('');
+              setSendSearchValue('');
+              setSearchValue('');
               setChangeFromDelete(true);
             }}
           />
@@ -61,6 +69,17 @@ export const FilterRow = ({
         null}
       </div>
       <div className="flex items-center flex-wrap gap-2 ">
+        {sendSearchValue && (
+          <Chip
+            label={sendSearchValue}
+            onDelete={() => {
+              setSendSearchValue('');
+              setSearchValue('');
+            }}
+            color="primary"
+            variant="outlined"
+          />
+        )}
         {filterValues.courseCategory.map((cat) => (
           <Chip
             key={cat}

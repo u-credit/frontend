@@ -201,6 +201,7 @@ const TabsContainer = ({}: TabsContainerProps) => {
             <div className="flex gap-x-2 w-full">
               <div className="flex lg:grow lg:justify-end w-full">
                 <CustomSearchBar
+                  value={searchValue}
                   onSearchValueChange={handleSearchValueChange}
                   onSearchAction={handleSearchBar}
                   sx={{

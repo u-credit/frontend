@@ -5,10 +5,13 @@ import { RootState } from '@/features/store';
 import { useSelector } from 'react-redux';
 import { fetchRecommendBookmark } from '@/api/bookmarkApi';
 import { fetchRecommendSubject } from '@/api/subjectApi';
+import { selectHasTranscript } from '@/features/transcriptSlice';
 
 interface RecommendItemsProps {}
 
 const RecommendItems = () => {
+  const hasTranscript = useSelector(selectHasTranscript);
+
   const [recommendSubjects, setRecommendSubjects] = useState<SubjectDto[]>([]);
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated,
@@ -65,6 +68,14 @@ const RecommendItems = () => {
     semester,
     year,
   ]);
+
+  if (!hasTranscript) {
+    return (
+      <div className="text-center text-gray-500">
+        อัปโหลดทรานสคริปท์เพื่อใช้งาน
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-y-4">

@@ -3,12 +3,14 @@ import { InputAdornment, SxProps, TextField, Theme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 interface SearchBarProps {
+  value: string;
   onSearchValueChange: (value: string) => void;
   onSearchAction: () => void;
   sx?: SxProps<Theme>;
 }
 
 export default function CustomSearchBar({
+  value,
   onSearchValueChange,
   onSearchAction,
   sx,
@@ -38,6 +40,7 @@ export default function CustomSearchBar({
           </InputAdornment>
         ),
       }}
+      value={value}
       sx={{
         width: '100%',
         '& .MuiOutlinedInput-root': {

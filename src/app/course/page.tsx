@@ -90,6 +90,8 @@ function Course() {
     useState<string>('');
   const [customEndTimeFilter, setCustomEndTimeFilter] = useState<string>('');
   const [searchValue, setSearchValue] = useState<string>('');
+  const [sendSearchValue, setSendSearchValue] = useState<string>('');
+
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
   // const [selectedCurriGroup, setSelectedCurriGroup] = useState<CurriGroup>({
   //   faculty: initSelectOption(),
@@ -318,7 +320,7 @@ function Course() {
       loadSubjects({ isLoadMore: false });
       setChangeFromDelete(false);
     }
-  }, [filterValues, customStartTimeFilter, customEndTimeFilter]);
+  }, [filterValues, customStartTimeFilter, customEndTimeFilter, filterValues]);
 
   useEffect(() => {
     const initializeSettings = async () => {
@@ -337,7 +339,12 @@ function Course() {
 
   const handleSearchBar = () => {
     loadSubjects({ isLoadMore: false });
+    setSendSearchValue(searchValue);
   };
+
+  useEffect(() => {
+    if (searchValue === '') loadSubjects({ isLoadMore: false });
+  }, [searchValue]);
 
   const handleSearchAction = (
     filterValues: FilterGroup,
@@ -536,6 +543,7 @@ function Course() {
                 ></Button>
               </div>
               <CustomSearchBar
+                value={searchValue}
                 onSearchValueChange={handleSearchValueChange}
                 onSearchAction={handleSearchBar}
               />
@@ -575,6 +583,9 @@ function Course() {
             resetFilter={resetFilter}
             setSendCustomTime={setSendCustomTime}
             setChangeFromDelete={setChangeFromDelete}
+            sendSearchValue={sendSearchValue}
+            setSearchValue={setSearchValue}
+            setSendSearchValue={setSendSearchValue}
           />
           {isLoading && !isLoadingMore ? (
             <div className="flex flex-col grow justify-center items-center h-full">
