@@ -324,12 +324,10 @@ function Course() {
 
   useEffect(() => {
     const initializeSettings = async () => {
-      if (!semester || !year || semester === '0' || year === '0') {
-        try {
-          dispatch(fetchActiveSetting());
-        } catch (error) {
-          console.error('Error:', error);
-        }
+      try {
+        dispatch(fetchActiveSetting());
+      } catch (error) {
+        console.error('Error:', error);
       }
     };
     initializeSettings();
