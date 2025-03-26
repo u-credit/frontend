@@ -52,6 +52,7 @@ const yearOptions: SelectOption[] = [
   { label: '2564', value: '2564' },
   { label: '2565', value: '2565' },
   { label: '2566', value: '2566' },
+  { label: '2567', value: '2567' },
 ];
 
 export default function CourseWrapper() {
