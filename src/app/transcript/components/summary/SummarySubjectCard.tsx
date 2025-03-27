@@ -78,8 +78,10 @@ export default function SummarySubjectCard({
 
   const [review, setReview] = useState<Review | null>(null);
   useEffect(() => {
-    const data = myTsReview?.find((r) => r.subjectId === subject.subject_id);
-    setReview(data || null);
+    if (Array.isArray(myTsReview)) {
+      const data = myTsReview?.find((r) => r.subjectId === subject.subject_id);
+      setReview(data || null);
+    }
   }, [myTsReview, subject.subject_id]);
 
   const handleOnClickReview = () => {
