@@ -1,6 +1,6 @@
 import { Button, Chip } from '@mui/material';
 import { SubjectDto } from '@/Interfaces';
-import { useEffect, useState } from 'react';
+import { useEffect, useState,useMemo } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import { Checkbox } from '@mui/material';
 import { CustomSectionChip, CustomSelect } from '@/components';
@@ -37,13 +37,15 @@ export default function TinySubjectCardWithIsShowButton({
 }: SubjectCardProps) {
   const conflictingSubjects = useSelector(
     (state: RootState) => state.conflicts.conflictingSubjects,
+    (prev, next) => prev === next
   );
-  const isConflicting = new Set(
-    Array.from(conflictingSubjects).map((subject) => subject.split('-')[0]),
-  ).has(subjectDetail.subject_id);
-
-  console.log(conflictingSubjects);
-
+  
+  const isConflicting = useMemo(() => {
+    return new Set(
+      Array.from(conflictingSubjects).map((subject) => subject.split('-')[0])
+    ).has(subjectDetail.subject_id);
+  }, [conflictingSubjects, subjectDetail.subject_id]);
+  
   const dispatch: AppDispatch = useDispatch();
   const { semester, year } = useSelector(
     (state: RootState) => state.selectorValue,
@@ -58,12 +60,16 @@ export default function TinySubjectCardWithIsShowButton({
   const handleMoreDetail = () => {
     router.push(`/course/${subjectDetail.subject_id}`);
   };
-  const hasBookmark = useSelector((state: RootState) =>
-    selectIsBookmark(state, subjectDetail.subject_id),
+  const hasBookmark = useSelector(
+    (state: RootState) => selectIsBookmark(state, subjectDetail.subject_id),
+    (prev, next) => prev === next
   );
-  const bookmarkDetail = useSelector((state: RootState) =>
-    selectBookmarkDetail(state, subjectDetail.subject_id),
+  
+  const bookmarkDetail = useSelector(
+    (state: RootState) => selectBookmarkDetail(state, subjectDetail.subject_id),
+    (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
   );
+  
   useEffect(() => {
     setIsBookmarked(hasBookmark);
     setSelectedSection(bookmarkDetail?.section || '');
@@ -105,7 +111,7 @@ export default function TinySubjectCardWithIsShowButton({
         editBookmark([
           {
             subjectId: subjectDetail.subject_id,
-            section: selectedSection,
+            section: String(selectedSection),
             semester: Number(semester),
             year: Number(year),
             isShow: isShowInSchedule,
@@ -116,7 +122,7 @@ export default function TinySubjectCardWithIsShowButton({
       if (isAuthenticated) {
         await updateBookmarkApi({
           subjectId: subjectDetail.subject_id,
-          section: selectedSection,
+          section: String(selectedSection),
           semester: Number(semester),
           year: Number(year),
           isShow: isShowInSchedule,
@@ -162,51 +168,72 @@ export default function TinySubjectCardWithIsShowButton({
   };
 
   useEffect(() => {
-    if (subjectDetail.teach_table) {
-      const daySection = new Array(8).fill('');
-      const dayList: string[][] = Array.from({ length: 8 }, () => []);
-      const newSectionList: string[] = [];
-      subjectDetail.teach_table.forEach((teach) => {
-        if (daySection[teach.teach_day] != '')
-          daySection[teach.teach_day] += ', ';
-        daySection[teach.teach_day] += teach.section;
-        dayList[teach.teach_day].push(teach.section);
-        const time_str = teach.teach_time_str?.split(',');
-        time_str?.forEach((time) => {
-          const day = Number(time.split('x')[0]);
-          if (day && !dayList[day].includes(teach.section)) {
-            if (daySection[day] != '') daySection[day] += ', ';
-            daySection[day] += teach.section;
-            dayList[day].push(teach.section);
-          }
-        });
-        newSectionList.push(teach.section);
+    if (!subjectDetail.teach_table) return;
+  
+    const daySectionTemp = Array(8).fill('');
+    const dayListTemp: string[][] = Array.from({ length: 8 }, () => []);
+    const newSectionListTemp: string[] = [];
+  
+    subjectDetail.teach_table.forEach((teach) => {
+      if (daySectionTemp[teach.teach_day] !== '') {
+        daySectionTemp[teach.teach_day] += ', ';
+      }
+      daySectionTemp[teach.teach_day] += teach.section;
+      dayListTemp[teach.teach_day].push(teach.section);
+  
+      const timeStr = teach.teach_time_str?.split(',');
+      timeStr?.forEach((time) => {
+        const day = Number(time.split('x')[0]);
+        if (day && !dayListTemp[day].includes(teach.section)) {
+          if (daySectionTemp[day] !== '') daySectionTemp[day] += ', ';
+          daySectionTemp[day] += teach.section;
+          dayListTemp[day].push(teach.section);
+        }
       });
-      setDaySection(daySection);
-      setSectionList(newSectionList);
-    }
-  }, [subjectDetail]);
+  
+      newSectionListTemp.push(teach.section);
+    });
+  
+    setDaySection((prev) => 
+      prev.length === daySectionTemp.length && prev.every((val, index) => val === daySectionTemp[index]) 
+        ? prev 
+        : daySectionTemp
+    );
+  
+    setSectionList((prev) => 
+      prev.length === newSectionListTemp.length && prev.every((val, index) => val === newSectionListTemp[index]) 
+        ? prev 
+        : newSectionListTemp
+    );
+  
+  }, [subjectDetail.teach_table]);
+  
 
   useEffect(() => {
-    setSelectedSection(section);
-  }, [section]);
+    if (sectionList.length > 0) {
+      setSelectedSection((prev) =>
+        sectionList.includes(prev) ? prev : sectionList[0]
+      );
+    }
+  }, [sectionList]);
+  
 
-  console.log(isConflicting);
   return (
     <div className="relative">
       <div
         className={`flex bg-white rounded-lg ${isConflicting ? 'border-red-500 border-[2px]' : 'border-gray-300 border-[1px]'}`}
       >
         {showCheckbox && (
+      
           <div className="  border-r-[1px] w-[100px] sm:w-[148px] ">
             <div className="flex flex-col  justify-center items-center h-full sm:py-5 px-2 ">
               <CustomSelect
                 onSelectedValueChange={handleSelectSectionChange}
                 selectOptions={sectionList.map((section) => ({
-                  label: section,
-                  value: section,
+                  label: String(section),
+                  value: String(section),
                 }))}
-                selectedValue={selectedSection}
+                selectedValue={sectionList.includes(selectedSection) ? selectedSection : (sectionList.length > 0 ? sectionList[0] : '')}
                 label="sec"
                 sx={{
                   width: '80px',

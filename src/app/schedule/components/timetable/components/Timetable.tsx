@@ -69,7 +69,7 @@ const transformSubjectsToSchedule = (
       Array.isArray(subject.detail.teach_table)
     ) {
       subject.detail.teach_table.forEach((table: Table) => {
-        if (table.section === matchingSection.selectedSection) {
+        if (String(table.section) === String(matchingSection.selectedSection)){
           if (table.teach_day == 0) {
             scheduleData.push({
               day: thaiDayMap[table.teach_day],
