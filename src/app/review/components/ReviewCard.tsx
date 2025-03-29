@@ -132,7 +132,8 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
     if (!dateString) return '';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
-    return new Date(date.getTime() + 7 * 60 * 60 * 1000)
+
+    return new Date(date.getTime())
       .toLocaleString('en-CA', {
         year: 'numeric',
         month: '2-digit',
