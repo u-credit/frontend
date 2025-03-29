@@ -94,14 +94,12 @@ const transformSubjectsToSchedule = (
             }
 
             if (table.teach_time_str) {
-              const match = table.teach_time_str.match(
-                /^(\d)x(\d{2}:\d{2})-(\d{2}:\d{2})$/,
-              );
-              if (match) {
+              const matches = table.teach_time_str.matchAll(/(\d)x(\d{2}:\d{2})-(\d{2}:\d{2})/g);
+              for (const match of matches) {
                 const [, day, timeStart, timeEnd] = match;
-
+            
                 scheduleData.push({
-                  day: thaiDayMap[parseInt(day)],
+                  day: thaiDayMap[parseInt(day)],  // วันนั้น ๆ
                   timeStart,
                   timeEnd,
                   subject: subject.detail?.subject_english_name || '',
@@ -111,6 +109,7 @@ const transformSubjectsToSchedule = (
                 });
               }
             }
+            
           }
         }
       });
