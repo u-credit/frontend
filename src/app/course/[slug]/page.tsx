@@ -440,6 +440,7 @@ export default function Page({
                   teacherName={review.teacherName}
                   reviewText={review.reviewText}
                   createdAt={review.createdAt}
+                  updatedAt={review.updatedAt}
                   likeCount={review.likeCount}
                   isLikedByCurrentUser={review.isLikedByCurrentUser || false}
                   isOwner={review.isOwner || false}
@@ -503,6 +504,7 @@ export default function Page({
                         teacherName={review.teacherName}
                         reviewText={review.reviewText}
                         createdAt={review.createdAt}
+                        updatedAt={review.updatedAt}
                         likeCount={review.likeCount}
                         isLikedByCurrentUser={
                           review.isLikedByCurrentUser || false

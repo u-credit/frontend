@@ -36,6 +36,7 @@ interface ReviewCardProps {
   teacherName: string;
   reviewText: string;
   createdAt: string;
+  updatedAt: string;
   isLikedByCurrentUser: boolean;
   likeCount: number;
   isOwner?: boolean;
@@ -50,6 +51,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   teacherName,
   reviewText,
   createdAt,
+  updatedAt,
   isLikedByCurrentUser,
   likeCount,
   isOwner,
@@ -230,7 +232,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
               <span>มีประโยชน์</span>
               <span className="ml-2">({likeCount})</span>
             </button>
-            <span className="ml-auto">{formatDate(createdAt)}</span>
+            <span className="ml-auto">{formatDate(updatedAt)}</span>
           </div>
         </div>
       </div>
