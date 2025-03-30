@@ -188,7 +188,7 @@ export default function SummarySubjectCard({
                   />
                 </Tooltip>
               ))} */}
-            {chipLabel && (
+            {chipLabel ? (
               <Tooltip title={chipLabel}>
                 <Chip
                   label={chipLabel}
@@ -218,6 +218,42 @@ export default function SummarySubjectCard({
                   }
                 />
               </Tooltip>
+            ) : (
+              subject.categories?.length > 0 &&
+              subject.categories.map((category: CategoryItem) => (
+                <Tooltip
+                  title={chipCategoryItem(category)}
+                  key={category.category + category.group + category.subgroup}
+                >
+                  <Chip
+                    label={chipCategoryItem(category)}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: {
+                        xs: '200px',
+                        sm: '300px',
+                        md: '500px',
+                        lg: '600px',
+                        xl: '700px',
+                      },
+                    }}
+                    color={
+                      getChipColor(category.category) as
+                        | 'default'
+                        | 'primary'
+                        | 'secondary'
+                        | 'error'
+                        | 'info'
+                        | 'success'
+                        | 'warning'
+                    }
+                  />
+                </Tooltip>
+              ))
             )}
           </div>
           <div id="row2" className="flex flex-row gap-4 ">
