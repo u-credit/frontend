@@ -1,10 +1,11 @@
 'use client';
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import CourseInfo from './CourseInfo';
 import { Button } from '@mui/material';
 import { StudentInfo } from '@/Interfaces/studentInfo.interface';
 import UploadTranscript from './UploadTranscript';
 import { useTranscriptContext } from '@/app/contexts/TranscriptContext';
+import { initSelectOption } from '@/types';
 
 interface UploadTranscriptPageProps {
   file: File | null;
@@ -17,7 +18,7 @@ export default function UploadTranscriptPage({
   setFile,
   onNext,
 }: UploadTranscriptPageProps) {
-  const { selectedCurriGroup } = useTranscriptContext();
+  const { selectedCurriGroup, setSelectedCurriGroup } = useTranscriptContext();
 
   const [studentInfo, setStudentInfo] = useState<StudentInfo>({
     faculty_id: '',
@@ -43,6 +44,24 @@ export default function UploadTranscriptPage({
       uploadTranscriptSuccess
     );
   };
+
+  useEffect(() => {
+    setFile(null);
+    setStudentInfo({
+      faculty_id: '',
+      dept_id: '',
+      curr2_id: '',
+      curri_id: '',
+      curr_year: '',
+    });
+    setUploadTranscriptSuccess(false);
+    setSelectedCurriGroup({
+      faculty: initSelectOption(),
+      department: initSelectOption(),
+      curriculum: initSelectOption(),
+      curriculumYear: initSelectOption(),
+    });
+  }, []);
 
   return (
     <>

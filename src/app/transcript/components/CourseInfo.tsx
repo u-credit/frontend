@@ -10,14 +10,12 @@ interface StudentInfoProps {
   studentInfo: StudentInfo;
 }
 
-export default function CourseInfo({
-  studentInfo,
-}: StudentInfoProps) {
+export default function CourseInfo({ studentInfo }: StudentInfoProps) {
   const { selectedCurriGroup, setSelectedCurriGroup } = useTranscriptContext();
   const [facultyOptions, setFacultyOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
-    const loadFaculty = async () => {
+    const loadData = async () => {
       try {
         const data = (await fetchListFaculty())?.data || [];
         const facultyOptions: SelectOption[] = data.map((faculty) => ({
@@ -37,52 +35,52 @@ export default function CourseInfo({
           })),
         }));
         setFacultyOptions(facultyOptions);
-      } catch (error) {}
+
+        if (facultyOptions.length === 0) return;
+
+        const faculty = facultyOptions.find(
+          (f) => f.value === studentInfo.faculty_id,
+        );
+        const department = faculty?.children?.find(
+          (d) => d.value === studentInfo.dept_id,
+        );
+        const curriculum = department?.children?.find(
+          (c) => c.value === studentInfo.curr2_id,
+        );
+        const curriculumYear = curriculum?.children?.find(
+          (y) => y.value === studentInfo.curr_year,
+        );
+
+        const curriGroup = {
+          faculty: {
+            label: faculty?.label || '',
+            value: studentInfo.faculty_id,
+            children: faculty?.children || [],
+          },
+          department: {
+            label: department?.label || '',
+            value: studentInfo.dept_id,
+            children: department?.children || [],
+          },
+          curriculum: {
+            label: curriculum?.label || '',
+            value: studentInfo.curr2_id,
+            children: curriculum?.children || [],
+          },
+          curriculumYear: {
+            label: curriculumYear?.label || '',
+            value: studentInfo.curr_year,
+            children: curriculumYear?.children || [],
+          },
+        };
+
+        setSelectedCurriGroup(curriGroup);
+      } catch (error) {
+        console.error('Error loading faculty:', error);
+      }
     };
 
-    loadFaculty();
-  }, []);
-
-  useEffect(() => {
-    if (facultyOptions.length === 0) return;
-
-    const faculty = facultyOptions.find(
-      (f) => f.value === studentInfo.faculty_id,
-    );
-    const department = faculty?.children?.find(
-      (d) => d.value === studentInfo.dept_id,
-    );
-    const curriculum = department?.children?.find(
-      (c) => c.value === studentInfo.curr2_id,
-    );
-    const curriculumYear = curriculum?.children?.find(
-      (y) => y.value === studentInfo.curr_year,
-    );
-
-    const curriGroup = {
-      faculty: {
-        label: faculty?.label || '',
-        value: studentInfo.faculty_id,
-        children: faculty?.children || [],
-      },
-      department: {
-        label: department?.label || '',
-        value: studentInfo.dept_id,
-        children: department?.children || [],
-      },
-      curriculum: {
-        label: curriculum?.label || '',
-        value: studentInfo.curr2_id,
-        children: curriculum?.children || [],
-      },
-      curriculumYear: {
-        label: curriculumYear?.label || '',
-        value: studentInfo.curr_year,
-        children: curriculumYear?.children || [],
-      },
-    };
-
-    setSelectedCurriGroup(curriGroup);
+    loadData();
   }, [studentInfo]);
 
   return (
