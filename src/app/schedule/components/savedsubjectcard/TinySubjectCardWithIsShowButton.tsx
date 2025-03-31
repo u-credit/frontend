@@ -233,7 +233,7 @@ export default function TinySubjectCardWithIsShowButton({
                   label: String(section),
                   value: String(section),
                 }))}
-                selectedValue={sectionList.includes(selectedSection) ? selectedSection : (sectionList.length > 0 ? sectionList[0] : '')}
+                selectedValue={sectionList.length > 0 ? selectedSection : ''}
                 label="sec"
                 sx={{
                   width: '80px',
