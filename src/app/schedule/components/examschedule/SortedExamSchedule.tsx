@@ -15,10 +15,10 @@ const SortedExamSchedule: React.FC<SortedExamScheduleProps> = ({
         .filter((item) => item.detail?.teach_table)
         .sort((a, b) => {
         const teachA = a.detail?.teach_table?.find(
-            (t) => t.section === a.section,
+            (t) => String(t.section) === String(a.section),
         );
         const teachB = b.detail?.teach_table?.find(
-            (t) => t.section === b.section,
+            (t) => String(t.section) === String(b.section),
         );
 
         const midtermA = teachA?.midterm_exam_date || null;
@@ -69,7 +69,7 @@ const SortedExamSchedule: React.FC<SortedExamScheduleProps> = ({
             <ExamSchedule
             key={index}
             item={item}
-            selectedSection={item.section || ''}
+            selectedSection={String(item.section) || ''}
             examType={examType}
             />
         ))}
